@@ -44,16 +44,17 @@
                 </li>
 
                 <li class="nav-link">
-                    <a href="#">
+                    <a href="home.php">
                         <i class='bx bx-home-alt icon'></i>
                         <span class="text nav-text">Home</span>
+                        
                     </a>
                 </li>
 
                 <li class="nav-link">
                     <a href="#">
-                        <i class='bx bx-folder icon'></i>
-                        <span class="text nav-text">Documentos</span>
+                        <i class='bx bx-bar-chart-alt-2 icon'></i>
+                        <span class="text nav-text">Estadisticas</span>
                     </a>
                 </li>
 
@@ -73,7 +74,7 @@
                 </li>
 
                 <li class="nav-link">
-                    <a href="mensajeria.php">
+                    <a href="#">
                         <i class='bx bx-chat icon'></i>
                         <span class="text nav-text">Mensajes</span>
                     </a>
