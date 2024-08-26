@@ -1,8 +1,9 @@
 <?php
+require_once 'Departamento.php';
 class Usuario
 {
     // DNI (Clave primaria)
-    protected $DNI;
+    protected $Dni;
     protected $nombre_usuario;
     // Nombre
     protected $nombre;
@@ -20,13 +21,30 @@ class Usuario
     protected $tipoUsuario; // TODO: Debe usar Enums de tipos
     // Nombre del departamento al que pertenece
     protected $departamento; // TODO: Debe ser un ojeto de tipo Departamento 
-    public function __construct($nombre_usuario, $nombre, $apellido, $email, $id = null)
+    public function __construct($Dni, $nombre_usuario, $nombre, $apellido,$fechaNac, $domicilio, $email, $telefono,$tipoUsuario, Departamento $departamento )
     {
+        $this->Dni = $Dni;
         $this->nombre_usuario = $nombre_usuario;
         $this->nombre = $nombre;
         $this->apellido = $apellido;
+        $this->fechaNac=$fechaNac;
+        $this->domicilio=$domicilio;
+        $this->telefono=$telefono;
         $this->email = $email;
-        $this->id = $id;
+        $this->tipoUsuario=$tipoUsuario;
+        $this->departamento=$departamento;
+
+    }
+
+
+    public function getDni()
+    {
+        return $this->Dni;
+    }
+
+    public function setId($Dni)
+    {
+        $this->Dni = $Dni;
     }
 
     public function getUsuario()
@@ -41,18 +59,42 @@ class Usuario
     {
         return $this->apellido;
     }
+
+    public function getfechaNac()
+    {
+        return $this->fechaNac;
+    }
+
+
+    public function getDomicilio()
+    {
+        return $this->domicilio;
+    }
+
+    public function getTelefono()
+    {
+        return $this->telefono;
+    }
+
     public function getEmail()
     {
         return $this->email;
     }
-    public function setId($DNI)
+
+    public function getTipoUsuario()
     {
-        $this->DNI = $DNI;
+        return $this->tipoUsuario;
     }
-    public function getId()
+
+    public function getDepartamento()
     {
-        return $this->DNI;
+        return $this->departamento->getNombre();
     }
+
+
+
+    
+
 
 
 }

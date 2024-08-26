@@ -18,9 +18,9 @@ class Reunion
     //HoraInicio(Clave Primaria)
     protected $horaInicio;
     //HoraFin(Clave primaria)
-    protected $horaFin
+    protected $horaFin;
     //Descripcion
-    protected $descripcion
+    protected $descripcion;
 
 
     public function __construct($tema, $fecha, $horaInicio, $horaFin, $descripcion)
@@ -39,15 +39,15 @@ class Reunion
     }
     public function getFecha()
     {
-        return $this->nombre;
+        return $this->fecha;
     }
     public function getHoraInicio()
     {
-        return $this->apellido;
+        return $this->horaInicio;
     }
     public function getHoraFin()
     {
-        return $this->email;
+        return $this->horaFin;
     }
     public function getDescripcion($descripcion)
     {

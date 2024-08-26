@@ -1,4 +1,6 @@
 <?php
+
+require_once 'Usuario.php';
 class Solicitud
 {
     //TipoSolicitud(clave primeria)
@@ -17,7 +19,7 @@ class Solicitud
     // Fecha desde cuando inicia la solicitud
     // Fecha de hasta cuando es de la solicitud
 
-    public function __construct($TipoSolicitud, $DniSolicitante, $FechaDesde ,$FechaHasta)
+    public function __construct($TipoSolicitud, Usuario $DniSolicitante, $FechaDesde ,$FechaHasta)
     {
         $this->TipoSolicitud = $TipoSolicitud;
         $this->DniSolicitante = $DniSolicitante;
@@ -33,7 +35,7 @@ class Solicitud
     }
     public function getDniSolicitante()
     {
-        return $this->DniSolicitante;
+        return $this->DniSolicitante->getDni();
     }
     public function getFechaDesde()
     {
