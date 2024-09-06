@@ -48,4 +48,32 @@ class Repositorio_Departamento extends Repositorio
             return $departamentos;
         }
     }
+
+
+
+    
+
+    public function create(Departamento $d)
+    {
+
+        // Preparamos la query del update
+        $sql = "INSERT INTO departamento(nombre, DirectorAcargo) VALUES (?, ?);";
+        $query = self::$conexion->prepare($sql);
+
+        // Obtenemos los nuevos valores desde el objeto:
+        $nombre = $d->getNombre();
+        $DirectorAcargo = $d->getDirectorAcargo();
+
+        // Asignamos los valores para reemplazar los "?" en la query
+        if (!$query->bind_param("ss", $nombre, $DirectorAcargo->getDirectorAcargo())) {
+            echo "fallo la consulta";
+        }
+
+        // Retornamos true si la query tiene éxito, false si fracasa
+        return $query->execute();
+    }
+
+        // CONFLICTO CON DELETE/UPTDATE RELACIONES CON LA TABLA USUARIO----------- VER QUE HACER, DELETE ON CASCADE? UPDATE ON CASCADE?
+
 }
+
