@@ -12,13 +12,6 @@ class Solicitud
     //FechaHasta
     protected $FechaHasta;
 
-    // TODO: Atributos:
-    // Tipo de Solicitud (Clave primaria)
-    // Fecha de la Solicitud (Clave primaria)
-    // DNI del usuario (Clave primaria)
-    // Fecha desde cuando inicia la solicitud
-    // Fecha de hasta cuando es de la solicitud
-
     public function __construct($TipoSolicitud, Usuario $DniSolicitante, $FechaDesde ,$FechaHasta)
     {
         $this->TipoSolicitud = $TipoSolicitud;
@@ -45,7 +38,5 @@ class Solicitud
     {
         return $this->FechaHasta;
     }
-
-
 
 }

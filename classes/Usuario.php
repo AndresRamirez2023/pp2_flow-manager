@@ -21,18 +21,18 @@ class Usuario
     protected $tipoUsuario; // TODO: Debe usar Enums de tipos
     // Nombre del departamento al que pertenece
     protected $departamento; // TODO: Debe ser un ojeto de tipo Departamento 
-    public function __construct($Dni, $nombre_usuario, $nombre, $apellido,$fechaNac, $domicilio, $email, $telefono,$tipoUsuario, Departamento $departamento )
+    public function __construct($Dni, $nombre_usuario, $nombre, $apellido, $fechaNac, $domicilio, $email, $telefono, $tipoUsuario, Departamento $departamento)
     {
         $this->Dni = $Dni;
         $this->nombre_usuario = $nombre_usuario;
         $this->nombre = $nombre;
         $this->apellido = $apellido;
-        $this->fechaNac=$fechaNac;
-        $this->domicilio=$domicilio;
-        $this->telefono=$telefono;
+        $this->fechaNac = $fechaNac;
+        $this->domicilio = $domicilio;
+        $this->telefono = $telefono;
         $this->email = $email;
-        $this->tipoUsuario=$tipoUsuario;
-        $this->departamento=$departamento;
+        $this->tipoUsuario = $tipoUsuario;
+        $this->departamento = $departamento;
 
     }
 
@@ -93,7 +93,7 @@ class Usuario
 
 
 
-    
+
 
 
 

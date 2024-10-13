@@ -3,15 +3,6 @@
 require_once 'Usuario.php';
 class Mensaje
 {
-    // TODO: Atributos:
-    // DNI del Usuario que envía el mensaje (Clave primaria)
-    // Tipo de Documento (Clave primaria)
-    // Fecha de Emisión (Clave primaria)
-    // Tipo de mensaje
-    // Cuerpo del mensaje
-    // DNI del Usuario que recibe el mensaje
-
-    // TODO: Getters y setters
 
     //FechaHoraMensaje
     protected $fechaHora;
@@ -29,13 +20,13 @@ class Mensaje
 
     public function __construct($fechaHora, $tituloMensaje, Usuario $dniRemitente, $tipoMensaje, $cuerpoMensaje, Usuario $dniReceptor)
     {
-        
-        $this->fechaHora=$fechaHora;
-        $this->tituloMensaje=$tituloMensaje;
-        $this->dniRemitente=$dniRemitente;
-        $this->tipoMensaje=$tipoMensaje;
-        $this->cuerpoMensaje=$cuerpoMensaje;
-        $this->dniReceptor=$dniReceptor;
+
+        $this->fechaHora = $fechaHora;
+        $this->tituloMensaje = $tituloMensaje;
+        $this->dniRemitente = $dniRemitente;
+        $this->tipoMensaje = $tipoMensaje;
+        $this->cuerpoMensaje = $cuerpoMensaje;
+        $this->dniReceptor = $dniReceptor;
     }
 
     public function getFechaHora()
@@ -69,7 +60,7 @@ class Mensaje
     }
 
 
-    
+
 
 
 

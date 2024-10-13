@@ -3,13 +3,6 @@
 require_once 'Usuario.php';
 class Departamento
 {
-    // TODO: Atributos:
-    // Nombre del Departamento (Clave primaria)
-    // DNI del director del departamento
-
-    // TODO: Getters y setters
-
-
     protected $nombre;
     protected $DirectorAcargo;
 
@@ -17,8 +10,8 @@ class Departamento
 
     public function __construct($nombre, Usuario $DirectorAcargo)
     {
-        $this->nombre=$nombre;
-        $this->DirectorAcargo=$DirectorAcargo;
+        $this->nombre = $nombre;
+        $this->DirectorAcargo = $DirectorAcargo;
     }
 
 
