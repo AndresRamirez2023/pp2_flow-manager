@@ -1,0 +1,68 @@
+html {
+  position: relative;
+}
+body {
+  background-color: #9d9d9d !important;
+  font-family: 'Roboto', sans-serif;
+  overflow-y: scroll;
+  overflow: -moz-scrollbars-vertical; 
+}
+
+header {
+  border-bottom: 1px solid #dee2e6;
+}
+
+header,
+.info-back,
+.sidebar,
+footer,
+.messages,
+.columns,
+.sidebar,
+.col1 {
+  background-color: #f8f9fa;
+}
+
+.info-back {
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Botones personalizados */
+.btn-custom {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #4a3aff;
+  color: white;
+  border-radius: 25px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+  margin-right: 2rem;
+}
+.btn-custom > a {
+  color: #ffffff !important;
+}
+.btn-custom:hover {
+  background-color: #796dfd;
+}
+
+.link {
+  font-size: 16px;
+  margin: 3px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 10px 20px;
+}
+/* Footer */
+footer {
+  padding: 2rem;
+  text-align: center;
+  border-top: 1px solid #dee2e6;
+  position: static;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+.footer-content p {
+  color: #6c757d;
+}
