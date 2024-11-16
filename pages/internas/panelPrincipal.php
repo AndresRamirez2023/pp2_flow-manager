@@ -7,6 +7,8 @@ if (isset($_SESSION['usuario'])) {
     // TODO: Redirige al login si no está iniciada la sesión
     // header('Location: ../../index.php');
 }
+// TODO: Agregar funcionalidades necesarias
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -14,6 +16,7 @@ if (isset($_SESSION['usuario'])) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Panel Principal &#65381; Flow Manager</title>
+    <link rel="icon" href="../img/Icon - FlowManager.png">
     <link
       href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Roboto&display=swap"
       rel="stylesheet"
