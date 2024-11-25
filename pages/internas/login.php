@@ -35,24 +35,24 @@
 
             <!-- Username -->
             <div class="mb-3">
-              <label for="username" class="form-label">Usuario</label>
+              <label for="CorreoElectronico" class="form-label">Usuario</label>
               <input
                 type="text"
-                id="username"
-                name="username"
+                id="CorreoElectronico"
+                name="CorreoElectronico"
                 class="form-control"
-                placeholder="Ingrese el nombre de usuario"
+                placeholder="Ingrese el mail del usuario"
                 required
               />
             </div>
 
             <!-- Password -->
             <div class="mb-3">
-              <label for="password" class="form-label">Contraseña</label>
+              <label for="clave" class="form-label">Contraseña</label>
               <input
-                type="password"
-                id="password"
-                name="password"
+                type="clave"
+                id="clave"
+                name="clave"
                 class="form-control"
                 placeholder="Ingrese la contraseña"
                 required

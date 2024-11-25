@@ -1,14 +1,15 @@
 <?php
+require_once '../../classes/ControladorSesion.php';
 session_start();
-$usuario = null;
-if (isset($_SESSION['usuario'])) {
-    $usuario = unserialize($_SESSION['usuario']);
-} else {
-    // TODO: Redirige al login si no está iniciada la sesión
-    // header('Location: ../../index.php');
-}
-// TODO: Agregar funcionalidades necesarias
 
+// Verificar si la sesión está activa
+if (empty($_SESSION['usuario'])) {
+    // Si no está autenticado, redirigir al login
+    header('Location: login.php?mensaje=Error: Debes iniciar sesión');
+    exit();
+}
+
+$usuario = unserialize($_SESSION['usuario']); // Obtener los datos del usuario desde la sesión
 ?>
 <!DOCTYPE html>
 <html lang="es">

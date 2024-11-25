@@ -4,7 +4,6 @@ class Usuario
 {
     // DNI (Clave primaria)
     protected $Dni;
-    protected $nombre_usuario;
     // Nombre
     protected $nombre;
     // Apellido
@@ -21,10 +20,9 @@ class Usuario
     protected $tipoUsuario; // TODO: Debe usar Enums de tipos
     // Nombre del departamento al que pertenece
     protected $departamento; // TODO: Debe ser un ojeto de tipo Departamento 
-    public function __construct($Dni, $nombre_usuario, $nombre, $apellido, $fechaNac, $domicilio, $email, $telefono, $tipoUsuario, Departamento $departamento)
+    public function __construct($Dni, $nombre, $apellido, $fechaNac, $domicilio, $email, $telefono, $tipoUsuario, ?Departamento $departamento, $clave)
     {
         $this->Dni = $Dni;
-        $this->nombre_usuario = $nombre_usuario;
         $this->nombre = $nombre;
         $this->apellido = $apellido;
         $this->fechaNac = $fechaNac;
@@ -45,11 +43,6 @@ class Usuario
     public function setId($Dni)
     {
         $this->Dni = $Dni;
-    }
-
-    public function getUsuario()
-    {
-        return "$this->nombre_usuario";
     }
     public function getNombre()
     {
@@ -88,10 +81,8 @@ class Usuario
 
     public function getDepartamento()
     {
-        return $this->departamento->getNombre();
+        return $this->departamento ? $this->departamento->getNombre() : 'Sin Departamento';
     }
-
-
 
 
 
