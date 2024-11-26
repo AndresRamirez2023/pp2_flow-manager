@@ -33,7 +33,7 @@ class Repositorio_Usuario extends Repositorio
         $query->bind_param('s', $CorreoElectronico);
     
         if ($query->execute()) {
-            $query->bind_result($Dni, $Nombre, $Apellido, $FechaNacimiento, $Direccion, $CorreoElectronico, $Telefono, $TipoDeUsuario, $Departamento, $clave_db);
+            $query->bind_result($Dni, $Nombre, $Apellido, $FechaNacimiento, $Direccion, $CorreoElectronico_db, $Telefono, $TipoDeUsuario, $Departamento, $clave_db);
     
             if ($query->fetch()) {
                 // Comparar la clave ingresada con la clave de la base de datos
@@ -42,7 +42,7 @@ class Repositorio_Usuario extends Repositorio
                     $departamento = $Departamento !== null ? new Departamento($Departamento) : null;
     
                     // Retornar un nuevo objeto Usuario
-                    return new Usuario($Dni, $Nombre, $Apellido, $FechaNacimiento, $Direccion, $CorreoElectronico, $Telefono, $TipoDeUsuario, $departamento, $clave_db);
+                    return new Usuario($Dni, $Nombre, $Apellido, $FechaNacimiento, $Direccion, $CorreoElectronico_db, $Telefono, $TipoDeUsuario, $departamento, $clave_db);
                 }
             }
         }
@@ -50,37 +50,54 @@ class Repositorio_Usuario extends Repositorio
         return null; // Devuelve null si no encuentra al usuario o la clave no coincide
     }
     
-    public function save(Usuario $usuario, $clave){
-
-        $q = "INSERT INTO usuarios (Dni, Nombre, Apellido, FechaNacimiento, Direccion,  CorreoElectronico, Telefono, TipoDeUsuario, Departamento, clave)";
-        $q .= "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        $query = self::$conexion->prepare($q);
-
-        $Dni = $Dni->getDni();
-        $Nombre = $Nombre->getNombre();
-        $Apellido=$Apellido->getApellido();
     
-        $FechaNacimiento = $FechaNacimiento->getFechaNacimiento();
-        $Direccion = $Direccion->getDireccion();
-        $CorreoElectronico = $CorreoElectronico->getCorreoElectronico();
-        $Telefono=$Telefono->getTelefono();
-        $TipoDeUsuario=$TipoDeUsuario->getTipoDeUsuario();
-        $Departamento=$Departamento->getDepartamento();
-        $clave_encriptada = password_hash($clave, PASSWORD_DEFAULT);
-
+    public function save(Usuario $usuario, $clave) {
+        // Definición de la consulta
+        $q = "INSERT INTO usuarios (Dni, Nombre, Apellido, FechaNacimiento, Direccion, CorreoElectronico, Telefono, TipoDeUsuario, Departamento, clave)";
+        $q .= " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
+        // Preparar la consulta
+        $query = self::$conexion->prepare($q);
+    
+        if ($query === false) {
+            die('Error en la preparación de la consulta: ' . self::$conexion->error);
+        }
+    
+        // Obtener los datos del objeto $usuario
+        $Dni = $usuario->getDni();
+        $Nombre = $usuario->getNombre();
+        $Apellido = $usuario->getApellido();
+        $FechaNacimiento = $usuario->getfechaNac();
+        $Direccion = $usuario->getDomicilio();
+        $CorreoElectronico = $usuario->getCorreoElectronico();
+        $Telefono = $usuario->getTelefono();
+        $TipoDeUsuario = $usuario->getTipoUsuario();
+        $Departamento = $usuario->getDepartamento();
+        $clave_encriptada = password_hash($clave, PASSWORD_DEFAULT); // Cifrar la contraseña
+    
+        // Vincular los parámetros
         $query->bind_param(
-            "sssss",
-            $nombre_usuario,
-            $clave_encriptada,
-            $nombre,
-            $apellido,
-            $email
+            "ssssssssss", // Tipos de los parámetros
+            $Dni,
+            $Nombre,
+            $Apellido,
+            $FechaNacimiento,
+            $Direccion,
+            $CorreoElectronico,
+            $Telefono,
+            $TipoDeUsuario,
+            $Departamento,
+            $clave_encriptada
         );
-
+    
+        // Ejecutar la consulta
         if ($query->execute()) {
-            return self::$conexion->insert_id;
+            return self::$conexion->insert_id; // Retorna el ID del nuevo usuario
         } else {
-            return false;
+            // Capturar y mostrar el error si falla
+            die('Error al ejecutar la consulta: ' . $query->error);
         }
     }
+    
+    
 }

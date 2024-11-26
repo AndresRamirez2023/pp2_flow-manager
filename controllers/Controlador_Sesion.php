@@ -1,17 +1,17 @@
 <?php
-require_once 'RepositorioUsuario.php';
-require_once 'Usuario.php';
+require_once '../repositories/Repositorio_Usuario.php';
+require_once '../classes/Usuario.php';
 
 class Controlador_Sesion
 {
 
 	protected $usuario = null;
 
-	public function login($nombre_usuario, $clave)
+	public function login($CorreoElectronico, $clave)
 	{
 
 		$r = new Repositorio_Usuario();
-		$usuario = $r->login($nombre_usuario, $clave);
+		$usuario = $r->login($CorreoElectronico, $clave);
 
 		if ($usuario === false) {
 			//fallo el login

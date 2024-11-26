@@ -2,15 +2,15 @@
 require_once '../../classes/ControladorSesion.php';
 session_start();
 
-// Verificar si la sesión está activa
-if (empty($_SESSION['usuario'])) {
-    // Si no está autenticado, redirigir al login
+if (!isset($_SESSION['usuario'])) {
     header('Location: login.php?mensaje=Error: Debes iniciar sesión');
     exit();
 }
 
-$usuario = unserialize($_SESSION['usuario']); // Obtener los datos del usuario desde la sesión
+// Deserializar y usar los datos del usuario
+$usuario = unserialize($_SESSION['usuario']);
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
   <head>
@@ -89,7 +89,7 @@ $usuario = unserialize($_SESSION['usuario']); // Obtener los datos del usuario d
                 <a href="perfil.php" class="dropdown-item">
                   <i class="bi bi-person-fill"></i> Perfil
                 </a>
-                <a href="login.php" class="dropdown-item">
+                <a href="logout.php" class="dropdown-item">
                   <i class="bi bi-box-arrow-right"></i> Cerrar sesión
                 </a>
               </div>
