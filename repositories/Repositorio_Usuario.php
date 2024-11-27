@@ -73,11 +73,11 @@ class Repositorio_Usuario extends Repositorio
         $Telefono = $usuario->getTelefono();
         $TipoDeUsuario = $usuario->getTipoUsuario();
         $Departamento = $usuario->getDepartamento();
-        $clave_encriptada = password_hash($clave, PASSWORD_DEFAULT); // Cifrar la contraseña
+        $clave_encriptada = password_hash($clave, PASSWORD_DEFAULT);
     
         // Vincular los parámetros
         $query->bind_param(
-            "ssssssssss", // Tipos de los parámetros
+            "ssssssssss",
             $Dni,
             $Nombre,
             $Apellido,
@@ -92,12 +92,13 @@ class Repositorio_Usuario extends Repositorio
     
         // Ejecutar la consulta
         if ($query->execute()) {
-            return self::$conexion->insert_id; // Retorna el ID del nuevo usuario
+            return true; // Retorna true si se ejecutó correctamente
         } else {
             // Capturar y mostrar el error si falla
             die('Error al ejecutar la consulta: ' . $query->error);
         }
     }
+    
     
     
 }

@@ -94,7 +94,7 @@ if (isset($_SESSION['usuario'])) {
           <h2>Agregar Usuario</h2>
           <form id="form-agregar-usuario" class="row g-3" action="../../controllers/controlador_usuario.php" method="POST">
             <div class="col-md-6">
-              <label for="nombreApellido" class="form-label">Nombre <b>*</b></label>
+              <label for="nombreApellido" class="form-label">Nombre y Apellido<b>*</b></label>
               <input
                 type="text"
                 class="form-control"
@@ -104,8 +104,10 @@ if (isset($_SESSION['usuario'])) {
             </div>
             <div class="col-md-6">
               <label for="dni" class="form-label">DNI <b>*</b></label>
-              <input type="text" class="form-control" id="dni" name="dni" required />
+              <input type="text" class="form-control" id="dni" name="dni" maxlength="8" pattern="\d{8}" required
+                title="El DNI debe tener exactamente 8 dígitos." />
             </div>
+
             <div class="col-md-6">
               <label for="domicilio" class="form-label">Domicilio</label>
               <input
@@ -131,13 +133,15 @@ if (isset($_SESSION['usuario'])) {
                 required />
             </div>
             <div class="col-md-6">
-              <label for="tipoUsuario" class="form-label">Tipo de usuario <b>*</b></label>
-              <select name="tipoUsuario" id="tipoUsuario" class="form-select">
-                <option value="">RRHH</option>
-                <option value="">Directivo</option>
-                <option value="">Empleado</option>
+              <label for="TipoDeUsuario" class="form-label">Tipo de usuario <b>*</b></label>
+              <select name="TipoDeUsuario" id="TipoDeUsuario" class="form-select" required>
+                <option value="">Seleccione un tipo de usuario</option>
+                <option value="RRHH">RRHH</option>
+                <option value="Directivo">Directivo</option>
+                <option value="Empleado">Empleado</option>
               </select>
             </div>
+
             <div class="col-md-6">
               <label for="password" class="form-label">Contraseña temporal *</label>
               <input
