@@ -179,13 +179,14 @@ if (isset($_SESSION['usuario'])) {
         <!-- Sección para agregar departamentos -->
         <div class="container my-4 bg-white rounded shadow-sm">
           <h2>Agregar Departamento</h2>
-          <form id="form-agregar-departamento" class="row g-3">
+          <form id="form-agregar-departamento" class="row g-3" action="../../controllers/Controlador_Departamento.php" method="POST">
             <div class="col-md-6">
               <label for="nombreDepartamento" class="form-label">Nombre del Departamento</label>
               <input
                 type="text"
                 class="form-control"
                 id="nombreDepartamento"
+                name="nombreDepartamento"
                 required />
             </div>
             <div class="col-md-6">
@@ -194,6 +195,7 @@ if (isset($_SESSION['usuario'])) {
                 type="text"
                 class="form-control"
                 id="dniDirector"
+                name="dniDirector"
                 required />
             </div>
             <div class="col-md-12">

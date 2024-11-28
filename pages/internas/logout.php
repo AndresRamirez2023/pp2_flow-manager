@@ -1,4 +1,4 @@
 <?php
 session_start();
 session_destroy();
-header('Location: index.php?mensaje=se ha cerrado la sesion');
+header('Location: login.php?mensaje=se ha cerrado la sesion');

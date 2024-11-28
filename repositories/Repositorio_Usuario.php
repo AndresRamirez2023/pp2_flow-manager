@@ -28,29 +28,39 @@ class Repositorio_Usuario extends Repositorio
 
     public function login($CorreoElectronico, $clave)
     {
-        $q = "SELECT Dni, Nombre, Apellido, FechaNacimiento, Direccion, CorreoElectronico, Telefono, TipoDeUsuario, Departamento, clave FROM usuarios WHERE CorreoElectronico = ?";
+        $q = "SELECT * FROM usuarios WHERE CorreoElectronico = ?";
         $query = self::$conexion->prepare($q);
         $query->bind_param('s', $CorreoElectronico);
     
         if ($query->execute()) {
-            $query->bind_result($Dni, $Nombre, $Apellido, $FechaNacimiento, $Direccion, $CorreoElectronico_db, $Telefono, $TipoDeUsuario, $Departamento, $clave_db);
+            $query->bind_result($Dni, $nombre, $apellido, $CorreoElectronico, $fechaNac, $domicilio, $telefono, $tipoUsuario, $departamento, $clave_encriptada);
     
             if ($query->fetch()) {
-                // Comparar la clave ingresada con la clave de la base de datos
-                if ($clave === $clave_db) {
-                    // Crear el objeto Departamento solo si no es NULL
-                    $departamento = $Departamento !== null ? new Departamento($Departamento) : null;
+                if (password_verify($clave, $clave_encriptada)) {
+                    // Crear un objeto Departamento si el valor no es "Sin Departamento" o null
+                    $departamentoObj = null;
+                    if ($departamento !== 'Sin Departamento' && $departamento !== null) {
+                        $departamentoObj = new Departamento($departamento); // Crear el objeto Departamento si es válido
+                    }
     
-                    // Retornar un nuevo objeto Usuario
-                    return new Usuario($Dni, $Nombre, $Apellido, $FechaNacimiento, $Direccion, $CorreoElectronico_db, $Telefono, $TipoDeUsuario, $departamento, $clave_db);
+                    // Crear y devolver el objeto Usuario
+                    return new Usuario(
+                        $Dni,
+                        $nombre,
+                        $apellido,
+                        $fechaNac,
+                        $domicilio,
+                        $CorreoElectronico,
+                        $telefono,
+                        $tipoUsuario,
+                        $departamentoObj,  // Pasar el objeto Departamento o null
+                        $clave
+                    );
                 }
             }
         }
-    
-        return null; // Devuelve null si no encuentra al usuario o la clave no coincide
+        return false;
     }
-    
-    
     public function save(Usuario $usuario, $clave) {
         // Definición de la consulta
         $q = "INSERT INTO usuarios (Dni, Nombre, Apellido, FechaNacimiento, Direccion, CorreoElectronico, Telefono, TipoDeUsuario, Departamento, clave)";

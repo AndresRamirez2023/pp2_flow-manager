@@ -2,9 +2,18 @@
 require_once '../../classes/ControladorSesion.php';
 session_start();
 
+// Verificar si la sesión 'usuario' está definida
 if (!isset($_SESSION['usuario'])) {
-    header('Location: login.php?mensaje=Error: Debes iniciar sesión');
-    exit();
+  // Redirigir con un mensaje de error
+  header('Location: login.php?mensaje=Error: Debes iniciar sesión');
+  exit();
+}
+
+// Verificar si la sesión 'usuario' tiene una cadena serializada válida
+if (!is_string($_SESSION['usuario']) || !@unserialize($_SESSION['usuario'])) {
+  // Si no es válida, redirigir a login con mensaje de error
+  header('Location: login.php?mensaje=Error: Sesión inválida');
+  exit();
 }
 
 // Deserializar y usar los datos del usuario

@@ -27,7 +27,7 @@
     <div class="full-container">
       <div class="login-container">
         <div class="form-container">
-          <form class="login-form" action="../../controllers/Validar_Sesion.php" method="POST">
+          <form class="login-form" action="../../controllers/Validar_login.php" method="POST">
             <h2 class="text-center mb-4">Nombre empresa<br />Ingreso</h2>
             <p class="text-center text-muted">
               Bienvenido al gestor de empleados<br /><b>Flow Manager</b>

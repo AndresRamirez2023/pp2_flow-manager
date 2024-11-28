@@ -1,14 +1,22 @@
 <?php
+require_once '../../classes/ControladorSesion.php';
 session_start();
-$usuario = null;
-if (isset($_SESSION['usuario'])) {
-    $usuario = unserialize($_SESSION['usuario']);
-} else {
-    // TODO: Redirige al login si no está iniciada la sesión
-    // header('Location: ../../index.php');
+// Verificar si la sesión 'usuario' está definida
+if (!isset($_SESSION['usuario'])) {
+  // Redirigir con un mensaje de error
+  header('Location: login.php?mensaje=Error: Debes iniciar sesión');
+  exit();
 }
-// TODO: Agregar funcionalidades necesarias
 
+// Verificar si la sesión 'usuario' tiene una cadena serializada válida
+if (!is_string($_SESSION['usuario']) || !@unserialize($_SESSION['usuario'])) {
+  // Si no es válida, redirigir a login con mensaje de error
+  header('Location: login.php?mensaje=Error: Sesión inválida');
+  exit();
+}
+
+// Deserializar y usar los datos del usuario
+$usuario = unserialize($_SESSION['usuario']);
 ?>
 <!DOCTYPE html>
 <html lang="es">

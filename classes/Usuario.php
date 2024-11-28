@@ -88,12 +88,11 @@ class Usuario
     {
         return $this->tipoUsuario;
     }
-
     public function getDepartamento()
     {
+        // Si el departamento es un objeto, devolver su nombre, sino 'Sin Departamento'
         return $this->departamento ? $this->departamento->getNombre() : 'Sin Departamento';
     }
-
     // Métodos para manejar la clave
     public function setClave($nuevaClave)
     {
