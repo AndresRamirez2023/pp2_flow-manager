@@ -209,7 +209,7 @@ if (isset($_SESSION['usuario'])) {
         <!-- Sección para enviar avisos o documentación -->
         <div class="container my-4 bg-white rounded shadow-sm">
           <h2>Enviar Aviso o Documentación</h2>
-          <form id="form-enviar-aviso-doc">
+          <form id="form-enviar-aviso-doc" action="../../controllers/Controlador_aviso_documento.php" method="POST" >
             <!-- Radio buttons para seleccionar tipo -->
             <div class="mb-3">
               <div class="form-check form-check-inline">

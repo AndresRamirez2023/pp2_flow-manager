@@ -23,4 +23,5 @@ class Controlador_Sesion
 			return [true, "Ingreso correcto"];
 		}
 	}
+
 }
