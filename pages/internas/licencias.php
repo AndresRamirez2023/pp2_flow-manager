@@ -1,4 +1,5 @@
 <?php
+require_once '../../repositories/Repositorio_solicitud.php';
 require_once '../../classes/Usuario.php'; 
 // Asegúrate de iniciar la sesión
 session_start();
@@ -15,6 +16,8 @@ $usuario = unserialize($_SESSION['usuario']);
 
 // Ahora puedes acceder al DNI directamente
 $dni = $usuario->getDni(); // Si tienes un getter en la clase Usuario
+$repositorio = new Repositorio_solicitud();
+$solicitudes = $repositorio->mostrarSolicitud($dni); // Obtener solicitudes
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -92,20 +95,7 @@ $dni = $usuario->getDni(); // Si tienes un getter en la clase Usuario
           <!-- Formulario de solicitud de licencia horizontal -->
           <form id="form-licencia" class="row g-3" action="../../controllers/Controlador_Solicitud.php" method="POST">
             <!-- Campo oculto con el DNI del usuario logueado -->
-            <input type="hidden" name="DniSolicitante" value="<?php echo $usuario->getDni(); ?>" />
-
-            <!-- Tipo de Licencia -->
-            <div class="col-md-3">
-              <label for="tipoLicencia" class="form-label">Tipo de Licencia</label>
-              <select class="form-select" name="tipoLicencia" id="tipoLicencia" required>
-                <option selected disabled>Seleccione una opción</option>
-                <option value="vacaciones">Vacaciones</option>
-                <option value="enfermedad">Enfermedad</option>
-                <option value="maternidad">Maternidad/Paternidad</option>
-                <option value="estudio">Estudio</option>
-                <option value="otros">Otros</option>
-              </select>
-            </div>
+            <input type="hidden" name="DniSolicitante" value="<?php echo $dni; ?>" />
 
             <!-- Fecha de Inicio -->
             <div class="col-md-3">
@@ -140,27 +130,21 @@ $dni = $usuario->getDni(); // Si tienes un getter en la clase Usuario
               </tr>
             </thead>
             <tbody>
-              <!-- Ejemplo de una licencia aprobada -->
-              <tr>
-                <td>Vacaciones</td>
-                <td>01/07/2024</td>
-                <td>15/07/2024</td>
-                <td><span class="badge bg-aprove">Aprobada</span></td>
-              </tr>
-              <tr>
-                <td>Enfermedad</td>
-                <td>20/08/2024</td>
-                <td>25/08/2024</td>
-                <td><span class="badge bg-pending">Pendiente</span></td>
-              </tr>
-              <!-- Ejemplo de una licencia rechazada -->
-              <tr>
-                <td>Vacaciones</td>
-                <td>10/08/2024</td>
-                <td>15/08/2024</td>
-                <td><span class="badge bg-danger">Rechazada</span></td>
-              </tr>
-              <!-- Agrega más filas según sea necesario -->
+              <?php
+              if ($solicitudes !== false && !empty($solicitudes)) {
+                  foreach ($solicitudes as $solicitud) {
+                      echo "<tr>";
+                      echo "<td>{$solicitud['TipoSolicitud']}</td>";
+                      echo "<td>{$solicitud['FechaHoraDesde']}</td>";
+                      echo "<td>{$solicitud['FechaHoraHasta']}</td>";
+                      //Falta agregar estado
+                      echo "<td><span class='badge'>" . htmlspecialchars($solicitud['Estado']) . "</span></td>";
+                      echo "</tr>";
+                  }
+              } else {
+                  echo "<tr><td colspan='4'>No se encontraron solicitudes</td></tr>";
+              }
+              ?>
             </tbody>
           </table>
         </div>

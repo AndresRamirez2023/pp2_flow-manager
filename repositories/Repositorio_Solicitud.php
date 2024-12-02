@@ -13,4 +13,26 @@ class Repositorio_solicitud extends Repositorio
 
         return $query->execute();
     }
+
+
+public function mostrarSolicitud($DniSolicitante)
+{
+    $sql = "SELECT TipoSolicitud, FechaHoraDesde, FechaHoraHasta  //Falta agregar estado  
+            FROM solicitudes 
+            WHERE DniSolicitante = ?";
+    $query = self::$conexion->prepare($sql);
+    $query->bind_param("s", $DniSolicitante);
+
+    if ($query->execute()) {
+        $result = $query->get_result();
+        $solicitudes = [];
+        while ($row = $result->fetch_assoc()) {
+            $solicitudes[] = $row;
+        }
+        return $solicitudes;
+    } else {
+        return false; // En caso de error
+    }
+
+}
 }
