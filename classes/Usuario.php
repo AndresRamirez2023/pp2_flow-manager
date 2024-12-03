@@ -69,8 +69,7 @@ class Usuario
         return $this->fechaNac;
     }
 
-    public function getDomicilio()
-    {
+    public function getDomicilio() {
         return $this->domicilio;
     }
 
@@ -93,14 +92,56 @@ class Usuario
         // Si el departamento es un objeto, devolver su nombre, sino 'Sin Departamento'
         return $this->departamento ? $this->departamento->getNombre() : 'Sin Departamento';
     }
+
+    public function getClave()
+{
+    return $this->clave;
+}
     // Métodos para manejar la clave
     public function setClave($nuevaClave)
     {
         $this->clave = password_hash($nuevaClave, PASSWORD_DEFAULT); // Actualizar la clave como hash
     }
-
+    
     public function validarClave($claveIngresada)
     {
         return password_verify($claveIngresada, $this->clave); // Verificar clave ingresada con el hash
     }
+
+    //SETTERS 
+    public function setNombre($nombre) {
+        $this->nombre = $nombre;
+    }
+
+    public function setApellido($apellido) {
+        $this->apellido = $apellido;
+    }
+
+    public function setFechaNac($fechaNacimiento) {
+        $this->fechaNacimiento = $fechaNacimiento;
+    }
+
+    public function setDomicilio($direccion) {
+        $this->domicilio = $direccion;
+    }
+    public function setCorreoElectronico($CorreoElectronico) {
+        $this->CorreoElectronico = $CorreoElectronico;
+    }
+
+    public function setTelefono($telefono) {
+        $this->telefono = $telefono;
+    }
+
+    public function setTipoUsuario($tipoUsuario) {
+        $this->tipoUsuario = $tipoUsuario;
+    }
+
+    public function setDepartamento($departamento) {
+        $this->departamento = $departamento;
+    }
+
+    public function setDni($dni) {
+        $this->dni = $dni;
+    }
+
 }

@@ -108,7 +108,80 @@ class Repositorio_Usuario extends Repositorio
             die('Error al ejecutar la consulta: ' . $query->error);
         }
     }
+
+
+    public function update(Usuario $usuario, $clave = null)
+    {
+        // Definir la consulta base
+        $q = "UPDATE usuarios 
+              SET Nombre = ?, 
+                  Apellido = ?, 
+                  FechaNacimiento = ?, 
+                  Direccion = ?, 
+                  CorreoElectronico = ?, 
+                  Telefono = ?, 
+                  TipoDeUsuario = ?";
     
+        if (!empty($nuevaPassword)) {
+            $q .= ", clave = ?";
+        }
     
+        $q .= " WHERE Dni = ?";
     
-}
+        // Preparar la consulta
+        $query = self::$conexion->prepare($q);
+    
+        if ($query === false) {
+            die('Error en la preparación de la consulta: ' . self::$conexion->error);
+        }
+    
+        // Obtener los datos del objeto $usuario
+        $Dni = $usuario->getDni();
+        $Nombre = $usuario->getNombre();
+        $Apellido = $usuario->getApellido();
+        $FechaNacimiento = $usuario->getFechaNac();
+        $Direccion = $usuario->getDomicilio();
+        $CorreoElectronico = $usuario->getCorreoElectronico();
+        $Telefono = $usuario->getTelefono();
+        $TipoDeUsuario = $usuario->getTipoUsuario();
+    
+        if (!empty($clave_encriptada)) {
+            $clave_encriptada = password_hash($clave, PASSWORD_DEFAULT);
+    
+            // Vincular parámetros con la contraseña
+            $query->bind_param(
+                "sssssssss", // Tipos
+                $Nombre,
+                $Apellido,
+                $FechaNacimiento,
+                $Direccion,
+                $CorreoElectronico,
+                $Telefono,
+                $TipoDeUsuario,
+                $clave,
+                $Dni
+            );
+        } else {
+            // Vincular parámetros sin la contraseña
+            $query->bind_param(
+                "ssssssss", // Tipos
+                $Nombre,
+                $Apellido,
+                $FechaNacimiento,
+                $Direccion,
+                $CorreoElectronico,
+                $Telefono,
+                $TipoDeUsuario,
+                $Dni
+            );
+        }
+    
+        // Ejecutar la consulta
+        if ($query->execute()) {
+            return true;
+        } else {
+            die('Error al ejecutar la consulta: ' . $query->error);
+        }
+    }
+    
+}    

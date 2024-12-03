@@ -16,8 +16,9 @@ class Repositorio_solicitud extends Repositorio
 
 
 public function mostrarSolicitud($DniSolicitante)
+// Falta agreagar ESTADO. 
 {
-    $sql = "SELECT TipoSolicitud, FechaHoraDesde, FechaHoraHasta  //Falta agregar estado  
+    $sql = "SELECT TipoSolicitud, FechaHoraDesde, FechaHoraHasta 
             FROM solicitudes 
             WHERE DniSolicitante = ?";
     $query = self::$conexion->prepare($sql);
