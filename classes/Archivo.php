@@ -1,40 +1,32 @@
 <?php
-class Archivo
-{
 
-    protected $tipoArchivo;
-    protected $nombre;
-    protected $fechaCreacion;
-    protected $contenido;
+class Archivo {
+    private $nombreArchivo;
+    private $contenido;
+    private $fechaCreacion;
+    private $dniCreador;
 
-
-    public function __construct($tipoArchivo, $nombre, $fechaCreacion, $contenido)
+    public function __construct($nombreArchivo, $contenido, $fechaCreacion, $dniCreador)
     {
-        $this->tipoArchivo = $tipoArchivo;
-        $this->nombre = $nombre;
-        $this->fechaCreacion = $fechaCreacion;
+        $this->nombreArchivo = $nombreArchivo;
         $this->contenido = $contenido;
-
-    }
-    public function getTipoArchivo()
-    {
-        return "$this->tipoArchivo";
+        $this->fechaCreacion = $fechaCreacion;
+        $this->dniCreador = $dniCreador;
     }
 
-    public function getNombre()
-    {
-        return "$this->nombre";
+    public function getNombreArchivo() {
+        return $this->nombreArchivo;
     }
 
-
-    public function fechaCreacion()
-    {
-        return "$this->fechaCreacion";
+    public function getContenido() {
+        return $this->contenido;
     }
 
-    public function contenido()
-    {
-        return "$this->contenido()";
+    public function getFechaCreacion() {
+        return $this->fechaCreacion;
     }
 
+    public function getDnicreador() {
+        return $this->dniCreador;
+    }
 }

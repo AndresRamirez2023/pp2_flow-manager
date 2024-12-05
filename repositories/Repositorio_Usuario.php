@@ -1,5 +1,5 @@
 <?php
- require_once __DIR__ . '/../classes/config.php';
+require_once __DIR__ . '/../classes/config.php';
 // Incluir clases necesarias
 require_once __DIR__ . '/../classes/Usuario.php';
 require_once 'Repositorio.php';
@@ -7,10 +7,11 @@ require_once 'Repositorio.php';
 class Repositorio_Usuario extends Repositorio
 {
     // Establecer la conexión a la base de datos usando los parámetros de configuración
-    public function __construct() {
+    public function __construct()
+    {
         // Obtener las credenciales de la función
         $credenciales = credenciales();
-        
+
         // Usar los valores de las credenciales
         $host = $credenciales['servidor'];
         $user = $credenciales['usuario'];
@@ -31,10 +32,10 @@ class Repositorio_Usuario extends Repositorio
         $q = "SELECT * FROM usuarios WHERE CorreoElectronico = ?";
         $query = self::$conexion->prepare($q);
         $query->bind_param('s', $CorreoElectronico);
-    
+
         if ($query->execute()) {
             $query->bind_result($Dni, $nombre, $apellido, $CorreoElectronico, $fechaNac, $domicilio, $telefono, $tipoUsuario, $departamento, $clave_encriptada);
-    
+
             if ($query->fetch()) {
                 if (password_verify($clave, $clave_encriptada)) {
                     // Crear un objeto Departamento si el valor no es "Sin Departamento" o null
@@ -42,7 +43,7 @@ class Repositorio_Usuario extends Repositorio
                     if ($departamento !== 'Sin Departamento' && $departamento !== null) {
                         $departamentoObj = new Departamento($departamento); // Crear el objeto Departamento si es válido
                     }
-    
+
                     // Crear y devolver el objeto Usuario
                     return new Usuario(
                         $Dni,
@@ -61,18 +62,8 @@ class Repositorio_Usuario extends Repositorio
         }
         return false;
     }
-    public function save(Usuario $usuario, $clave) {
-        // Definición de la consulta
-        $q = "INSERT INTO usuarios (Dni, Nombre, Apellido, FechaNacimiento, Direccion, CorreoElectronico, Telefono, TipoDeUsuario, Departamento, clave)";
-        $q .= " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
-        // Preparar la consulta
-        $query = self::$conexion->prepare($q);
-    
-        if ($query === false) {
-            die('Error en la preparación de la consulta: ' . self::$conexion->error);
-        }
-    
+    public function save(Usuario $usuario, $clave)
+    {
         // Obtener los datos del objeto $usuario
         $Dni = $usuario->getDni();
         $Nombre = $usuario->getNombre();
@@ -83,8 +74,67 @@ class Repositorio_Usuario extends Repositorio
         $Telefono = $usuario->getTelefono();
         $TipoDeUsuario = $usuario->getTipoUsuario();
         $Departamento = $usuario->getDepartamento();
+
+        // **VALIDACIONES BACKEND**
+
+        // Validar DNI (exactamente 8 dígitos)
+        if (!preg_match('/^\d{8}$/', $Dni)) {
+            die('Error: El DNI debe contener exactamente 8 dígitos numéricos.');
+        }
+
+        // Validar nombre y apellido (solo letras y espacios, entre 2 y 50 caracteres)
+        if (!preg_match('/^[A-Za-zÀ-ÿ\s]{2,50}$/', $Nombre) || !preg_match('/^[A-Za-zÀ-ÿ\s]{2,50}$/', $Apellido)) {
+            die('Error: El nombre y el apellido solo pueden contener letras y espacios, entre 2 y 50 caracteres.');
+        }
+
+        // Validar fecha de nacimiento (formato válido y usuario mayor de edad)
+        $fechaActual = new DateTime();
+        $fechaNacimiento = DateTime::createFromFormat('Y-m-d', $FechaNacimiento);
+        if (!$fechaNacimiento || $fechaNacimiento > $fechaActual->modify('-18 years')) {
+            die('Error: El usuario debe ser mayor de 18 años.');
+        }
+
+        // Validar dirección (mínimo 5 caracteres)
+        if (strlen($Direccion) < 5 || strlen($Direccion) > 100) {
+            die('Error: La dirección debe contener entre 5 y 100 caracteres.');
+        }
+
+        // Validar correo electrónico
+        if (!filter_var($CorreoElectronico, FILTER_VALIDATE_EMAIL)) {
+            die('Error: El correo electrónico no tiene un formato válido.');
+        }
+
+        // Validar teléfono (7-15 dígitos opcionales con "+")
+        if (!preg_match('/^\+?\d{7,15}$/', $Telefono)) {
+            die('Error: El número de teléfono debe tener entre 7 y 15 dígitos.');
+        }
+
+        // Validar tipo de usuario
+        $tiposValidos = ['RRHH', 'Directivo', 'Empleado'];
+        if (!in_array($TipoDeUsuario, $tiposValidos)) {
+            die('Error: Tipo de usuario inválido.');
+        }
+
+        // Validar contraseña (mínimo 8 caracteres, al menos una letra y un número)
+        if (!preg_match('/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/', $clave)) {
+            die('Error: La contraseña debe tener al menos 8 caracteres, incluyendo una letra y un número.');
+        }
+
+        // Encriptar la contraseña
         $clave_encriptada = password_hash($clave, PASSWORD_DEFAULT);
-    
+
+        // **INSERCIÓN EN LA BASE DE DATOS**
+
+        // Definición de la consulta
+        $q = "INSERT INTO usuarios (Dni, Nombre, Apellido, FechaNacimiento, Direccion, CorreoElectronico, Telefono, TipoDeUsuario, Departamento, clave)";
+        $q .= " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        // Preparar la consulta
+        $query = self::$conexion->prepare($q);
+        if ($query === false) {
+            die('Error en la preparación de la consulta: ' . self::$conexion->error);
+        }
+
         // Vincular los parámetros
         $query->bind_param(
             "ssssssssss",
@@ -99,12 +149,11 @@ class Repositorio_Usuario extends Repositorio
             $Departamento,
             $clave_encriptada
         );
-    
+
         // Ejecutar la consulta
         if ($query->execute()) {
             return true; // Retorna true si se ejecutó correctamente
         } else {
-            // Capturar y mostrar el error si falla
             die('Error al ejecutar la consulta: ' . $query->error);
         }
     }
@@ -121,20 +170,20 @@ class Repositorio_Usuario extends Repositorio
                   CorreoElectronico = ?, 
                   Telefono = ?, 
                   TipoDeUsuario = ?";
-    
+
         if (!empty($nuevaPassword)) {
             $q .= ", clave = ?";
         }
-    
+
         $q .= " WHERE Dni = ?";
-    
+
         // Preparar la consulta
         $query = self::$conexion->prepare($q);
-    
+
         if ($query === false) {
             die('Error en la preparación de la consulta: ' . self::$conexion->error);
         }
-    
+
         // Obtener los datos del objeto $usuario
         $Dni = $usuario->getDni();
         $Nombre = $usuario->getNombre();
@@ -144,10 +193,10 @@ class Repositorio_Usuario extends Repositorio
         $CorreoElectronico = $usuario->getCorreoElectronico();
         $Telefono = $usuario->getTelefono();
         $TipoDeUsuario = $usuario->getTipoUsuario();
-    
+
         if (!empty($clave_encriptada)) {
             $clave_encriptada = password_hash($clave, PASSWORD_DEFAULT);
-    
+
             // Vincular parámetros con la contraseña
             $query->bind_param(
                 "sssssssss", // Tipos
@@ -175,7 +224,7 @@ class Repositorio_Usuario extends Repositorio
                 $Dni
             );
         }
-    
+
         // Ejecutar la consulta
         if ($query->execute()) {
             return true;
@@ -183,5 +232,4 @@ class Repositorio_Usuario extends Repositorio
             die('Error al ejecutar la consulta: ' . $query->error);
         }
     }
-    
-}    
+}

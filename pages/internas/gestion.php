@@ -92,7 +92,13 @@ if (isset($_SESSION['usuario'])) {
         <!-- Sección para agregar usuarios -->
         <div class="container my-4 bg-white rounded shadow-sm">
           <h2>Agregar Usuario</h2>
-          <form id="form-agregar-usuario" class="row g-3" action="../../controllers/controlador_usuario.php" method="POST">
+          <form
+            id="form-agregar-usuario"
+            class="row g-3"
+            action="../../controllers/controlador_usuario.php"
+            method="POST"
+            onsubmit="return validarFormulario();">
+
             <div class="col-md-6">
               <label for="nombreApellido" class="form-label">Nombre y Apellido<b>*</b></label>
               <input
@@ -100,12 +106,22 @@ if (isset($_SESSION['usuario'])) {
                 class="form-control"
                 id="nombreApellido"
                 name="nombreApellido"
+                pattern="^[A-Za-zÀ-ÿ\s]{2,50}$"
+                title="El nombre debe contener solo letras y espacios, entre 2 y 50 caracteres."
                 required />
             </div>
+
             <div class="col-md-6">
               <label for="dni" class="form-label">DNI <b>*</b></label>
-              <input type="text" class="form-control" id="dni" name="dni" maxlength="8" pattern="\d{8}" required
-                title="El DNI debe tener exactamente 8 dígitos." />
+              <input
+                type="text"
+                class="form-control"
+                id="dni"
+                name="dni"
+                maxlength="8"
+                pattern="\d{8}"
+                title="El DNI debe tener exactamente 8 dígitos numéricos."
+                required />
             </div>
 
             <div class="col-md-6">
@@ -113,25 +129,47 @@ if (isset($_SESSION['usuario'])) {
               <input
                 type="text"
                 class="form-control"
-                id="domicilio" name="domicilio"
+                id="domicilio"
+                name="domicilio"
+                pattern="^[A-Za-z0-9\s,.-]{5,100}$"
+                title="El domicilio debe contener entre 5 y 100 caracteres, incluyendo letras, números, espacios, y símbolos como ',' o '-'."
                 required />
             </div>
+
             <div class="col-md-6">
               <label for="telefono" class="form-label">Número de Teléfono</label>
-              <input type="tel" class="form-control" id="telefono" name="telefono" required />
+              <input
+                type="tel"
+                class="form-control"
+                id="telefono"
+                name="telefono"
+                pattern="^\+?\d{7,15}$"
+                title="El teléfono debe contener entre 7 y 15 dígitos, opcionalmente iniciando con '+'."
+                required />
             </div>
+
             <div class="col-md-6">
               <label for="email" class="form-label">Email <b>*</b></label>
-              <input type="email" class="form-control" id="email" name="email" required />
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                name="email"
+                required />
             </div>
+
             <div class="col-md-6">
               <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento</label>
               <input
                 type="date"
                 class="form-control"
-                id="fechaNacimiento" name="fechaNacimiento"
+                id="fechaNacimiento"
+                name="fechaNacimiento"
+                max="2006-12-31"
+                title="El usuario debe ser mayor de edad."
                 required />
             </div>
+
             <div class="col-md-6">
               <label for="TipoDeUsuario" class="form-label">Tipo de usuario <b>*</b></label>
               <select name="TipoDeUsuario" id="TipoDeUsuario" class="form-select" required>
@@ -149,20 +187,19 @@ if (isset($_SESSION['usuario'])) {
                 class="form-control"
                 id="clave"
                 name="clave"
+                pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$"
+                title="La contraseña debe tener al menos 8 caracteres, incluyendo una letra y un número."
                 required />
             </div>
-            <div class="col-md-6">
-              <label for="departamento" class="form-label"></label>
-              <input
-                type="hidden"
-                class="form-control"
-                id="departamento"
-                name="departamento" />
-            </div>
+
+            <input
+              type="hidden"
+              class="form-control"
+              id="departamento"
+              name="departamento" />
+
             <div class="col-md-12">
-              <button type="submit" class="btn btn-primary w-100">
-                Agregar Usuario
-              </button>
+              <button type="submit" class="btn btn-primary w-100">Agregar Usuario</button>
             </div>
           </form>
         </div>
@@ -209,114 +246,112 @@ if (isset($_SESSION['usuario'])) {
         <!-- Sección para enviar avisos o documentación -->
         <div class="container my-4 bg-white rounded shadow-sm">
           <h2>Enviar Aviso o Documentación</h2>
-          <form id="form-enviar-aviso-doc" action="../../controllers/Controlador_aviso_documento.php" method="POST" >
-            <!-- Radio buttons para seleccionar tipo -->
-            <div class="mb-3">
-              <div class="form-check form-check-inline">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="tipoEnvio"
-                  id="envioAviso"
-                  value="aviso"
-                  checked />
-                <label class="form-check-label" for="envioAviso">Aviso</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="tipoEnvio"
-                  id="envioDocumento"
-                  value="documento" />
-                <label class="form-check-label" for="envioDocumento">Documentación</label>
-              </div>
-            </div>
-
-            <!-- Sección de envío de aviso -->
-            <div id="seccion-aviso" class="row">
-              <div class="col-6">
-                <div class="mb-3">
-                  <label for="tituloAviso" class="form-label">Título del Aviso</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="tituloAviso"
-                    required />
-                </div>
-                <div class="mb-3">
-                  <label for="cuerpoAviso" class="form-label">Cuerpo del Mensaje</label>
-                  <textarea
-                    class="form-control"
-                    id="cuerpoAviso"
-                    rows="4"
-                    required></textarea>
+          <form id="form-enviar-aviso-doc" action="../../controllers/Controlador_aviso_documento.php" method="POST" enctype="multipart/form-data">
+            <div class="row">
+              <div class="col">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="tipoEnvio" value="aviso" checked id="tipoEnvioAviso">
+                  <label class="form-check-label" for="tipoEnvioAviso">
+                    Aviso
+                  </label>
                 </div>
               </div>
-
-              <!-- Ajuste del select dentro de la columna -->
-              <div class="col-6">
-                <div class="mb-3" style="height: 100%">
-                  <label for="departamentosAviso" class="form-label">Departamentos</label>
-                  <select
-                    class="form-select"
-                    id="departamentosAviso"
-                    multiple
-                    style="height: 200px">
-                    <option value="todos">Todos</option>
-                    <option value="ventas">Ventas</option>
-                    <option value="finanzas">Finanzas</option>
-                    <option value="rrhh">Recursos Humanos</option>
-                    <option value="it">IT</option>
-                    <!-- Agregar más departamentos si es necesario -->
-                  </select>
+              <div class="col">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="tipoEnvio" value="documento" id="tipoEnvioDocumento">
+                  <label class="form-check-label" for="tipoEnvioDocumento">
+                    Documento
+                  </label>
                 </div>
               </div>
             </div>
 
-            <!-- Sección de envío de documentación -->
+            <!-- Sección de aviso -->
+            <div id="seccion-aviso">
+              <div class="row mb-3">
+                <label for="usuarioAviso" class="col-sm-2 col-form-label">Usuario:</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="usuarioAviso" name="usuarioAviso">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="mensajeAviso" class="col-sm-2 col-form-label">Mensaje:</label>
+                <div class="col-sm-10">
+                  <textarea class="form-control" id="mensajeAviso" name="mensajeAviso"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sección de documento -->
             <div id="seccion-documento" class="d-none">
-              <div class="mb-3">
-                <label for="usuarioDocumento" class="form-label">Usuario (DNI)</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="usuarioDocumento"
-                  required />
+              <div class="row mb-3">
+                <label for="usuarioDocumento" class="col-sm-2 col-form-label">Usuario:</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="usuarioDocumento" name="usuarioDocumento">
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="archivoDocumento" class="form-label">Archivo</label>
-                <input
-                  type="file"
-                  class="form-control"
-                  id="archivoDocumento"
-                  required />
+              <div class="row mb-3">
+                <label for="mensajeDocumento" class="col-sm-2 col-form-label">Mensaje:</label>
+                <div class="col-sm-10">
+                  <textarea class="form-control" id="mensajeDocumento" name="mensajeDocumento"></textarea>
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="mensajeDocumento" class="form-label">Mensaje Opcional</label>
-                <textarea
-                  class="form-control"
-                  id="mensajeDocumento"
-                  rows="4"></textarea>
+              <div class="row mb-3">
+                <label for="archivoDocumento" class="col-sm-2 col-form-label">Archivo:</label>
+                <div class="col-sm-10">
+                  <input type="file" class="form-control" id="archivoDocumento" name="archivoDocumento">
+                </div>
               </div>
-              <div class="mb-3 form-check">
-                <input
-                  type="checkbox"
-                  class="form-check-input"
-                  id="requiereFirma" />
-                <label class="form-check-label" for="requiereFirma">Requiere firma</label>
+              <div class="row mb-3">
+                <label for="requiereFirma" class="col-sm-2 col-form-label">Requiere firma:</label>
+                <div class="col-sm-10">
+                  <input type="checkbox" class="form-check-input" id="requiereFirma" name="requiereFirma">
+                </div>
               </div>
             </div>
 
-            <!-- Botón de envío -->
-            <button type="submit" class="btn btn-primary w-100">
-              Enviar
-            </button>
+            <div class="row mb-3">
+              <div class="col text-center">
+                <button type="submit" class="btn btn-primary">Enviar</button>
+              </div>
+            </div>
           </form>
+
+
+
         </div>
       </main>
     </div>
   </div>
+  <!-- Script JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tipoEnvioRadios = document.querySelectorAll('input[name="tipoEnvio"]');
+    const seccionAviso = document.getElementById('seccion-aviso');
+    const seccionDocumento = document.getElementById('seccion-documento');
+
+    // Función para mostrar la sección correspondiente
+    function actualizarSeccion() {
+        const tipoEnvioSeleccionado = document.querySelector('input[name="tipoEnvio"]:checked').value;
+
+        if (tipoEnvioSeleccionado === 'aviso') {
+            seccionAviso.classList.remove('d-none');
+            seccionDocumento.classList.add('d-none');
+        } else if (tipoEnvioSeleccionado === 'documento') {
+            seccionAviso.classList.add('d-none');
+            seccionDocumento.classList.remove('d-none');
+        }
+    }
+
+    // Inicializa las secciones basadas en la selección por defecto
+    actualizarSeccion();
+
+    // Actualiza la sección cuando se cambie la opción
+    tipoEnvioRadios.forEach(radio => {
+        radio.addEventListener('change', actualizarSeccion);
+    });
+});
+</script>
 
   <!-- Bootstrap 5 JS -->
   <script src="../../assets/dist/js/bootstrap.bundle.min.js"></script>
