@@ -232,4 +232,27 @@ class Repositorio_Usuario extends Repositorio
             die('Error al ejecutar la consulta: ' . $query->error);
         }
     }
+
+    public function obtenerTipoDeUsuario($Dni)
+{
+    $q = "SELECT TipoDeUsuario FROM usuarios WHERE Dni = ?";
+    $query = self::$conexion->prepare($q);
+
+    if ($query === false) {
+        die('Error al preparar la consulta: ' . self::$conexion->error);
+    }
+
+    $query->bind_param("s", $Dni);
+
+    if ($query->execute()) {
+        $query->bind_result($tipoUsuario);
+        if ($query->fetch()) {
+            return $tipoUsuario;
+        }
+    }
+
+    return null; // Retornar null si no se encuentra el usuario
+}
+
+
 }

@@ -95,26 +95,34 @@ $solicitudes = $repositorio->mostrarSolicitud($dni); // Obtener solicitudes
           <!-- Formulario de solicitud de licencia horizontal -->
           <form id="form-licencia" class="row g-3" action="../../controllers/Controlador_Solicitud.php" method="POST">
             <!-- Campo oculto con el DNI del usuario logueado -->
-            <input type="hidden" name="DniSolicitante" value="<?php echo $dni; ?>" />
-
+            <input type="hidden" name="DniSolicitante" value="<?php echo $usuario->getDni(); ?>" />
+            <!-- Tipo de Licencia -->
+            <div class="col-md-3">
+              <label for="tipoLicencia" class="form-label">Tipo de Licencia</label>
+              <select class="form-select" name="tipoLicencia" id="tipoLicencia" required>
+                <option selected disabled>Seleccione una opción</option>
+                <option value="vacaciones">Vacaciones</option>
+                <option value="enfermedad">Enfermedad</option>
+                <option value="maternidad">Maternidad/Paternidad</option>
+                <option value="estudio">Estudio</option>
+                <option value="otros">Otros</option>
+              </select>
+            </div>
             <!-- Fecha de Inicio -->
             <div class="col-md-3">
               <label for="fechaInicio" class="form-label">Fecha de Inicio</label>
               <input type="date" class="form-control" name="fechaInicio" id="fechaInicio" required />
             </div>
-
             <!-- Fecha de Fin -->
             <div class="col-md-3">
               <label for="fechaFin" class="form-label">Fecha de Fin</label>
               <input type="date" class="form-control" name="fechaFin" id="fechaFin" required />
             </div>
-
             <!-- Botón Enviar -->
             <div class="col-md-3 d-flex align-items-end">
               <button type="submit" class="btn btn-custom w-100">Enviar Solicitud</button>
             </div>
           </form>
-
         </div>
 
         <!-- Historial de licencias como tabla -->

@@ -1,15 +1,24 @@
 <?php
+require_once '../../classes/Usuario.php';
 session_start();
-$usuario = null;
-if (isset($_SESSION['usuario'])) {
-  $usuario = unserialize($_SESSION['usuario']);
-} else {
-  // TODO: Redirige al login si no está iniciada la sesión
-  // header('Location: ../../index.php');
-}
-// TODO: Agregar funcionalidades necesarias
 
+// Verificar si el usuario está logueado
+if (!isset($_SESSION['usuario'])) {
+    header("Location: login.php");
+    exit;
+}
+
+// Deserializar el usuario guardado en la sesión
+$usuario = unserialize($_SESSION['usuario']);
+
+// Verificar si el usuario es de tipo RRHH
+if (!$usuario->esRRHH()) {
+    // Si no es RRHH, redirigir a una página de acceso denegado o al login
+    header("Location: acceso_denegado.php");
+    exit;
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 

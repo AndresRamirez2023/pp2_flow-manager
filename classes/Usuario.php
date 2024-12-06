@@ -17,7 +17,7 @@ class Usuario
     protected $domicilio;
     // Teléfono
     protected $telefono;
-    // Tipo de usuario (Director, Recursos humanos, empleado)
+    // Tipo de usuario (Director, Recursos Humanos, Empleado)
     protected $tipoUsuario; // TODO: Usar Enums para definir tipos
     // Nombre del departamento al que pertenece
     protected $departamento; // TODO: Ser un objeto de tipo Departamento
@@ -69,7 +69,8 @@ class Usuario
         return $this->fechaNac;
     }
 
-    public function getDomicilio() {
+    public function getDomicilio()
+    {
         return $this->domicilio;
     }
 
@@ -87,6 +88,7 @@ class Usuario
     {
         return $this->tipoUsuario;
     }
+
     public function getDepartamento()
     {
         // Si el departamento es un objeto, devolver su nombre, sino 'Sin Departamento'
@@ -94,54 +96,75 @@ class Usuario
     }
 
     public function getClave()
-{
-    return $this->clave;
-}
+    {
+        return $this->clave;
+    }
+
     // Métodos para manejar la clave
     public function setClave($nuevaClave)
     {
         $this->clave = password_hash($nuevaClave, PASSWORD_DEFAULT); // Actualizar la clave como hash
     }
-    
+
     public function validarClave($claveIngresada)
     {
         return password_verify($claveIngresada, $this->clave); // Verificar clave ingresada con el hash
     }
 
-    //SETTERS 
-    public function setNombre($nombre) {
+    // Validar si el usuario puede solicitar días
+    public function puedeSolicitarDias()
+    {
+        return strtolower($this->tipoUsuario) === 'empleado';
+    }
+
+    public function esRRHH()
+{
+    return strtolower($this->tipoUsuario) === 'rrhh'; // Validar si el tipo de usuario es 'rrhh'
+}
+
+    // SETTERS
+    public function setNombre($nombre)
+    {
         $this->nombre = $nombre;
     }
 
-    public function setApellido($apellido) {
+    public function setApellido($apellido)
+    {
         $this->apellido = $apellido;
     }
 
-    public function setFechaNac($fechaNacimiento) {
-        $this->fechaNacimiento = $fechaNacimiento;
+    public function setFechaNac($fechaNacimiento)
+    {
+        $this->fechaNac = $fechaNacimiento;
     }
 
-    public function setDomicilio($direccion) {
+    public function setDomicilio($direccion)
+    {
         $this->domicilio = $direccion;
     }
-    public function setCorreoElectronico($CorreoElectronico) {
+
+    public function setCorreoElectronico($CorreoElectronico)
+    {
         $this->CorreoElectronico = $CorreoElectronico;
     }
 
-    public function setTelefono($telefono) {
+    public function setTelefono($telefono)
+    {
         $this->telefono = $telefono;
     }
 
-    public function setTipoUsuario($tipoUsuario) {
+    public function setTipoUsuario($tipoUsuario)
+    {
         $this->tipoUsuario = $tipoUsuario;
     }
 
-    public function setDepartamento($departamento) {
+    public function setDepartamento($departamento)
+    {
         $this->departamento = $departamento;
     }
 
-    public function setDni($dni) {
-        $this->dni = $dni;
+    public function setDni($dni)
+    {
+        $this->Dni = $dni;
     }
-
 }
