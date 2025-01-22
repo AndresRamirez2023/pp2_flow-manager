@@ -132,7 +132,7 @@ $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
               </div>
               <!-- Botón Enviar -->
               <div class="col-md-3 d-flex align-items-end">
-                <button type="submit" class="btn btn-custom w-100">Enviar Solicitud</button>
+                <button type="submit" name="accion" value="crear" class="btn btn-custom w-100">Enviar Solicitud</button>
               </div>
             </form>
           </div>
@@ -143,36 +143,63 @@ $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
 
   <!-- Historial de licencias como tabla -->
   <div class="container my-4 p-4 bg-white rounded shadow-sm">
-    <h2>Historial de Licencias</h2>
-    <table class="table table-bordered">
-      <thead class="table-light">
-        <tr>
-          <th scope="col">Tipo de Licencia</th>
-          <th scope="col">Fecha de Inicio</th>
-          <th scope="col">Fecha de Fin</th>
-          <th scope="col">Estado</th> <!-- Columna para el estado -->
-        </tr>
-      </thead>
-      <tbody>
-        <?php
-        $solicitudes = $solicitudes ?? [];
-        // Aquí debes asegurarte de que la variable $solicitudes tenga los datos adecuados
-        if ($solicitudes !== false && !empty($solicitudes)) {
-          foreach ($solicitudes as $solicitud) {
-              echo "<tr>";
-              echo "<td>{$solicitud['TipoSolicitud']}</td>";
-              echo "<td>{$solicitud['FechaHoraDesde']}</td>";
-              echo "<td>{$solicitud['FechaHoraHasta']}</td>";
-              echo "<td>{$solicitud['Estado']}</td>";
-              echo "</tr>";
+  <h2>Historial de Licencias</h2>
+  <table class="table table-bordered">
+    <thead class="table-light">
+      <tr>
+        <th scope="col">Tipo de Licencia</th>
+        <?php if ($isRRHH): ?>
+          <th scope="col">Dni solicitante</th> <!-- Columna solo para RRHH -->
+        <?php endif; ?>
+        <th scope="col">Fecha de Inicio</th>
+        <th scope="col">Fecha de Fin</th>
+        <th scope="col">Estado</th> <!-- Columna para el estado -->
+        <?php if ($isRRHH): ?>
+          <th scope="col">Acciones</th> <!-- Columna solo para RRHH -->
+        <?php endif; ?>
+      </tr>
+    </thead>
+    <tbody>
+      <?php
+      $solicitudes = $solicitudes ?? [];
+      // Aquí debes asegurarte de que la variable $solicitudes tenga los datos adecuados
+      if ($solicitudes !== false && !empty($solicitudes)) {
+        foreach ($solicitudes as $solicitud) {
+          echo "<tr>";
+          echo "<td>{$solicitud['TipoSolicitud']}</td>";
+          if ($isRRHH): 
+            echo "<td>{$solicitud['DniSolicitante']}</td>";
+          endif;          
+          echo "<td>{$solicitud['FechaHoraDesde']}</td>";
+          echo "<td>{$solicitud['FechaHoraHasta']}</td>";
+          echo "<td>{$solicitud['Estado']}</td>";
+
+          // Si es RRHH, mostrar columna de acciones
+          if ($isRRHH) {
+            echo "<td>
+                    <form action='../../controllers/Controlador_Solicitud.php' method='post'>
+                        <input type='hidden' name='DniSolicitante' value='{$solicitud['DniSolicitante']}'>
+                        <input type='hidden' name='id_licencia' value='" . (isset($solicitud['id_licencia']) ? $solicitud['id_licencia'] : '') . "'>
+
+                        <select name='estado'>
+                            <option value='Pendiente' " . ($solicitud['Estado'] == 'Pendiente' ? 'selected' : '') . ">Pendiente</option>
+                            <option value='Aprobada' " . ($solicitud['Estado'] == 'Aprobada' ? 'selected' : '') . ">Aprobada</option>
+                            <option value='Rechazada' " . ($solicitud['Estado'] == 'Rechazada' ? 'selected' : '') . ">Rechazada</option>
+                        </select>
+                        <button type='submit' name='accion' value='actualizar'>Actualizar</button>
+                    </form>
+                  </td>";
           }
+
+          echo "</tr>";
+        }
       } else {
-          echo "<tr><td colspan='4'>No se encontraron solicitudes</td></tr>";
+        echo "<tr><td colspan='5'>No se encontraron solicitudes</td></tr>";
       }
-        ?>
-      </tbody>
-    </table>
-  </div>
+      ?>
+    </tbody>
+  </table>
+</div>
 
   <!-- Bootstrap 5 JS -->
   <script src="../../assets/dist/js/bootstrap.bundle.min.js"></script>
