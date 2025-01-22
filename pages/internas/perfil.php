@@ -2,17 +2,23 @@
 require_once '../../repositories/Repositorio_Usuario.php';
 require_once '../../classes/Usuario.php';
 
-session_start();
-$usuario = null;
-if (isset($_SESSION['usuario'])) {
-  $usuario = unserialize($_SESSION['usuario']);
-} else {
-  // TODO: Redirige al login si no está iniciada la sesión
-  // header('Location: ../../index.php');
+if (session_status() !== PHP_SESSION_ACTIVE) {
+  session_start();
 }
-// TODO: Agregar funcionalidades necesarias
-$repositorio = new Repositorio_Usuario();
+
+// Verificar si el usuario está logueado
+if (!isset($_SESSION['usuario'])) {
+  header("Location: login.php");
+  exit;
+}
+
+// Deserializar el usuario guardado en la sesión
+$usuario = unserialize($_SESSION['usuario']);
+
+// Verificar si el usuario es de tipo RRHH
+$isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -110,21 +116,25 @@ $repositorio = new Repositorio_Usuario();
               <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento</label>
               <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento" required />
             </div>
-            <div class="col-md-6">
-              <label for="tipoUsuario" class="form-label">Tipo de usuario</label>
-              <select name="tipoUsuario" id="tipoUsuario" class="form-select">
-                <option value="Empleado">Empleado</option>
-                <option value="RRHH">RRHH</option>
-                <option value="Directivo">Directivo</option>
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label for="nueva_clave" class="form-label">Cambiar Contraseña</label>
-              <input type="password" class="form-control" id="nueva_clave" name="nueva_clave" />
-            </div>
-            <div class="col-md-12">
-              <button type="submit" class="btn btn-primary w-100">Guardar Datos</button>
-            </div>
+            
+              <?php if ($isRRHH): ?>
+                <div class="col-md-6">
+                <label for="tipoUsuario" class="form-label">Tipo de usuario</label>
+                <select name="tipoUsuario" id="tipoUsuario" class="form-select">
+                  <option value="Empleado">Empleado</option>
+                  <option value="RRHH">RRHH</option>
+                  <option value="Directivo">Directivo</option>
+                </select>
+            </div><!-- Columna solo para RRHH -->
+          <?php endif; ?>
+
+          <div class="col-md-6">
+            <label for="nueva_clave" class="form-label">Cambiar Contraseña</label>
+            <input type="password" class="form-control" id="nueva_clave" name="nueva_clave" />
+          </div>
+          <div class="col-md-12">
+            <button type="submit" class="btn btn-primary w-100">Guardar Datos</button>
+          </div>
           </form>
 
         </div>

@@ -77,6 +77,17 @@ class Repositorio_Usuario extends Repositorio
 
         // **VALIDACIONES BACKEND**
 
+
+        // Validar si el DNI ya existe en la base de datos
+        if ($this->existsByDNI($Dni)) {
+            die('Error: El DNI ingresado ya está registrado.');
+        }
+
+        // Validar si el correo electrónico ya existe en la base de datos
+        if ($this->existsByEmail($CorreoElectronico)) {
+            die('Error: El correo electrónico ingresado ya está registrado.');
+        }
+
         // Validar DNI (exactamente 8 dígitos)
         if (!preg_match('/^\d{8}$/', $Dni)) {
             die('Error: El DNI debe contener exactamente 8 dígitos numéricos.');
@@ -157,6 +168,30 @@ class Repositorio_Usuario extends Repositorio
             die('Error al ejecutar la consulta: ' . $query->error);
         }
     }
+    private function existsByDNI($Dni)
+{
+    $q = "SELECT COUNT(*) FROM usuarios WHERE Dni = ?";
+    $stmt = self::$conexion->prepare($q);
+    $stmt->bind_param("s", $Dni);
+    $stmt->execute();
+    $stmt->bind_result($count);
+    $stmt->fetch();
+    return $count > 0;
+}
+
+/**
+ * Verificar si el correo electrónico ya existe
+ */
+private function existsByEmail($CorreoElectronico)
+{
+    $q = "SELECT COUNT(*) FROM usuarios WHERE CorreoElectronico = ?";
+    $stmt = self::$conexion->prepare($q);
+    $stmt->bind_param("s", $CorreoElectronico);
+    $stmt->execute();
+    $stmt->bind_result($count);
+    $stmt->fetch();
+    return $count > 0;
+}
 
 
     public function update(Usuario $usuario, $clave = null)
@@ -234,25 +269,23 @@ class Repositorio_Usuario extends Repositorio
     }
 
     public function obtenerTipoDeUsuario($Dni)
-{
-    $q = "SELECT TipoDeUsuario FROM usuarios WHERE Dni = ?";
-    $query = self::$conexion->prepare($q);
+    {
+        $q = "SELECT TipoDeUsuario FROM usuarios WHERE Dni = ?";
+        $query = self::$conexion->prepare($q);
 
-    if ($query === false) {
-        die('Error al preparar la consulta: ' . self::$conexion->error);
-    }
-
-    $query->bind_param("s", $Dni);
-
-    if ($query->execute()) {
-        $query->bind_result($tipoUsuario);
-        if ($query->fetch()) {
-            return $tipoUsuario;
+        if ($query === false) {
+            die('Error al preparar la consulta: ' . self::$conexion->error);
         }
+
+        $query->bind_param("s", $Dni);
+
+        if ($query->execute()) {
+            $query->bind_result($tipoUsuario);
+            if ($query->fetch()) {
+                return $tipoUsuario;
+            }
+        }
+
+        return null; // Retornar null si no se encuentra el usuario
     }
-
-    return null; // Retornar null si no se encuentra el usuario
-}
-
-
 }

@@ -2,13 +2,17 @@
 require_once '../classes/Usuario.php'; // Clase Usuario
 require_once '../repositories/Repositorio_Usuario.php'; // Repositorio
 
-
 $dni = trim($_POST['dni']); // Eliminar espacios adicionales
+$email = trim($_POST['email']); // Eliminar espacios adicionales
 
 // Validar que el DNI sea exactamente de 8 caracteres y numérico
 if (!preg_match('/^\d{8}$/', $dni)) {
     die("DNI no válido. Debe contener exactamente 8 dígitos.");
 }
+
+
+// Instancia del repositorio
+$usuarioRepo = new Repositorio_Usuario();
 
 // Continuar con el proceso de creación del usuario si el DNI es válido
 $nombreApellido = $_POST['nombreApellido'];

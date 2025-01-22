@@ -3,6 +3,7 @@ require_once 'Departamento.php';
 
 class Usuario
 {
+        
     // DNI (Clave primaria)
     protected $Dni;
     // Nombre
@@ -110,6 +111,8 @@ class Usuario
     {
         return password_verify($claveIngresada, $this->clave); // Verificar clave ingresada con el hash
     }
+
+    
 
     // Validar si el usuario puede solicitar días
     public function puedeSolicitarDias()
