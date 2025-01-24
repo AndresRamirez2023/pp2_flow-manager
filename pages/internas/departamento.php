@@ -1,21 +1,52 @@
 <?php
 require_once '../../classes/ControladorSesion.php';
 require_once '../../classes/Usuario.php';
-session_start();
+require_once '../../repositories/Repositorio_Departamento.php';
 
+session_start();
 
 // Verificar si el usuario está logueado
 if (!isset($_SESSION['usuario'])) {
-  header("Location: login.php");
-  exit;
+    header("Location: login.php");
+    exit;
 }
 
-// Deserializar el usuario guardado en la sesión
+// Deserializar el objeto Usuario desde la sesión
 $usuario = unserialize($_SESSION['usuario']);
 
-// Verificar si el usuario es de tipo RRHH
-$isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
+// Obtener el DNI del usuario logueado
+$dni = $usuario->getDni();
+
+// Inicializar la variable $departamento
+$departamento = null;
+
+// Obtener el departamento automáticamente al cargar la página
+$repositorio = new Repositorio_Departamento();
+try {
+    $departamento = $repositorio->obtenerDepartamentoPorDni($dni);
+    if (!$departamento) {
+        $departamento = "No se encontró el departamento para tu DNI.";
+    }
+} catch (Exception $e) {
+    $departamento = "Ocurrió un error al obtener el departamento: " . $e->getMessage();
+}
+
+try {
+  $director = $repositorio->obtenerDirectorACargo($departamento);
+  if (!$director) {
+      $director = "No se encontró el departamento para tu DNI.";
+  }
+} catch (Exception $e) {
+  $director = "Ocurrió un error al obtener el departamento: " . $e->getMessage();
+}
+
+
+
+// Verificar si el usuario es de tipo RRHH o Directivo (opcional, según tu lógica)
+$isRRHH = $usuario->esRRHH();
+
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">
@@ -98,60 +129,62 @@ $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
     </nav>
   </header>
 
-    <div class="container-fluid">
-      <div class="row">
-        <!-- Contenido principal -->
-        <main class="main-content">
-          <div class="container">
-            <!-- Documentos informativos -->
-            <div class="row">
-              <div class="col-md-6">
-                <h1>Integrantes</h1>
-                <h5 class="mt-5 mb-3">Director: Juán Reyes</h5>
-                <ul class="row">
-                  <div class="col-6">
-                    <li class="mt-3">Juan Pérez</li>
-                    <li class="mt-3">María González</li>
-                    <li class="mt-3">Carlos Rodríguez</li>
-                    <li class="mt-3">Ana Fernández</li>
-                    <li class="mt-3">Lucía Gómez</li>
-                    <li class="mt-3">Santiago López</li>
-                    <li class="mt-3">Valeria Martínez</li>
-                    <li class="mt-3">Federico Díaz</li>
-                    <li class="mt-3">Sofía Sosa</li>
-                    <li class="mt-3">Alejandro Torres</li>
-                  </div>
-                  <div class="col-6">
-                    <li class="mt-3">Martina Romero</li>
-                    <li class="mt-3">Gonzalo Sánchez</li>
-                    <li class="mt-3">Carolina Benítez</li>
-                    <li class="mt-3">Agustín Silva</li>
-                    <li class="mt-3">Julieta Álvarez</li>
-                    <li class="mt-3">Manuel Méndez</li>
-                    <li class="mt-3">Camila Herrera</li>
-                    <li class="mt-3">Nicolás Castro</li>
-                    <li class="mt-3">Florencia Ramírez</li>
-                    <li class="mt-3">Diego Ruiz</li>
-                  </div>
-                </ul>
-              </div>
-              <div class="col-md-6">
-                <!-- Calendario -->
-                <h1>Próximos eventos</h1>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Contenido principal -->
+      <main class="main-content">
+        <div class="container">
+          <!-- Documentos informativos -->
+          <div class="row">
+            <div class="col-md-6">
+              <h1><?php echo htmlspecialchars($departamento ?? 'No se ha consultado ningún departamento.'); ?></h1>
 
-                <div class="justify-content-center">
-                  <div id="calendar" class="mb-4 w-100"></div>
+              <h5 class="mt-5 mb-3">Director: <?php echo htmlspecialchars($director ?? 'No se ha consultado ningún departamento.'); ?>  </h5>
+              <ul class="row">
+                <div class="col-6">
+                  <li class="mt-3">Juan Pérez</li>
+                  <li class="mt-3">María González</li>
+                  <li class="mt-3">Carlos Rodríguez</li>
+                  <li class="mt-3">Ana Fernández</li>
+                  <li class="mt-3">Lucía Gómez</li>
+                  <li class="mt-3">Santiago López</li>
+                  <li class="mt-3">Valeria Martínez</li>
+                  <li class="mt-3">Federico Díaz</li>
+                  <li class="mt-3">Sofía Sosa</li>
+                  <li class="mt-3">Alejandro Torres</li>
                 </div>
+                <div class="col-6">
+                  <li class="mt-3">Martina Romero</li>
+                  <li class="mt-3">Gonzalo Sánchez</li>
+                  <li class="mt-3">Carolina Benítez</li>
+                  <li class="mt-3">Agustín Silva</li>
+                  <li class="mt-3">Julieta Álvarez</li>
+                  <li class="mt-3">Manuel Méndez</li>
+                  <li class="mt-3">Camila Herrera</li>
+                  <li class="mt-3">Nicolás Castro</li>
+                  <li class="mt-3">Florencia Ramírez</li>
+                  <li class="mt-3">Diego Ruiz</li>
+                </div>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <!-- Calendario -->
+              <h1>Próximos eventos</h1>
+
+              <div class="justify-content-center">
+                <div id="calendar" class="mb-4 w-100"></div>
               </div>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
+  </div>
 
-    <!-- Bootstrap 5 JS -->
-    <script src="../../assets/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/profile-menu.js"></script>
-    <script src="../js/calendar2.js"></script>
-  </body>
+  <!-- Bootstrap 5 JS -->
+  <script src="../../assets/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/profile-menu.js"></script>
+  <script src="../js/calendar2.js"></script>
+</body>
+
 </html>

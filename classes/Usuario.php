@@ -125,6 +125,11 @@ class Usuario
     return strtolower($this->tipoUsuario) === 'rrhh'; // Validar si el tipo de usuario es 'rrhh'
 }
 
+public function esDirectivo()
+{
+    return strtolower($this->tipoUsuario) === 'directivo'; // Validar si el tipo de usuario es 'director'
+}
+
     // SETTERS
     public function setNombre($nombre)
     {
