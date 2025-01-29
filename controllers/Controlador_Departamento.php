@@ -7,6 +7,7 @@ require_once __DIR__ . '/../classes/Departamento.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre_departamento = $_POST['nombreDepartamento'] ?? null;
     $dni_director = $_POST['dniDirector'] ?? null;
+    $accion = $_POST['accion'] ?? '';
 
     if ($nombre_departamento && $dni_director) {
         $repositorio = new Repositorio_Departamento();
@@ -33,4 +34,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         echo "Por favor, complete todos los campos.";
     }
-}
+
+    if ($accion === 'editar'){
+        echo "Editar departamento: $nombre_departamento (DNI del Director: $dni_director)";
+        // Aquí puedes redirigir o mostrar un formulario de edición
+
+    } elseif ($accion === 'eliminar'){
+        //Logica para eliminar el departamento
+
+    }
+
+    }
+    
+

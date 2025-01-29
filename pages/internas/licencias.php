@@ -1,5 +1,5 @@
 <?php
-require_once '../../classes/ControladorSesion.php';
+ 
 require_once '../../classes/Usuario.php';
 require_once __DIR__ . '/../../repositories/Repositorio_Solicitud.php';
 require_once __DIR__ . '/../../controllers/Controlador_Solicitud.php';

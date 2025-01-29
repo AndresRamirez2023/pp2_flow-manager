@@ -74,4 +74,71 @@ class Repositorio_Departamento extends Repositorio
     
         return null; // El DNI no corresponde a ningún usuario
     }
+
+    public function ObtenerListaDepartamento() {
+        $sql = "SELECT concat (u.nombre, ' ', u.apellido) as nombre, d.nombre AS NombreDepartamento, d.DirectorACargo as dni
+                FROM usuarios u
+                LEFT JOIN departamentos d ON u.Dni = d.DirectorACargo
+                WHERE TipoDeUsuario = 'Directivo'";
+        
+        $query = self::$conexion->prepare($sql);
+    
+        if ($query->execute()) {
+            $result = $query->get_result();
+            $listaDepartamento = []; // Declaración del array
+    
+            while ($fila = $result->fetch_assoc()) {
+                $listaDepartamento[] = [
+                    'nombreDepartamento' => $fila['NombreDepartamento'],
+                    'nombreDirector' => $fila['nombre'],
+                    'dniDirector' => $fila['dni']                   
+                    
+                ];
+            }
+    
+            // Aquí devuelves todo el array acumulado
+            return $listaDepartamento;
+        }
+    
+        // En caso de fallo de la consulta, devuelves un array vacío
+        return [];
+    }
+    public function EditarDepartamento($nombre_departamento, $dni_director, $dni_actual) {
+        if ($nombre_departamento && $dni_director && $dni_actual) {
+            // Se asegura que se está editando el departamento correcto según el DNI del director actual
+            $sql = "UPDATE departamentos SET Nombre = ?, DirectorACargo = ? WHERE DirectorACargo = ?";
+            $query = self::$conexion->prepare($sql);
+            $query->bind_param("sss", $nombre_departamento, $dni_director, $dni_actual);
+            $resultado = $query->execute();
+    
+            if (!$resultado) {
+                error_log("Error al ejecutar la consulta: " . $query->error);
+            }
+            return $resultado;
+        } else {
+            echo "Error: Los parámetros proporcionados son incorrectos.";
+            return false;
+        }
+    }
+    
+    public function EliminarDepartamento($nombre_departamento) {
+        $sql = "DELETE FROM DEPARTAMENTOS WHERE Nombre = ?";
+        $query = self::$conexion->prepare($sql);
+    
+        if (!$query) {
+            error_log("Error en la preparación de la consulta: " . self::$conexion->error);
+            return false;
+        }
+    
+        $query->bind_param("s", $nombre_departamento);
+        $resultado = $query->execute();
+    
+        if (!$resultado) {
+            error_log("Error al ejecutar la consulta: " . $query->error);
+            return false;
+        }
+    
+        return true; // Retorna true si se eliminó correctamente
+    }
+
 }

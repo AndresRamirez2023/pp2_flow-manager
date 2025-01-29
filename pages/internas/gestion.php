@@ -1,11 +1,12 @@
 <?php
 require_once '../../classes/Usuario.php';
+require_once __DIR__ . '/../../repositories/Repositorio_Departamento.php';
 session_start();
 
 // Verificar si el usuario está logueado
 if (!isset($_SESSION['usuario'])) {
-    header("Location: login.php");
-    exit;
+  header("Location: login.php");
+  exit;
 }
 
 // Deserializar el usuario guardado en la sesión
@@ -13,10 +14,12 @@ $usuario = unserialize($_SESSION['usuario']);
 
 // Verificar si el usuario es de tipo RRHH
 if (!$usuario->esRRHH()) {
-    // Si no es RRHH, redirigir a una página de acceso denegado o al login
-    header("Location: acceso_denegado.php");
-    exit;
+  // Si no es RRHH, redirigir a una página de acceso denegado o al login
+  header("Location: acceso_denegado.php");
+  exit;
 }
+$objetoClase = new Repositorio_Departamento();
+$listaDepartamento = $objetoClase->ObtenerListaDepartamento();
 ?>
 
 <!DOCTYPE html>
@@ -222,37 +225,137 @@ if (!$usuario->esRRHH()) {
           }
         </script>
 
-        <!-- Sección para agregar departamentos -->
+        <!-- Contenedor principal -->
         <div class="container my-4 bg-white rounded shadow-sm">
-          <h2>Agregar Departamento</h2>
-          <form id="form-agregar-departamento" class="row g-3" action="../../controllers/Controlador_Departamento.php" method="POST">
+          <h2>Gestión de Departamentos</h2>
+
+          <!-- Fila con dos columnas -->
+          <div class="row">
+            <!-- Columna izquierda: Agregar departamento -->
             <div class="col-md-6">
-              <label for="nombreDepartamento" class="form-label">Nombre del Departamento</label>
-              <input
-                type="text"
-                class="form-control"
-                id="nombreDepartamento"
-                name="nombreDepartamento"
-                required />
+              <h4>Agregar Departamento</h4>
+              <form id="form-agregar-departamento" class="row g-3" action="../../controllers/Controlador_Departamento.php" method="POST">
+                <div class="col-md-12">
+                  <label for="nombreDepartamento" class="form-label">Nombre del Departamento</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="nombreDepartamento"
+                    name="nombreDepartamento"
+                    required />
+                </div>
+                <div class="col-md-12">
+                  <label for="dniDirector" class="form-label">DNI del Director</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="dniDirector"
+                    name="dniDirector"
+                    required />
+                </div>
+                <div class="col-md-12">
+                  <button type="submit" class="btn btn-primary w-100">
+                    Agregar Departamento
+                  </button>
+                </div>
+              </form>
             </div>
-            <div class="col-md-6">
-              <label for="dniDirector" class="form-label">DNI del Director</label>
-              <input
-                type="text"
-                class="form-control"
-                id="dniDirector"
-                name="dniDirector"
-                required />
+
+            <!-- Columna derecha: Modificar departamentos -->
+<!-- Columna derecha: Modificar departamentos -->
+<div class="col-md-6">
+    <h4>Modificar Departamentos Existentes</h4>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre del Departamento</th>
+                    <th>Nombre del Director</th>
+                    <th>DNI del Director</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                $listaDepartamento = $listaDepartamento ?? [];
+
+                if (!empty($listaDepartamento)) {
+                    foreach ($listaDepartamento as $lista) {
+                        echo "<tr>";
+                        echo "<td>{$lista['nombreDepartamento']}</td>";
+                        echo "<td>{$lista['nombreDirector']}</td>";
+                        echo "<td>{$lista['dniDirector']}</td>";
+
+                        // Botones de acción
+                        echo "<td>
+                            <button type='button' class='btn btn-warning btn-sm' 
+                                onclick=\"mostrarFormularioEditar('{$lista['nombreDepartamento']}', '{$lista['nombreDirector']}', '{$lista['dniDirector']}')\">Editar</button>
+                            <button type='button' class='btn btn-danger btn-sm' 
+                                onclick=\"eliminarDepartamento('{$lista['nombreDepartamento']}')\">Eliminar</button>
+                        </td>";
+                        echo "</tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='4'>No hay datos disponibles</td></tr>";
+                }
+                ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal para editar departamento -->
+<div class="modal fade" id="modalEditarDepartamento" tabindex="-1" aria-labelledby="modalEditarDepartamentoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditarDepartamentoLabel">Editar Departamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <div class="col-md-12">
-              <button type="submit" class="btn btn-primary w-100">
-                Agregar Departamento
-              </button>
+            <div class="modal-body">
+                <form id="formEditarDepartamento" action="../../controllers/Controlador_Departamento.php" method="post">
+                    <input type="hidden" name="accion" value="editar">
+                    <div class="mb-3">
+                        <label for="nombreDepartamento" class="form-label">Nombre del Departamento</label>
+                        <input type="text" class="form-control" id="nombreDepartamento" name="nombre_departamento" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nombreDirector" class="form-label">Nombre del Director</label>
+                        <input type="text" class="form-control" id="nombreDirector" name="nombre_director" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dniDirector" class="form-label">DNI del Director</label>
+                        <input type="text" class="form-control" id="dniDirector" name="dni_director" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
             </div>
-          </form>
         </div>
+    </div>
+</div>
+
+<script>
+    // Función para mostrar el formulario con datos prellenados
+    function mostrarFormularioEditar(nombreDepartamento, nombreDirector, dniDirector) {
+        // Llenar los campos del modal con los datos del departamento seleccionado
+        document.getElementById('nombreDepartamento').value = nombreDepartamento;
+        document.getElementById('nombreDirector').value = nombreDirector;
+        document.getElementById('dniDirector').value = dniDirector;
+
+        // Mostrar el modal
+        var modalEditar = new bootstrap.Modal(document.getElementById('modalEditarDepartamento'));
+        modalEditar.show();
+    }
+
+    // Función para eliminar departamento
+
+</script>
 
         <!-- Sección para enviar avisos o documentación -->
+        <div>
         <div class="container my-4 bg-white rounded shadow-sm">
           <h2>Enviar Aviso o Documentación</h2>
           <form id="form-enviar-aviso-doc" action="../../controllers/Controlador_aviso_documento.php" method="POST" enctype="multipart/form-data">
@@ -333,34 +436,34 @@ if (!$usuario->esRRHH()) {
     </div>
   </div>
   <!-- Script JavaScript -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const tipoEnvioRadios = document.querySelectorAll('input[name="tipoEnvio"]');
-    const seccionAviso = document.getElementById('seccion-aviso');
-    const seccionDocumento = document.getElementById('seccion-documento');
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const tipoEnvioRadios = document.querySelectorAll('input[name="tipoEnvio"]');
+      const seccionAviso = document.getElementById('seccion-aviso');
+      const seccionDocumento = document.getElementById('seccion-documento');
 
-    // Función para mostrar la sección correspondiente
-    function actualizarSeccion() {
+      // Función para mostrar la sección correspondiente
+      function actualizarSeccion() {
         const tipoEnvioSeleccionado = document.querySelector('input[name="tipoEnvio"]:checked').value;
 
         if (tipoEnvioSeleccionado === 'aviso') {
-            seccionAviso.classList.remove('d-none');
-            seccionDocumento.classList.add('d-none');
+          seccionAviso.classList.remove('d-none');
+          seccionDocumento.classList.add('d-none');
         } else if (tipoEnvioSeleccionado === 'documento') {
-            seccionAviso.classList.add('d-none');
-            seccionDocumento.classList.remove('d-none');
+          seccionAviso.classList.add('d-none');
+          seccionDocumento.classList.remove('d-none');
         }
-    }
+      }
 
-    // Inicializa las secciones basadas en la selección por defecto
-    actualizarSeccion();
+      // Inicializa las secciones basadas en la selección por defecto
+      actualizarSeccion();
 
-    // Actualiza la sección cuando se cambie la opción
-    tipoEnvioRadios.forEach(radio => {
+      // Actualiza la sección cuando se cambie la opción
+      tipoEnvioRadios.forEach(radio => {
         radio.addEventListener('change', actualizarSeccion);
+      });
     });
-});
-</script>
+  </script>
 
   <!-- Bootstrap 5 JS -->
   <script src="../../assets/dist/js/bootstrap.bundle.min.js"></script>
