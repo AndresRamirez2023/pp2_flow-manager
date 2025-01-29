@@ -1,5 +1,5 @@
 <?php
-require_once '../../repositories/Repositorio_solicitud.php';
+require_once '../../repositories/Repositorio_Solicitud.php';
 require_once '../../classes/Usuario.php'; 
 // Asegúrate de iniciar la sesión
 session_start();
@@ -16,7 +16,7 @@ $usuario = unserialize($_SESSION['usuario']);
 
 // Ahora puedes acceder al DNI directamente
 $dni = $usuario->getDni(); // Si tienes un getter en la clase Usuario
-$repositorio = new Repositorio_solicitud();
+$repositorio = new Repositorio_Solicitud();
 $solicitudes = $repositorio->mostrarSolicitud($dni); // Obtener solicitudes
 ?>
 <!DOCTYPE html>
