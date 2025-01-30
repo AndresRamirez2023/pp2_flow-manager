@@ -103,22 +103,24 @@ class Repositorio_Departamento extends Repositorio
         // En caso de fallo de la consulta, devuelves un array vacío
         return [];
     }
-    public function EditarDepartamento($nombre_departamento, $dni_director, $dni_actual) {
-        if ($nombre_departamento && $dni_director && $dni_actual) {
-            // Se asegura que se está editando el departamento correcto según el DNI del director actual
-            $sql = "UPDATE departamentos SET Nombre = ?, DirectorACargo = ? WHERE DirectorACargo = ?";
-            $query = self::$conexion->prepare($sql);
-            $query->bind_param("sss", $nombre_departamento, $dni_director, $dni_actual);
-            $resultado = $query->execute();
+    public function actualizarDepartamento($nombreNuevo, $dniViejo, $dniNuevo) {
+        $sql = "UPDATE departamentos SET Nombre = ?, DirectorACargo = ? WHERE DirectorACargo = ?";
+        $query = self::$conexion->prepare($sql);
+        return $query->execute([$nombreNuevo, $dniNuevo, $dniViejo]);
+    }
     
-            if (!$resultado) {
-                error_log("Error al ejecutar la consulta: " . $query->error);
-            }
-            return $resultado;
-        } else {
-            echo "Error: Los parámetros proporcionados son incorrectos.";
-            return false;
-        }
+
+    public function verificarDniEnUso($dni) {
+        $sql = "SELECT COUNT(*) FROM departamentos WHERE DirectorACargo = ?";
+        $query = self::$conexion->prepare($sql);
+        $query->bind_param("s", $dni);
+        $query->execute();
+        $query->bind_result($count);
+        $query->fetch();
+        $query->close();
+    
+        // Si el resultado es mayor que 0, el DNI ya está en uso
+        return $count > 0;
     }
     
     public function EliminarDepartamento($nombre_departamento) {

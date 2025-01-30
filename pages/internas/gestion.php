@@ -262,25 +262,25 @@ $listaDepartamento = $objetoClase->ObtenerListaDepartamento();
             </div>
 
             <!-- Columna derecha: Modificar departamentos -->
-<!-- Columna derecha: Modificar departamentos -->
-<div class="col-md-6">
-    <h4>Modificar Departamentos Existentes</h4>
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Nombre del Departamento</th>
-                    <th>Nombre del Director</th>
-                    <th>DNI del Director</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $listaDepartamento = $listaDepartamento ?? [];
+            <!-- Columna derecha: Modificar departamentos -->
+            <div class="col-md-6">
+              <h4>Modificar Departamentos Existentes</h4>
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Nombre del Departamento</th>
+                      <th>Nombre del Director</th>
+                      <th>DNI del Director</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php
+                    $listaDepartamento = $listaDepartamento ?? [];
 
-                if (!empty($listaDepartamento)) {
-                    foreach ($listaDepartamento as $lista) {
+                    if (!empty($listaDepartamento)) {
+                      foreach ($listaDepartamento as $lista) {
                         echo "<tr>";
                         echo "<td>{$lista['nombreDepartamento']}</td>";
                         echo "<td>{$lista['nombreDirector']}</td>";
@@ -289,149 +289,148 @@ $listaDepartamento = $objetoClase->ObtenerListaDepartamento();
                         // Botones de acción
                         echo "<td>
                             <button type='button' class='btn btn-warning btn-sm' 
-                                onclick=\"mostrarFormularioEditar('{$lista['nombreDepartamento']}', '{$lista['nombreDirector']}', '{$lista['dniDirector']}')\">Editar</button>
+                                onclick=\"mostrarFormularioEditar('{$lista['nombreDepartamento']}','{$lista['dniDirector']}')\">Editar</button>
                             <button type='button' class='btn btn-danger btn-sm' 
                                 onclick=\"eliminarDepartamento('{$lista['nombreDepartamento']}')\">Eliminar</button>
                         </td>";
                         echo "</tr>";
+                      }
+                    } else {
+                      echo "<tr><td colspan='4'>No hay datos disponibles</td></tr>";
                     }
-                } else {
-                    echo "<tr><td colspan='4'>No hay datos disponibles</td></tr>";
-                }
-                ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Modal para editar departamento -->
-<div class="modal fade" id="modalEditarDepartamento" tabindex="-1" aria-labelledby="modalEditarDepartamentoLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalEditarDepartamentoLabel">Editar Departamento</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    ?>
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div class="modal-body">
-                <form id="formEditarDepartamento" action="../../controllers/Controlador_Departamento.php" method="post">
-                    <input type="hidden" name="accion" value="editar">
-                    <div class="mb-3">
-                        <label for="nombreDepartamento" class="form-label">Nombre del Departamento</label>
-                        <input type="text" class="form-control" id="nombreDepartamento" name="nombre_departamento" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="nombreDirector" class="form-label">Nombre del Director</label>
-                        <input type="text" class="form-control" id="nombreDirector" name="nombre_director" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="dniDirector" class="form-label">DNI del Director</label>
-                        <input type="text" class="form-control" id="dniDirector" name="dni_director" required>
-                    </div>
-                    <div class="modal-footer">
+
+            <!-- Modal para editar departamento -->
+            <div class="modal fade" id="modalEditarDepartamento" tabindex="-1" aria-labelledby="modalEditarDepartamentoLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditarDepartamentoLabel">Editar Departamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form id="formEditarDepartamento" action="../../controllers/Controlador_Departamento.php" method="post">
+                      <input type="hidden" name="accion" value="editar">
+                      
+                      <div class="mb-3">
+                        <label for="editarNombreDepartamento" class="form-label">Nombre del Departamento</label>
+                        <input type="text" class="form-control" id="editarNombreDepartamento" name="nombreDepartamento" required />
+                      </div>
+                      <div class="mb-3">
+                        <label for="dniDirectorActual" class="form-label">DNI del Director</label>
+                        <input type="text" class="form-control" id="dniDirectorActual" name="dniDirector" required />
+                      </div>
+                      <div class="mb-3">
+                        <label for="nuevoDniDirector" class="form-label">Nuevo dni director</label>
+                        <input type="text" class="form-control" id="nuevoDniDirector" name="nuevoDniDirector" />
+                      </div>
+                      <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <script>
+              // Función para mostrar el formulario con datos prellenados
+              function mostrarFormularioEditar(nombreDepartamento, dniDirectorActual) {
+                document.getElementById("editarNombreDepartamento").value = nombreDepartamento;
+                document.getElementById("dniDirectorActual").value = dniDirectorActual; // Guardamos el DNI viejo
+
+                // Mostrar el modal
+                var modalEditar = new bootstrap.Modal(document.getElementById('modalEditarDepartamento'));
+                modalEditar.show();
+              }
+
+
+              // Función para eliminar departamento
+            </script>
+
+            <!-- Sección para enviar avisos o documentación -->
+            <div>
+              <div class="container my-4 bg-white rounded shadow-sm">
+                <h2>Enviar Aviso o Documentación</h2>
+                <form id="form-enviar-aviso-doc" action="../../controllers/Controlador_aviso_documento.php" method="POST" enctype="multipart/form-data">
+                  <div class="row">
+                    <div class="col">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="tipoEnvio" value="aviso" checked id="tipoEnvioAviso">
+                        <label class="form-check-label" for="tipoEnvioAviso">
+                          Aviso
+                        </label>
+                      </div>
                     </div>
+                    <div class="col">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="tipoEnvio" value="documento" id="tipoEnvioDocumento">
+                        <label class="form-check-label" for="tipoEnvioDocumento">
+                          Documento
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Sección de aviso -->
+                  <div id="seccion-aviso">
+                    <div class="row mb-3">
+                      <label for="usuarioAviso" class="col-sm-2 col-form-label">Usuario:</label>
+                      <div class="col-sm-10">
+                        <input type="text" class="form-control" id="usuarioAviso" name="usuarioAviso">
+                      </div>
+                    </div>
+                    <div class="row mb-3">
+                      <label for="mensajeAviso" class="col-sm-2 col-form-label">Mensaje:</label>
+                      <div class="col-sm-10">
+                        <textarea class="form-control" id="mensajeAviso" name="mensajeAviso"></textarea>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Sección de documento -->
+                  <div id="seccion-documento" class="d-none">
+                    <div class="row mb-3">
+                      <label for="usuarioDocumento" class="col-sm-2 col-form-label">Usuario:</label>
+                      <div class="col-sm-10">
+                        <input type="text" class="form-control" id="usuarioDocumento" name="usuarioDocumento">
+                      </div>
+                    </div>
+                    <div class="row mb-3">
+                      <label for="mensajeDocumento" class="col-sm-2 col-form-label">Mensaje:</label>
+                      <div class="col-sm-10">
+                        <textarea class="form-control" id="mensajeDocumento" name="mensajeDocumento"></textarea>
+                      </div>
+                    </div>
+                    <div class="row mb-3">
+                      <label for="archivoDocumento" class="col-sm-2 col-form-label">Archivo:</label>
+                      <div class="col-sm-10">
+                        <input type="file" class="form-control" id="archivoDocumento" name="archivoDocumento">
+                      </div>
+                    </div>
+                    <div class="row mb-3">
+                      <label for="requiereFirma" class="col-sm-2 col-form-label">Requiere firma:</label>
+                      <div class="col-sm-10">
+                        <input type="checkbox" class="form-check-input" id="requiereFirma" name="requiereFirma">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row mb-3">
+                    <div class="col text-center">
+                      <button type="submit" class="btn btn-primary">Enviar</button>
+                    </div>
+                  </div>
                 </form>
-            </div>
-        </div>
-    </div>
-</div>
 
-<script>
-    // Función para mostrar el formulario con datos prellenados
-    function mostrarFormularioEditar(nombreDepartamento, nombreDirector, dniDirector) {
-        // Llenar los campos del modal con los datos del departamento seleccionado
-        document.getElementById('nombreDepartamento').value = nombreDepartamento;
-        document.getElementById('nombreDirector').value = nombreDirector;
-        document.getElementById('dniDirector').value = dniDirector;
 
-        // Mostrar el modal
-        var modalEditar = new bootstrap.Modal(document.getElementById('modalEditarDepartamento'));
-        modalEditar.show();
-    }
 
-    // Función para eliminar departamento
-
-</script>
-
-        <!-- Sección para enviar avisos o documentación -->
-        <div>
-        <div class="container my-4 bg-white rounded shadow-sm">
-          <h2>Enviar Aviso o Documentación</h2>
-          <form id="form-enviar-aviso-doc" action="../../controllers/Controlador_aviso_documento.php" method="POST" enctype="multipart/form-data">
-            <div class="row">
-              <div class="col">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="tipoEnvio" value="aviso" checked id="tipoEnvioAviso">
-                  <label class="form-check-label" for="tipoEnvioAviso">
-                    Aviso
-                  </label>
-                </div>
               </div>
-              <div class="col">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="tipoEnvio" value="documento" id="tipoEnvioDocumento">
-                  <label class="form-check-label" for="tipoEnvioDocumento">
-                    Documento
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <!-- Sección de aviso -->
-            <div id="seccion-aviso">
-              <div class="row mb-3">
-                <label for="usuarioAviso" class="col-sm-2 col-form-label">Usuario:</label>
-                <div class="col-sm-10">
-                  <input type="text" class="form-control" id="usuarioAviso" name="usuarioAviso">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label for="mensajeAviso" class="col-sm-2 col-form-label">Mensaje:</label>
-                <div class="col-sm-10">
-                  <textarea class="form-control" id="mensajeAviso" name="mensajeAviso"></textarea>
-                </div>
-              </div>
-            </div>
-
-            <!-- Sección de documento -->
-            <div id="seccion-documento" class="d-none">
-              <div class="row mb-3">
-                <label for="usuarioDocumento" class="col-sm-2 col-form-label">Usuario:</label>
-                <div class="col-sm-10">
-                  <input type="text" class="form-control" id="usuarioDocumento" name="usuarioDocumento">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label for="mensajeDocumento" class="col-sm-2 col-form-label">Mensaje:</label>
-                <div class="col-sm-10">
-                  <textarea class="form-control" id="mensajeDocumento" name="mensajeDocumento"></textarea>
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label for="archivoDocumento" class="col-sm-2 col-form-label">Archivo:</label>
-                <div class="col-sm-10">
-                  <input type="file" class="form-control" id="archivoDocumento" name="archivoDocumento">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label for="requiereFirma" class="col-sm-2 col-form-label">Requiere firma:</label>
-                <div class="col-sm-10">
-                  <input type="checkbox" class="form-check-input" id="requiereFirma" name="requiereFirma">
-                </div>
-              </div>
-            </div>
-
-            <div class="row mb-3">
-              <div class="col text-center">
-                <button type="submit" class="btn btn-primary">Enviar</button>
-              </div>
-            </div>
-          </form>
-
-
-
-        </div>
       </main>
     </div>
   </div>
