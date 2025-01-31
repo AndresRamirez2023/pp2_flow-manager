@@ -253,6 +253,7 @@ $listaDepartamento = $objetoClase->ObtenerListaDepartamento();
                     name="dniDirector"
                     required />
                 </div>
+                <input type="hidden" name="accion" value="agregar">
                 <div class="col-md-12">
                   <button type="submit" class="btn btn-primary w-100">
                     Agregar Departamento
@@ -315,7 +316,8 @@ $listaDepartamento = $objetoClase->ObtenerListaDepartamento();
                   <div class="modal-body">
                     <form id="formEditarDepartamento" action="../../controllers/Controlador_Departamento.php" method="post">
                       <input type="hidden" name="accion" value="editar">
-                      
+                      <input type="hidden" name="eliminarDepartamento" value="eliminarDepartamento">
+
                       <div class="mb-3">
                         <label for="editarNombreDepartamento" class="form-label">Nombre del Departamento</label>
                         <input type="text" class="form-control" id="editarNombreDepartamento" name="nombreDepartamento" required />
@@ -350,7 +352,27 @@ $listaDepartamento = $objetoClase->ObtenerListaDepartamento();
               }
 
 
-              // Función para eliminar departamento
+              function eliminarDepartamento(nombreDepartamento) {
+                if (confirm("¿Estás seguro de que deseas eliminar el departamento " + nombreDepartamento + "?")) {
+                  fetch("../../controllers/Controlador_Departamento.php", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                      },
+                      body: "accion=eliminar&nombreDepartamento=" + encodeURIComponent(nombreDepartamento)
+                    })
+                    .then(response => response.json()) // Espera una respuesta JSON del servidor
+                    .then(data => {
+                      if (data.success) {
+                        alert("Departamento eliminado correctamente.");
+                        location.reload(); // Recargar la página para reflejar cambios
+                      } else {
+                        alert("Error al eliminar el departamento: " + data.error);
+                      }
+                    })
+                    .catch(error => console.error("Error:", error));
+                }
+              }
             </script>
 
             <!-- Sección para enviar avisos o documentación -->

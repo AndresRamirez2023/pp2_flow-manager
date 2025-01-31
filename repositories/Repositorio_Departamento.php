@@ -79,7 +79,7 @@ class Repositorio_Departamento extends Repositorio
         $sql = "SELECT concat (u.nombre, ' ', u.apellido) as nombre, d.nombre AS NombreDepartamento, d.DirectorACargo as dni
                 FROM usuarios u
                 LEFT JOIN departamentos d ON u.Dni = d.DirectorACargo
-                WHERE TipoDeUsuario = 'Directivo'";
+                WHERE TipoDeUsuario = 'Directivo' and u.Departamento != 'Sin Departamento'";
         
         $query = self::$conexion->prepare($sql);
     

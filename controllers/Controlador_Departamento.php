@@ -1,11 +1,13 @@
 <?php
 
+
 require_once __DIR__ . '/../repositories/Repositorio_Departamento.php';
 require_once __DIR__ . '/../classes/Usuario.php';
 require_once __DIR__ . '/../classes/Departamento.php';
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     $nombre_departamento = $_POST['nombreDepartamento'] ?? null;
     $dni_director = $_POST['dniDirector'] ?? null;
     $accion = $_POST['accion'] ?? '';
@@ -22,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $departamento = new Departamento($nombre_departamento, $director);
 
                 if ($repositorio->save($departamento)) {
-                    echo "El departamento '{$nombre_departamento}' fue asignado correctamente al director con DNI {$dni_director}.";
+                    header("Location: ../pages/internas/gestion.php?mensaje=agregado");
                 } else {
                     echo "Error al guardar el departamento.";
                 }
@@ -73,6 +75,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "Por favor, complete todos los campos correctamente.";
         }
     } elseif ($accion === 'eliminar') {
-        // Lógica para eliminar el departamento
+        if ($nombre_departamento) {
+            $resultado = $repositorio->EliminarDepartamento($nombre_departamento);
+
+            header("Content-Type: application/json");
+            if ($resultado) {
+                echo json_encode(["success" => true]);
+            } else {
+                echo json_encode(["success" => false, "error" => "No se pudo eliminar el departamento"]);
+            }
+            exit();
+        }
     }
 }
