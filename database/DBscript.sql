@@ -96,7 +96,7 @@ CREATE TABLE `solicitudes` (
 CREATE TABLE `empresas` (
   `Nombre` varchar(100) NOT NULL,
   `Logo` blob DEFAULT NULL,
-  `Fondo` blob DEFAULT NULL,
+  `Fondo` blob DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -114,7 +114,7 @@ CREATE TABLE `usuarios` (
   `CorreoElectronico` varchar(100) NOT NULL,
   `Telefono` varchar(15) DEFAULT NULL,
   `TipoDeUsuario` varchar(50) NOT NULL,
-  `Empresa` int(20) NOT NULL,
+  `Empresa` varchar(100) NOT NULL,
   `Departamento` varchar(50) DEFAULT NULL,
   `clave` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -176,7 +176,7 @@ ALTER TABLE `solicitudes`
 -- Indices de la tabla `empresas`
 --
 ALTER TABLE `empresas`
-  ADD PRIMARY KEY (`Nombre`)
+  ADD PRIMARY KEY (`Nombre`);
 
 --
 -- Indices de la tabla `usuarios`
@@ -226,7 +226,7 @@ ALTER TABLE `solicitudes`
 -- Filtros para la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  ADD CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`Departamento`) REFERENCES `departamentos` (`Nombre`);
+  ADD CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`Departamento`) REFERENCES `departamentos` (`Nombre`),
   ADD CONSTRAINT `usuarios_ibfk_2` FOREIGN KEY (`Empresa`) REFERENCES `empresas` (`Nombre`);
 --
 -- Filtros para la tabla `usuarios_reuniones`
