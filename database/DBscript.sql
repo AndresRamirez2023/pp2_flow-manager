@@ -106,13 +106,6 @@ CREATE TABLE `usuarios` (
   `clave` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `usuarios`
---
-
-INSERT INTO `usuarios` (`Dni`, `Nombre`, `Apellido`, `FechaNacimiento`, `Direccion`, `CorreoElectronico`, `Telefono`, `TipoDeUsuario`, `Departamento`, `clave`) VALUES
-(12345678, 'Juan', 'Pérez', '1990-05-15', 'Calle Falsa 123', 'juan.perez@example.com', '555123456', 'Admin', NULL, '1234');
-
 -- --------------------------------------------------------
 
 --
