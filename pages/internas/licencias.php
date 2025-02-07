@@ -173,7 +173,7 @@ $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
           echo "<td>{$solicitud['FechaHoraDesde']}</td>";
           echo "<td>{$solicitud['FechaHoraHasta']}</td>";
           echo "<td>{$solicitud['Estado']}</td>";
-
+          
           // Si es RRHH, mostrar columna de acciones
           if ($isRRHH) {
             echo "<td>
@@ -190,6 +190,7 @@ $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
                     </form>
                   </td>";
           }
+          
 
           echo "</tr>";
         }

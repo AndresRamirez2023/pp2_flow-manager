@@ -60,4 +60,42 @@ class Repositorio_solicitud extends Repositorio
             return false; // En caso de error
         }
     }
+
+    public function deleteSolicitud($id_licencia, $DniSolicitante = null){
+        $sql= "DELETE FROM solicitudes WHERE id_licencia = ?" ;
+
+
+        if ($DniSolicitante){
+            $sql = "DELETE FROM solicitudes WHERE id_licencia = ? and  DniSolicitante=?";
+        }
+
+        $query= self::$conexion->prepare($sql);
+            // Si se pasa un DNI, lo enlazamos ambos parametros
+        if ($DniSolicitante) {
+            $query->bind_param("ss", $id_licencia, $DniSolicitante);
+        } else {
+            //Si no se pasa un DNI, Solo se enlaza el id_licencia
+            $query-> bind_param("s", $id_licencia);
+        }
+
+        //Ejecutamos la consulta
+
+        $query->execute();
+
+        // Comprobamos si la ejecucion fue exitosa
+
+        if($query->affected_rows > 0){
+
+            // Si funciono
+            echo "Solicitud eliminada con exito.";
+
+        } else {
+            // si no funciono (pincho)
+            echo "No se encotro ninguna solicitud para eliminar";
+        }
+
+
+
+
+    }
 }
