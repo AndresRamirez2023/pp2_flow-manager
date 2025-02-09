@@ -32,7 +32,12 @@
             <p class="text-center text-muted">
               Bienvenido al gestor de empleados<br /><b>Flow Manager</b>
             </p>
-
+            <?php
+            if (isset($_GET['mensaje'])) {
+                echo '<div id="mensaje" class="alert alert-danger text-center">
+                    <p>' . $_GET['mensaje'] . '</p></div>';
+            }
+            ?>
             <!-- Username -->
             <div class="mb-3">
               <label for="CorreoElectronico" class="form-label">Usuario</label>
@@ -69,12 +74,6 @@
               <button type="submit" class="btn btn-primary">Ingresar</button>
             </div>
           </form>
-          <?php
-            if (isset($_GET['mensaje'])) {
-                echo '<div id="mensaje" class="alert alert-primary text-center">
-                    <p>' . $_GET['mensaje'] . '</p></div>';
-            }
-            ?>
         </div>
         <div class="right-background"></div>
       </div>
