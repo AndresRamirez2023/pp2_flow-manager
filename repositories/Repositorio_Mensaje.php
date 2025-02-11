@@ -46,5 +46,86 @@ class Repositorio_Mensaje extends Repositorio_Archivo {
             }
         }
     }
+
+    public function GetAllMensajes($DniReceptor){
+
+        $sql= 'SELECT FechaHoraMensaje, TituloMensaje, DniRemitente, TipoMensaje, CuerpoMensaje FROM mensajes where DniReceptor= ?';
+        $query= self::$conexion->prepare($sql);
+
+        
+        if (!$query) {
+            throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
+        }
+            
+        $query->bind_param('s', $DniReceptor);
+        if ($query->execute()) {
+            $query->bind_result($FechaHoraMensaje, $TituloMensaje, $DniRemitente, $TipoMensaje, $CuerpoMensaje);
+
+            $mensajes=[];
+
+            while ($query->fetch()) {
+                $mensajes[]=[
+                    'FechaHoraMensaje' => $FechaHoraMensaje,
+                    'TituloMensaje' => $TituloMensaje,
+                    'DniRemitente' => $DniRemitente,
+                    'TipoMensaje' => $TipoMensaje,
+                    'CuerpoMensaje' => $CuerpoMensaje
+
+                ];
+
+            }
+        }
+
+
+        $query->close();
+        return !empty($mensajes) ? $mensajes : null;
+
+
+
+
+    }
+
+
+    public function UpdateMensajes($DniReceptor, $nuevoTitulo, $nuevoTipo, $nuevoCuerpo){
+        $sql= "UPDATE mensajes set  TituloMensaje=?, TipoMensaje=?, CuerpoMensaje=? WHERE DniReceptor=?";
+        $query=self::$conexion->prepare($sql);
+
+        if (!$query) {
+            throw new Exception("Error en la rpeparacion de la consulta: " . self::$conexion->error);
+        }
+
+        $query->bind_param('ssss', $nuevoTitulo, $nuevoTipo, $nuevoCuerpo, $DniReceptor);
+
+        if(!$query->execute()){
+            throw new Exception("Error en la ejecicion de la actualizacion: ". $query->error);
+        }
+
+        if ($query->affected_rows>0){
+            return true;
+        } else  {
+            return false;
+        }
+}
+
+public function DeleteMensajes($TituloMensaje, $DniReceptor){
+    $sql= "DELETE * FROM mensajes WHERE TituloMensaje= ? and DniReceptor=?";
+    $query=self::$conexion->prepare($sql);
+
+    if(!$query){
+        throw new Exception("Error en la rpeparacion de la consulta: " . self::$conexion->error);
+    }
+
+    $query->bind_param("ss", $TituloMensaje, $DniReceptor);
+
+    $resultado = $query->execute();
+    
+    if (!$resultado) {
+        error_log("Error al ejecutar la consulta: " . $query->error);
+        return false;
+    }
+
+    return true; // Retorna true si se eliminó correctamente
+}
+
 }
 
