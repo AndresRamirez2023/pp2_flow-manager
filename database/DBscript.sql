@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 25-11-2024 a las 14:55:27
+-- Tiempo de generación: 03-02-2025 a las 14:14:48
 -- Versión del servidor: 10.4.28-MariaDB
 -- Versión de PHP: 8.2.4
 
@@ -45,6 +45,48 @@ CREATE TABLE `departamentos` (
   `DirectorACargo` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Triggers de `departamentos`
+--
+DELIMITER $$
+CREATE TRIGGER `update_departamento_on_insert` AFTER INSERT ON `departamentos` FOR EACH ROW BEGIN
+    UPDATE usuarios
+    SET Departamento = NEW.Nombre
+    WHERE Dni = NEW.DirectorACargo;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `update_departamento_on_update` AFTER UPDATE ON `departamentos` FOR EACH ROW BEGIN
+    UPDATE usuarios
+    SET Departamento = NEW.Nombre
+    WHERE Dni = NEW.DirectorACargo;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `update_departamento_on_delete` AFTER DELETE ON `departamentos` FOR EACH ROW BEGIN
+      -- Si existe al menos uno actualiza el departamento a "nulo"
+      IF EXISTS (SELECT 1 FROM usuarios WHERE Departamento = OLD.Nombre) THEN
+        UPDATE usuarios 
+        SET Departamento = NULL
+        WHERE Departamento = OLD.Nombre;
+    END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `cambiar_departamento_despues_dni` AFTER UPDATE ON `departamentos` FOR EACH ROW BEGIN
+     IF OLD.DirectorACargo <> NEW.DirectorACargo THEN
+        -- Actualiza el departamento a "Sin Departamento"
+        UPDATE usuarios 
+        SET Departamento = 'Sin Departamento'
+        WHERE Dni = OLD.DirectorACargo;
+    END IF;
+END
+$$
+DELIMITER ;
+
 -- --------------------------------------------------------
 
 --
@@ -84,7 +126,8 @@ CREATE TABLE `solicitudes` (
   `TipoSolicitud` varchar(50) NOT NULL,
   `DniSolicitante` int(11) NOT NULL,
   `FechaHoraDesde` date NOT NULL,
-  `FechaHoraHasta` date DEFAULT NULL
+  `FechaHoraHasta` date DEFAULT NULL,
+  `Estado` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -114,10 +157,24 @@ CREATE TABLE `usuarios` (
   `CorreoElectronico` varchar(100) NOT NULL,
   `Telefono` varchar(15) DEFAULT NULL,
   `TipoDeUsuario` varchar(50) NOT NULL,
-  `Empresa` varchar(100) NOT NULL,
-  `Departamento` varchar(50) DEFAULT NULL,
+  `Departamento` varchar(255) DEFAULT NULL,
   `clave` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `super_usuario`
+--
+
+CREATE TABLE `super_usuario` (
+  `username` varchar(20) NOT NULL,
+  `password` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `usuarios` (`username`, `password`) VALUES
+('admin', 'admin')
+
 
 -- --------------------------------------------------------
 
@@ -187,6 +244,12 @@ ALTER TABLE `usuarios`
   ADD KEY `usuarios_ibfk_2` (`Empresa`);
 
 --
+-- Indices de la tabla `super_usuario`
+--
+ALTER TABLE `super_usuario`
+  ADD PRIMARY KEY (`username`);
+
+--
 -- Indices de la tabla `usuarios_reuniones`
 --
 ALTER TABLE `usuarios_reuniones`
@@ -207,7 +270,7 @@ ALTER TABLE `archivos`
 -- Filtros para la tabla `departamentos`
 --
 ALTER TABLE `departamentos`
-  ADD CONSTRAINT `departamentos_ibfk_1` FOREIGN KEY (`DirectorACargo`) REFERENCES `usuarios` (`Dni`);
+  ADD CONSTRAINT `departamentos_ibfk_1` FOREIGN KEY (`DirectorACargo`) REFERENCES `usuarios` (`Dni`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `mensajes`
