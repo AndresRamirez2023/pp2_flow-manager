@@ -157,6 +157,7 @@ CREATE TABLE `usuarios` (
   `CorreoElectronico` varchar(100) NOT NULL,
   `Telefono` varchar(15) DEFAULT NULL,
   `TipoDeUsuario` varchar(50) NOT NULL,
+  `Empresa` varchar(100) NOT NULL,
   `Departamento` varchar(255) DEFAULT NULL,
   `clave` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -172,8 +173,8 @@ CREATE TABLE `super_usuario` (
   `password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `usuarios` (`username`, `password`) VALUES
-('admin', 'admin')
+INSERT INTO `super_usuario` (`username`, `password`) VALUES
+('admin', 'admin');
 
 
 -- --------------------------------------------------------
