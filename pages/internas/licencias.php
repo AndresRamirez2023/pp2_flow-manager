@@ -1,16 +1,17 @@
 <?php
- 
 require_once '../../classes/Usuario.php';
-require_once __DIR__ . '/../../repositories/Repositorio_Solicitud.php';
+require_once __DIR__ . '../../repositories/Repositorio_Solicitud.php';
 require_once __DIR__ . '/../../controllers/Controlador_Solicitud.php';
+
 if (session_status() !== PHP_SESSION_ACTIVE) {
   session_start();
 }
 
 // Verificar si el usuario está logueado
 if (!isset($_SESSION['usuario'])) {
-  header("Location: login.php");
-  exit;
+    // Redirigir con un mensaje de error si no está logueado
+    header('Location: login.php?mensaje=Error: Debes iniciar sesión');
+    exit();
 }
 
 // Deserializar el usuario guardado en la sesión

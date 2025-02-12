@@ -27,12 +27,17 @@
     <div class="full-container">
       <div class="login-container">
         <div class="form-container">
-          <form class="login-form" action="../../controllers/Validar_login.php" method="POST">
+          <form class="login-form" action="../php/Validar_Login.php" method="POST">
             <h2 class="text-center mb-4">Nombre empresa<br />Ingreso</h2>
             <p class="text-center text-muted">
               Bienvenido al gestor de empleados<br /><b>Flow Manager</b>
             </p>
-
+            <?php
+            if (isset($_GET['mensaje'])) {
+                echo '<div id="mensaje" class="alert alert-danger text-center">
+                    <p>' . $_GET['mensaje'] . '</p></div>';
+            }
+            ?>
             <!-- Username -->
             <div class="mb-3">
               <label for="CorreoElectronico" class="form-label">Usuario</label>
@@ -48,11 +53,11 @@
 
             <!-- Password -->
             <div class="mb-3">
-              <label for="clave" class="form-label">Contraseña</label>
+              <label for="password" class="form-label">Contraseña</label>
               <input
-                type="clave"
-                id="clave"
-                name="clave"
+                type="password"
+                id="password"
+                name="password"
                 class="form-control"
                 placeholder="Ingrese la contraseña"
                 required
