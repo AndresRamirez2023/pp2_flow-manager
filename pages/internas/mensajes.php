@@ -41,7 +41,7 @@ $repositorio = new Repositorio_Mensaje();
     rel="stylesheet" />
   <!-- Bootstrap 5 CSS -->
   <link
-    href="../../bootstrap.min.css"
+    href="../../assets/dist/css/bootstrap.min.css"
     rel="stylesheet" />
 
   <!-- Bootstrap Icons CSS -->

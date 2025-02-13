@@ -11,7 +11,9 @@
     <link href="https://fonts.googleapis.com/css?family=Poppins&display=swap" rel="stylesheet">
 
     <!-- Bootstrap 5 CSS -->
-    <link href="../../bootstrap.min.css" rel="stylesheet">
+    <link
+    href="../../assets/dist/css/bootstrap.min.css"
+    rel="stylesheet" />
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../css/panel.css">

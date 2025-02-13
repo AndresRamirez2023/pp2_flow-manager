@@ -23,11 +23,13 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
     <link rel="icon" href="../img/Icon - FlowManager.png">
 
     <!-- Bootstrap 5 CSS -->
-    <link href="../../bootstrap.min.css" rel="stylesheet" />
+    <link
+    href="../../assets/dist/css/bootstrap.min.css"
+    rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
     <link rel="stylesheet" href="../css/styles.css" />
     <link rel="stylesheet" href="../css/panel.css" />
-    <link href="../../bootstrap.min.css" rel="stylesheet" />
+
 </head>
 
 <body>

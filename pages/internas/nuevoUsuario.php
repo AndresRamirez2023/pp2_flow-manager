@@ -21,7 +21,7 @@ if (isset($_SESSION['usuario'])) {
 
   <!-- Bootstrap 5 CSS -->
   <link
-    href="../../bootstrap.min.css"
+    href="../../assets/dist/css/bootstrap.min.css"
     rel="stylesheet" />
 
   <!-- Bootstrap Icons CSS -->

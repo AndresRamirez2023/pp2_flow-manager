@@ -14,9 +14,8 @@
 
     <!-- Bootstrap 5 CSS -->
     <link
-      href="../../bootstrap.min.css"
-      rel="stylesheet"
-    />
+    href="../../assets/dist/css/bootstrap.min.css"
+    rel="stylesheet" />
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../css/panel.css" />
