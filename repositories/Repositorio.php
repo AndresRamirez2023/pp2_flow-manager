@@ -17,7 +17,7 @@ abstract class Repositorio
             );
             if (self::$conexion->connect_error) {
                 $error = 'Error al conectar:' . self::$conexion->connect_error;
-                self::$conexxion = null;
+                self::$conexion = null;
                 die($error);
             }
             self::$conexion->set_charset('utf8mb4');
