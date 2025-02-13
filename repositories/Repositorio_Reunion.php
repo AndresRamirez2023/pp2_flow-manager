@@ -12,7 +12,16 @@ class Repositorio_Reunion extends Repositorio{
 
     public function create_reunion($titulo, $fecha, $horaInicio, $HoraFin, $descripcion){
 
-        $sql="INSERT INTO r.reuniones (r.Titulo, r.Fecha, r.HoraInicio, r.HoraFin, r.Descripcion)   "
+        $sql="INSERT INTO r.reuniones ( Titulo, Fecha, HoraInicio, HoraFin, Descripcion) VALUES (?,?,?,?,?)";
+        $query=self::$conexion->prepare($sql);
+
+        $query->bind_param("sssss",$titulo, $fecha, $horaInicio, $HoraFin, $descripcion);
+
+        return $query->execute();
 
     }
+
+
+
+    
 }

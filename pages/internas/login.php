@@ -39,11 +39,11 @@
             ?>
             <!-- Username -->
             <div class="mb-3">
-              <label for="CorreoElectronico" class="form-label">Usuario</label>
+              <label for="usuario" class="form-label">Usuario</label>
               <input
                 type="text"
-                id="CorreoElectronico"
-                name="CorreoElectronico"
+                id="usuario"
+                name="usuario"
                 class="form-control"
                 placeholder="Ingrese el mail del usuario"
                 required

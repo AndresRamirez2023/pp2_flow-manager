@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../.env.php';
+require_once __DIR__ . '/../.env.php'; 
 abstract class Repositorio
 {
     protected static $conexion = null;

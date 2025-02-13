@@ -5,41 +5,49 @@ require_once __DIR__ . '/../classes/Usuario.php';
 require_once 'Repositorio.php';
 
 class Repositorio_Usuario extends Repositorio
+
 {
+
     public function login($CorreoElectronico, $clave)
     {
         $q = "SELECT * FROM usuarios WHERE CorreoElectronico = ?";
         $query = self::$conexion->prepare($q);
+
+        if (!$query) {
+            throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
+        }
+    
         $query->bind_param('s', $CorreoElectronico);
 
-        if ($query->execute()) {
-            $query->bind_result($Dni, $nombre, $apellido, $CorreoElectronico, $fechaNac, $domicilio, $telefono, $tipoUsuario, $departamento, $clave_encriptada);
-
-            if ($query->fetch()) {
-                if (password_verify($clave, $clave_encriptada)) {
-                    // Crear un objeto Departamento si el valor no es "Sin Departamento" o null
-                    $departamentoObj = null;
-                    if ($departamento !== 'Sin Departamento' && $departamento !== null) {
-                        $departamentoObj = new Departamento($departamento); // Crear el objeto Departamento si es válido
-                    }
-
-                    // Crear y devolver el objeto Usuario
-                    return new Usuario(
-                        $Dni,
-                        $nombre,
-                        $apellido,
-                        $fechaNac,
-                        $domicilio,
-                        $CorreoElectronico,
-                        $telefono,
-                        $tipoUsuario,
-                        $departamentoObj,  // Pasar el objeto Departamento o null
-                        $clave
-                    );
+        $query->execute();
+        $result = $query->get_result(); // Obtiene los datos de la consulta
+        if ($row = $result->fetch_assoc()) {
+            // Verificar la contraseña
+            if (password_verify($clave, $row['Clave'])) {
+                // Si el usuario tiene un departamento válido, crea el objeto
+                $departamentoObj = null;
+                if ($row['Departamento'] !== 'Sin Departamento' && $row['Departamento'] !== null) {
+                    $departamentoObj = new Departamento($row['Departamento']);
                 }
+    
+                // Retornar un objeto Usuario con los datos obtenidos
+                return new Usuario(
+                    $row['Dni'],
+                    $row['Nombre'],
+                    $row['Apellido'],
+                    $row['FechaNac'],
+                    $row['Domicilio'],
+                    $row['CorreoElectronico'],
+                    $row['Telefono'],
+                    $row['TipoUsuario'],
+                    $departamentoObj,  // Pasa el objeto Departamento o null
+                    $clave
+                );
             }
         }
-        return false;
+    
+        $query->close(); // Cierra la consulta
+        return false; // Retorna false si el usuario no existe o la contraseña es incorrecta
     }
     public function save(Usuario $usuario, $clave)
     {

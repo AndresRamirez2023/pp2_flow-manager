@@ -1,6 +1,7 @@
 <?php
-require_once '../repositories/Repositorio_Usuario.php';
-require_once '../classes/Usuario.php';
+require_once __DIR__ . '/../repositories/Repositorio_Usuario.php';
+
+require_once __DIR__ .'/../classes/Usuario.php';
 
 class Controlador_Sesion
 {
