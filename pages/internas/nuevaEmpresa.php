@@ -1,12 +1,11 @@
 <?php
 session_start();
-$usuario = null;
-if (isset($_SESSION['usuario'])) {
-    $usuario = unserialize($_SESSION['usuario']);
-} else {
-    // Redirige al login si no está iniciada la sesión
-    // header('Location: ../../index.php');
+
+if (!isset($_SESSION['super_user'])) {
+    header('Location: loginInterno.php');
+    exit();
 }
+$superUser = unserialize($_SESSION['super_user']);
 
 // Control de estado de creación
 $empresaCreada = isset($_SESSION['empresaCreada']) ? $_SESSION['empresaCreada'] : false;
@@ -24,8 +23,8 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
 
     <!-- Bootstrap 5 CSS -->
     <link
-    href="../../assets/dist/css/bootstrap.min.css"
-    rel="stylesheet" />
+        href="../../assets/dist/css/bootstrap.min.css"
+        rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
     <link rel="stylesheet" href="../css/styles.css" />
     <link rel="stylesheet" href="../css/panel.css" />
@@ -38,7 +37,7 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container-fluid">
                 <!-- Logo de la empresa cliente -->
-                <a class="navbar-brand" href="panelPrincipal.php">
+                <a class="navbar-brand" href="nuevaEmpresa.php">
                     <img id="logo" src="../img/Logo - FlowManager.svg" alt="Logo Empresa" />
                 </a>
 
@@ -52,10 +51,7 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
 
                         <!-- Menú desplegable -->
                         <div class="dropdown-menu" id="profileDropdown">
-                            <a href="perfil.php" class="dropdown-item">
-                                <i class="bi bi-person-fill"></i> Perfil
-                            </a>
-                            <a href="login.php" class="dropdown-item">
+                            <a href="logoutInterno.php" class="dropdown-item">
                                 <i class="bi bi-box-arrow-right"></i> Cerrar sesión
                             </a>
                         </div>
@@ -163,7 +159,7 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
                         <div class="alert alert-info mt-3">
                             <?php echo $mensaje; ?>
                         </div>
-                        <?php
+                    <?php
                         unset($_SESSION['mensaje']);
                     endif; ?>
                 </div>

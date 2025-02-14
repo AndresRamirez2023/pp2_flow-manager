@@ -174,7 +174,7 @@ CREATE TABLE `super_usuario` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO `super_usuario` (`username`, `password`) VALUES
-('admin', 'admin');
+('admin', '$2y$10$9OBk3EmUy2wOxqMPXNRARe2iG1cuyu2qY1PwWtiDbtsio99PoRMUW');
 
 
 -- --------------------------------------------------------
