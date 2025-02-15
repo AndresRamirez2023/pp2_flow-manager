@@ -5,18 +5,26 @@ require_once __DIR__ . '/../classes/Usuario.php';
 require_once 'Repositorio.php';
 
 class Repositorio_Usuario extends Repositorio
-
 {
+
+    public function __construct()
+    {
+        parent::__construct();
+    }
 
     public function login($CorreoElectronico, $clave)
     {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
         $q = "SELECT * FROM usuarios WHERE CorreoElectronico = ?";
         $query = self::$conexion->prepare($q);
 
         if (!$query) {
             throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
         }
-    
+
         $query->bind_param('s', $CorreoElectronico);
 
         $query->execute();
@@ -29,7 +37,7 @@ class Repositorio_Usuario extends Repositorio
                 if ($row['Departamento'] !== 'Sin Departamento' && $row['Departamento'] !== null) {
                     $departamentoObj = new Departamento($row['Departamento']);
                 }
-    
+
                 // Retornar un objeto Usuario con los datos obtenidos
                 return new Usuario(
                     $row['Dni'],
@@ -45,12 +53,16 @@ class Repositorio_Usuario extends Repositorio
                 );
             }
         }
-    
+
         $query->close(); // Cierra la consulta
         return false; // Retorna false si el usuario no existe o la contraseña es incorrecta
     }
     public function save(Usuario $usuario, $clave)
     {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
         // Obtener los datos del objeto $usuario
         $Dni = $usuario->getDni();
         $Nombre = $usuario->getNombre();
@@ -156,33 +168,49 @@ class Repositorio_Usuario extends Repositorio
         }
     }
     private function existsByDNI($Dni)
-{
-    $q = "SELECT COUNT(*) FROM usuarios WHERE Dni = ?";
-    $stmt = self::$conexion->prepare($q);
-    $stmt->bind_param("s", $Dni);
-    $stmt->execute();
-    $stmt->bind_result($count);
-    $stmt->fetch();
-    return $count > 0;
-}
+    {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
 
-/**
- * Verificar si el correo electrónico ya existe
- */
-private function existsByEmail($CorreoElectronico)
-{
-    $q = "SELECT COUNT(*) FROM usuarios WHERE CorreoElectronico = ?";
-    $stmt = self::$conexion->prepare($q);
-    $stmt->bind_param("s", $CorreoElectronico);
-    $stmt->execute();
-    $stmt->bind_result($count);
-    $stmt->fetch();
-    return $count > 0;
-}
+        $count = null;
+
+        $q = "SELECT COUNT(*) FROM usuarios WHERE Dni = ?";
+        $stmt = self::$conexion->prepare($q);
+        $stmt->bind_param("s", $Dni);
+        $stmt->execute();
+        $stmt->bind_result($count);
+        $stmt->fetch();
+        return $count > 0;
+    }
+
+    /**
+     * Verificar si el correo electrónico ya existe
+     */
+    private function existsByEmail($CorreoElectronico)
+    {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
+        $count = null;
+
+        $q = "SELECT COUNT(*) FROM usuarios WHERE CorreoElectronico = ?";
+        $stmt = self::$conexion->prepare($q);
+        $stmt->bind_param("s", $CorreoElectronico);
+        $stmt->execute();
+        $stmt->bind_result($count);
+        $stmt->fetch();
+        return $count > 0;
+    }
 
 
     public function update(Usuario $usuario, $clave = null)
     {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
         // Definir la consulta base
         $q = "UPDATE usuarios 
               SET Nombre = ?, 
@@ -257,6 +285,12 @@ private function existsByEmail($CorreoElectronico)
 
     public function obtenerTipoDeUsuario($Dni)
     {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
+        $tipoUsuario = null;
+
         $q = "SELECT TipoDeUsuario FROM usuarios WHERE Dni = ?";
         $query = self::$conexion->prepare($q);
 

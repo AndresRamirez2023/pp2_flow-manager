@@ -9,11 +9,12 @@ require_once 'Repositorio_Mensaje.php';
 
 class Repositorio_Archivo extends Repositorio
 {
-    // Constructor para inicializar la conexión
-
-
     public function guardarArchivo($nombreArchivo, $fechaCreacion, $contenidoArchivo, $dniCreador)
     {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
         // Consulta para insertar archivo binario en la base de datos
         $sql = "INSERT INTO archivos (nombre, FechaCreacion, Contenido, DniCreador) VALUES (?, ?, ?, ?)";
 
@@ -36,6 +37,10 @@ class Repositorio_Archivo extends Repositorio
 
     public function GetAllArchivos($dniCreador = null)
     {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
         if ($dniCreador !== null) {
             $sql = "SELECT * FROM archivos WHERE DniCreador= ?";
             $query = self::$conexion->prepare($sql);
@@ -70,6 +75,10 @@ class Repositorio_Archivo extends Repositorio
 
     public function UpdateArchivo($Contenido, $dniCreador)
     {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
         $sql = "UPDATE archivos set Contenido= ? WHERE DniCreador= ?";
         $query = self::$conexion->prepare($sql);
 
@@ -95,23 +104,27 @@ class Repositorio_Archivo extends Repositorio
     }
 
 
-    public function DeleteArchivo($nombreArchivo, $dniCreador){
+    public function DeleteArchivo($nombreArchivo, $dniCreador)
+    {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
 
-        $sql= "DELETE FROM archivos where Nombre= ? and DniCreador= ?";
-        $query=self::$conexion->prepare($sql);
+        $sql = "DELETE FROM archivos where Nombre= ? and DniCreador= ?";
+        $query = self::$conexion->prepare($sql);
 
-        if(!$query){
-            throw new Exception("Error en la preparacion de la consulta: " .self::$conexion->error);
+        if (!$query) {
+            throw new Exception("Error en la preparacion de la consulta: " . self::$conexion->error);
         }
 
 
         $query->bind_param('ss', $nombreArchivo, $dniCreador);
 
-        if(!$query->execute()){
-            throw new Exception("Error en la ejecución de la consulta: " .self::$conexion->error);
+        if (!$query->execute()) {
+            throw new Exception("Error en la ejecución de la consulta: " . self::$conexion->error);
         }
 
-        if ($query->affected_rows=== 0){
+        if ($query->affected_rows === 0) {
             $query->close();
             return false; //no se elimino ninguna fila
         }

@@ -1,13 +1,18 @@
 <?php
- require_once __DIR__ . './../.env.php';
+require_once __DIR__ . './../.env.php';
 require_once __DIR__ . '/../classes/config.php';
 // Incluir clases necesarias
 require_once __DIR__ . '/../classes/Usuario.php';
 require_once 'Repositorio.php';
 class Repositorio_solicitud extends Repositorio
 {
+
     public function guardarSolicitud($TipoSolicitud, $DniSolicitante, $FechaHoraDesde, $FechaHoraHasta)
     {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
         $Estado = "pendiente"; // Valor predeterminado para el estado
         $sql = "INSERT INTO solicitudes (TipoSolicitud, DniSolicitante, FechaHoraDesde, FechaHoraHasta, Estado) 
                 VALUES (?, ?, ?, ?, ?)";
@@ -19,6 +24,9 @@ class Repositorio_solicitud extends Repositorio
 
     public function updateSolicitud($Estado, $DniSolicitante, $id_licencia)
     {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
 
         // Preparar la consulta SQL
         $sql = "UPDATE solicitudes
@@ -35,6 +43,10 @@ class Repositorio_solicitud extends Repositorio
     }
     public function mostrarSolicitud($DniSolicitante = null)
     {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
         $sql = "SELECT TipoSolicitud, DniSolicitante, FechaHoraDesde, FechaHoraHasta, Estado, id_licencia
                 FROM solicitudes";
 
@@ -62,21 +74,26 @@ class Repositorio_solicitud extends Repositorio
         }
     }
 
-    public function deleteSolicitud($id_licencia, $DniSolicitante = null){
-        $sql= "DELETE FROM solicitudes WHERE id_licencia = ?" ;
+    public function deleteSolicitud($id_licencia, $DniSolicitante = null)
+    {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
+        $sql = "DELETE FROM solicitudes WHERE id_licencia = ?";
 
 
-        if ($DniSolicitante){
+        if ($DniSolicitante) {
             $sql = "DELETE FROM solicitudes WHERE id_licencia = ? and  DniSolicitante=?";
         }
 
-        $query= self::$conexion->prepare($sql);
-            // Si se pasa un DNI, lo enlazamos ambos parametros
+        $query = self::$conexion->prepare($sql);
+        // Si se pasa un DNI, lo enlazamos ambos parametros
         if ($DniSolicitante) {
             $query->bind_param("ss", $id_licencia, $DniSolicitante);
         } else {
             //Si no se pasa un DNI, Solo se enlaza el id_licencia
-            $query-> bind_param("s", $id_licencia);
+            $query->bind_param("s", $id_licencia);
         }
 
         //Ejecutamos la consulta
@@ -85,18 +102,13 @@ class Repositorio_solicitud extends Repositorio
 
         // Comprobamos si la ejecucion fue exitosa
 
-        if($query->affected_rows > 0){
+        if ($query->affected_rows > 0) {
 
             // Si funciono
             echo "Solicitud eliminada con exito.";
-
         } else {
             // si no funciono (pincho)
             echo "No se encotro ninguna solicitud para eliminar";
         }
-
-
-
-
     }
 }

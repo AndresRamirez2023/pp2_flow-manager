@@ -8,6 +8,10 @@ class Repositorio_Super_Usuario extends Repositorio
 {
     public function login($username, $password)
     {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
         $q = "SELECT * FROM super_usuario WHERE username = ?";
         $query = self::$conexion->prepare($q);
 
@@ -16,6 +20,8 @@ class Repositorio_Super_Usuario extends Repositorio
         }
 
         $query->bind_param('s', $username);
+
+        $password_hash = '';
 
         if ($query->execute()) {
             $query->bind_result($username, $password_hash);

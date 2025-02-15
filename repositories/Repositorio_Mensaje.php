@@ -9,9 +9,14 @@ require_once __DIR__ . '/../classes/Usuario.php';
 require_once __DIR__ . '/../classes/Solicitud.php';
 
 
-class Repositorio_Mensaje extends Repositorio_Archivo {
+class Repositorio_Mensaje extends Repositorio_Archivo
+{
 
-    public function redactar_mensaje($FechaHoraMensaje, $TituloMensaje, $DniRemitente, $TipoMensaje, $CuerpoMensaje, $DniReceptor, $archivo = null) {
+    public function redactar_mensaje($FechaHoraMensaje, $TituloMensaje, $DniRemitente, $TipoMensaje, $CuerpoMensaje, $DniReceptor, $archivo = null)
+    {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
 
         $sql_dni = "SELECT Dni from usuarios where Dni=?";
         $query_dni = self::$conexion->prepare($sql_dni);
@@ -37,7 +42,7 @@ class Repositorio_Mensaje extends Repositorio_Archivo {
                     $nombreArchivo = $archivo['name'];
                     $fechaCreacion = date("Y-m-d H:i:s"); // Fecha actual
                     $dniCreador = $DniRemitente; // DNI del creador del mensaje
-    
+
                     // Invocar la función para guardar el archivo
                     $this->guardarArchivo($nombreArchivo, $fechaCreacion, $contenidoArchivo, $dniCreador);
                 } else {
@@ -47,24 +52,34 @@ class Repositorio_Mensaje extends Repositorio_Archivo {
         }
     }
 
-    public function GetAllMensajes($DniReceptor){
+    public function GetAllMensajes($DniReceptor)
+    {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
 
-        $sql= 'SELECT FechaHoraMensaje, TituloMensaje, DniRemitente, TipoMensaje, CuerpoMensaje FROM mensajes where DniReceptor= ?';
-        $query= self::$conexion->prepare($sql);
+        $FechaHoraMensaje = null;
+        $TituloMensaje = null;
+        $DniRemitente = null;
+        $TipoMensaje = null;
+        $CuerpoMensaje = null;
 
-        
+        $sql = 'SELECT FechaHoraMensaje, TituloMensaje, DniRemitente, TipoMensaje, CuerpoMensaje FROM mensajes where DniReceptor= ?';
+        $query = self::$conexion->prepare($sql);
+
+
         if (!$query) {
             throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
         }
-            
+
         $query->bind_param('s', $DniReceptor);
         if ($query->execute()) {
             $query->bind_result($FechaHoraMensaje, $TituloMensaje, $DniRemitente, $TipoMensaje, $CuerpoMensaje);
 
-            $mensajes=[];
+            $mensajes = [];
 
             while ($query->fetch()) {
-                $mensajes[]=[
+                $mensajes[] = [
                     'FechaHoraMensaje' => $FechaHoraMensaje,
                     'TituloMensaje' => $TituloMensaje,
                     'DniRemitente' => $DniRemitente,
@@ -72,23 +87,23 @@ class Repositorio_Mensaje extends Repositorio_Archivo {
                     'CuerpoMensaje' => $CuerpoMensaje
 
                 ];
-
             }
         }
 
 
         $query->close();
         return !empty($mensajes) ? $mensajes : null;
-
-
-
-
     }
 
 
-    public function UpdateMensajes($DniReceptor, $nuevoTitulo, $nuevoTipo, $nuevoCuerpo){
-        $sql= "UPDATE mensajes set  TituloMensaje=?, TipoMensaje=?, CuerpoMensaje=? WHERE DniReceptor=?";
-        $query=self::$conexion->prepare($sql);
+    public function UpdateMensajes($DniReceptor, $nuevoTitulo, $nuevoTipo, $nuevoCuerpo)
+    {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
+        $sql = "UPDATE mensajes set  TituloMensaje=?, TipoMensaje=?, CuerpoMensaje=? WHERE DniReceptor=?";
+        $query = self::$conexion->prepare($sql);
 
         if (!$query) {
             throw new Exception("Error en la rpeparacion de la consulta: " . self::$conexion->error);
@@ -96,36 +111,39 @@ class Repositorio_Mensaje extends Repositorio_Archivo {
 
         $query->bind_param('ssss', $nuevoTitulo, $nuevoTipo, $nuevoCuerpo, $DniReceptor);
 
-        if(!$query->execute()){
-            throw new Exception("Error en la ejecicion de la actualizacion: ". $query->error);
+        if (!$query->execute()) {
+            throw new Exception("Error en la ejecicion de la actualizacion: " . $query->error);
         }
 
-        if ($query->affected_rows>0){
+        if ($query->affected_rows > 0) {
             return true;
-        } else  {
+        } else {
             return false;
         }
-}
-
-public function DeleteMensajes($TituloMensaje, $DniReceptor){
-    $sql= "DELETE * FROM mensajes WHERE TituloMensaje= ? and DniReceptor=?";
-    $query=self::$conexion->prepare($sql);
-
-    if(!$query){
-        throw new Exception("Error en la rpeparacion de la consulta: " . self::$conexion->error);
     }
 
-    $query->bind_param("ss", $TituloMensaje, $DniReceptor);
+    public function DeleteMensajes($TituloMensaje, $DniReceptor)
+    {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
 
-    $resultado = $query->execute();
-    
-    if (!$resultado) {
-        error_log("Error al ejecutar la consulta: " . $query->error);
-        return false;
+        $sql = "DELETE * FROM mensajes WHERE TituloMensaje= ? and DniReceptor=?";
+        $query = self::$conexion->prepare($sql);
+
+        if (!$query) {
+            throw new Exception("Error en la rpeparacion de la consulta: " . self::$conexion->error);
+        }
+
+        $query->bind_param("ss", $TituloMensaje, $DniReceptor);
+
+        $resultado = $query->execute();
+
+        if (!$resultado) {
+            error_log("Error al ejecutar la consulta: " . $query->error);
+            return false;
+        }
+
+        return true; // Retorna true si se eliminó correctamente
     }
-
-    return true; // Retorna true si se eliminó correctamente
 }
-
-}
-
