@@ -48,8 +48,7 @@ class Repositorio_Usuario extends Repositorio
                     $row['CorreoElectronico'],
                     $row['Telefono'],
                     $row['TipoUsuario'],
-                    $departamentoObj,  // Pasa el objeto Departamento o null
-                    $clave
+                    $departamentoObj  // Pasa el objeto Departamento o null
                 );
             }
         }

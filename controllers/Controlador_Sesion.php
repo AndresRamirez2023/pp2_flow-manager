@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../repositories/Repositorio_Usuario.php';
 require_once __DIR__ . '/../repositories/Repositorio_Super_Usuario.php';
-require_once __DIR__ .'/../classes/Usuario.php';
+require_once __DIR__ . '/../classes/Usuario.php';
 
 class Controlador_Sesion
 {
@@ -27,7 +27,8 @@ class Controlador_Sesion
 		}
 	}
 
-	public function loginInterno($username, $password){
+	public function loginInterno($username, $password)
+	{
 		$r = new Repositorio_Super_Usuario();
 		$super_usuario = $r->login($username, $password);
 
@@ -41,5 +42,4 @@ class Controlador_Sesion
 			return [true, "Ingreso correcto"];
 		}
 	}
-
 }

@@ -1,44 +1,41 @@
 <?php
-require_once '../classes/Usuario.php'; // Clase Usuario
-require_once '../repositories/Repositorio_Usuario.php'; // Repositorio
+class Controlador_Usuario
+{
+    protected $ru;
 
-$dni = trim($_POST['dni']); // Eliminar espacios adicionales
-$email = trim($_POST['email']); // Eliminar espacios adicionales
+    public function __construct()
+    {
+        $this->ru = new Repositorio_Usuario();
+    }
 
-// Validar que el DNI sea exactamente de 8 caracteres y numérico
-if (!preg_match('/^\d{8}$/', $dni)) {
-    die("DNI no válido. Debe contener exactamente 8 dígitos.");
+    public function get_all() {}
+
+    public function get_by_dni($nombre) {}
+
+    public function login($CorreoElectronico, $clave)
+    {
+        $this->ru->login($CorreoElectronico, $clave);
+    }
+
+    public function create(Usuario $usuario, $nombreApellido, $clave)
+    {
+        // Validar que el DNI sea exactamente de 8 caracteres y numérico
+        if (!preg_match('/^\d{8}$/', $usuario->getDni())) {
+            die("DNI no válido. Debe contener exactamente 8 dígitos.");
+        }
+
+        // Separar nombre y apellido
+        $nombreApellidoArray = explode(" ", $nombreApellido, 2);
+        $nombre = $nombreApellidoArray[0];
+        $apellido = isset($nombreApellidoArray[1]) ? $nombreApellidoArray[1] : "";
+
+        $usuario->setNombre($nombre);
+        $usuario->setApellido($apellido);
+
+        return $this->ru->save($usuario, $clave);
+    }
+
+    public function update(Usuario $usuario) {}
+
+    public function delete(Usuario $usuario) {}
 }
-
-
-// Instancia del repositorio
-$usuarioRepo = new Repositorio_Usuario();
-
-// Continuar con el proceso de creación del usuario si el DNI es válido
-$nombreApellido = $_POST['nombreApellido'];
-$domicilio = $_POST['domicilio'];
-$telefono = $_POST['telefono'];
-$email = $_POST['email'];
-$fechaNacimiento = $_POST['fechaNacimiento'];
-$TipoDeUsuario = $_POST['TipoDeUsuario'];
-$departamento = $_POST['departamento'];
-$clave = $_POST['clave']; // La contraseña
-
-// Separar nombre y apellido
-list($nombre, $apellido) = explode(' ', $nombreApellido, 2);
-
-// Crear instancia de Usuario
-$departamentoObj = empty($departamento) ? null : new Departamento($departamento);
-$usuario = new Usuario($dni, $nombre, $apellido, $fechaNacimiento, $domicilio, $email, $telefono, $TipoDeUsuario, $departamentoObj, $clave);
-
-// Guardar en la base de datos
-$usuarioRepo = new Repositorio_Usuario();
-$resultado = $usuarioRepo->save($usuario, $clave);
-
-if ($resultado) {
-    echo "Usuario agregado correctamente.";
-} else {
-    echo "Error al agregar el usuario.";
-}
-
-?>

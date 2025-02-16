@@ -3,7 +3,7 @@ require_once 'Departamento.php';
 
 class Usuario
 {
-        
+
     // DNI (Clave primaria)
     protected $Dni;
     // Nombre
@@ -22,8 +22,6 @@ class Usuario
     protected $tipoUsuario; // TODO: Usar Enums para definir tipos
     // Nombre del departamento al que pertenece
     protected $departamento; // TODO: Ser un objeto de tipo Departamento
-    // Clave de usuario (almacenada como hash)
-    protected $clave;
 
     public function __construct(
         $Dni,
@@ -34,8 +32,7 @@ class Usuario
         $CorreoElectronico,
         $telefono,
         $tipoUsuario,
-        ?Departamento $departamento,
-        $clave
+        ?Departamento $departamento
     ) {
         $this->Dni = $Dni;
         $this->nombre = $nombre;
@@ -46,7 +43,6 @@ class Usuario
         $this->CorreoElectronico = $CorreoElectronico;
         $this->tipoUsuario = $tipoUsuario;
         $this->departamento = $departamento;
-        $this->clave = password_hash($clave, PASSWORD_DEFAULT); // Guardar clave como hash
     }
 
     // Getters
@@ -96,24 +92,6 @@ class Usuario
         return $this->departamento ? $this->departamento->getNombre() : 'Sin Departamento';
     }
 
-    public function getClave()
-    {
-        return $this->clave;
-    }
-
-    // Métodos para manejar la clave
-    public function setClave($nuevaClave)
-    {
-        $this->clave = password_hash($nuevaClave, PASSWORD_DEFAULT); // Actualizar la clave como hash
-    }
-
-    public function validarClave($claveIngresada)
-    {
-        return password_verify($claveIngresada, $this->clave); // Verificar clave ingresada con el hash
-    }
-
-    
-
     // Validar si el usuario puede solicitar días
     public function puedeSolicitarDias()
     {
@@ -121,19 +99,19 @@ class Usuario
     }
 
     public function esRRHH()
-{
-    return strtolower($this->tipoUsuario) === 'rrhh'; // Validar si el tipo de usuario es 'rrhh'
-}
+    {
+        return strtolower($this->tipoUsuario) === 'rrhh'; // Validar si el tipo de usuario es 'rrhh'
+    }
 
-public function esEmpleado()
-{
-    return strtolower($this->tipoUsuario) === 'empleado'; // Validar si el tipo de usuario es 'rrhh'
-}
+    public function esEmpleado()
+    {
+        return strtolower($this->tipoUsuario) === 'empleado'; // Validar si el tipo de usuario es 'rrhh'
+    }
 
-public function esDirectivo()
-{
-    return strtolower($this->tipoUsuario) === 'directivo'; // Validar si el tipo de usuario es 'director'
-}
+    public function esDirectivo()
+    {
+        return strtolower($this->tipoUsuario) === 'directivo'; // Validar si el tipo de usuario es 'director'
+    }
 
     // SETTERS
     public function setNombre($nombre)
