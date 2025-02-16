@@ -1,11 +1,92 @@
 <?php
+require_once '../../controllers/Controlador_Empresa.php';
+require_once '../../classes/Empresa.php';
+// require_once '../../controllers/controlador_usuario.php';
+
 session_start();
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' && !isset($_SESSION['mensaje_mostrado'])) {
+    unset($_SESSION['empresaCreada']);
+    unset($_SESSION['nombreEmpresa']);
+    $_SESSION['mensaje_mostrado'] = true;
+}
 
 if (!isset($_SESSION['super_user'])) {
     header('Location: loginInterno.php');
     exit();
 }
 $superUser = unserialize($_SESSION['super_user']);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'crearEmpresa') {
+    $ce = new Controlador_Empresa();
+    $nombreEmpresa = trim($_POST['nombreEmpresa']);
+
+    // Validar si la empresa ya existe
+    if ($ce->get_by_name($nombreEmpresa) !== null) {
+        $_SESSION['mensaje'] = "La empresa ya existe en el sistema.";
+        $_SESSION['mensaje_tipo'] = "danger";
+        header('Location: nuevaEmpresa.php');
+        exit();
+    }
+
+    // Procesar archivos
+    $nombreEmpresaLimpio = preg_replace('/[^A-Za-z0-9_-]/', '_', $nombreEmpresa);
+    $directorioBase = "../../uploads/$nombreEmpresaLimpio/";
+    $directorioImagenes = $directorioBase . "images/";
+    $directorioArchivos = $directorioBase . "files/";
+
+    // Crear directorios si no existen
+    if (!file_exists($directorioImagenes)) {
+        mkdir($directorioImagenes, 0777, true);
+    }
+    if (!file_exists($directorioArchivos)) {
+        mkdir($directorioArchivos, 0777, true);
+    }
+
+    // Función para obtener la extensión del archivo
+    function obtenerExtension($nombreArchivo)
+    {
+        return strtolower(pathinfo($nombreArchivo, PATHINFO_EXTENSION));
+    }
+
+    // Guardar imágenes
+    $logoPath = null;
+    if (!empty($_FILES['logoEmpresa']['name'])) {
+        $extensionLogo = obtenerExtension($_FILES['logoEmpresa']['name']);
+        $logoPath = $directorioImagenes . "logo." . $extensionLogo;
+        move_uploaded_file($_FILES['logoEmpresa']['tmp_name'], $logoPath);
+    }
+
+    $fondoPath = null;
+    if (!empty($_FILES['fondoEmpresa']['name'])) {
+        $extensionFondo = obtenerExtension($_FILES['fondoEmpresa']['name']);
+        $fondoPath = $directorioImagenes . "fondo." . $extensionFondo;
+        move_uploaded_file($_FILES['fondoEmpresa']['tmp_name'], $fondoPath);
+    }
+
+    // Crear empresa
+    $empresa = new Empresa($nombreEmpresa, $fondoPath, $logoPath);
+    $result = $ce->create($empresa);
+
+    if ($result) {
+        $_SESSION['empresaCreada'] = true;
+        $_SESSION['nombreEmpresa'] = $nombreEmpresa;
+        $_SESSION['mensaje'] = "Empresa creada correctamente.";
+        $_SESSION['mensaje_tipo'] = "info";
+    } else {
+        $_SESSION['mensaje'] = "Error al crear la empresa.";
+        $_SESSION['mensaje_tipo'] = "danger";
+    }
+    header('Location: nuevaEmpresa.php');
+    exit();
+} elseif (isset($_POST['accion']) && $_POST['accion'] === 'crearUsuario') {
+    if (!isset($_SESSION['empresaCreada']) || !$_SESSION['empresaCreada']) {
+        $_SESSION['mensaje'] = "Debe crear una empresa antes de registrar un usuario.";
+        $_SESSION['mensaje_tipo'] = "danger";
+        header('Location: nuevaEmpresa.php');
+        exit();
+    }
+}
 
 // Control de estado de creación
 $empresaCreada = isset($_SESSION['empresaCreada']) ? $_SESSION['empresaCreada'] : false;
@@ -18,7 +99,7 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Creación de Empresa &#65381; Flow Manager</title>
+    <title>Agregar Empresa &#65381; Flow Manager</title>
     <link rel="icon" href="../img/Icon - FlowManager.png">
 
     <!-- Bootstrap 5 CSS -->
@@ -67,7 +148,19 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
                 <!-- Formulario Empresa y Usuario -->
                 <div class="container my-4 bg-white rounded shadow-sm px-5">
                     <h1>Administrador de Empresas</h1>
-                    <form id="empresa-usuario-form" class="mt-4" action="../php/guardar_datos.php" method="POST"
+
+                    <?php if (isset($_SESSION['mensaje'])): ?>
+                        <div class="alert alert-<?php echo $_SESSION['mensaje_tipo']; ?> mt-3">
+                            <?php echo $_SESSION['mensaje']; ?>
+                        </div>
+                        <?php
+                        unset($_SESSION['mensaje']);
+                        unset($_SESSION['mensaje_tipo']);
+                        unset($_SESSION['mensaje_mostrado']);
+                        ?>
+                    <?php endif; ?>
+
+                    <form id="empresa-usuario-form" class="mt-4" action="nuevaEmpresa.php" method="POST"
                         enctype="multipart/form-data">
                         <h2>Datos de nueva empresa</h2>
                         <div class="mb-3">
@@ -154,14 +247,6 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
                             </div>
                         </div>
                     </form>
-
-                    <?php if ($mensaje): ?>
-                        <div class="alert alert-info mt-3">
-                            <?php echo $mensaje; ?>
-                        </div>
-                    <?php
-                        unset($_SESSION['mensaje']);
-                    endif; ?>
                 </div>
         </div>
         </main>

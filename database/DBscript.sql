@@ -138,8 +138,11 @@ CREATE TABLE `solicitudes` (
 
 CREATE TABLE `empresas` (
   `Nombre` varchar(100) NOT NULL,
-  `Logo` blob DEFAULT NULL,
-  `Fondo` blob DEFAULT NULL
+  `Logo` varchar(255) DEFAULT NULL,
+  `Fondo` varchar(255) DEFAULT NULL,
+  `ArchivoInicio1` varchar(255) DEFAULT NULL,
+  `ArchivoInicio2` varchar(255) DEFAULT NULL,
+  `DniPrincipal` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
