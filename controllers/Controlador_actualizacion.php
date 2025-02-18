@@ -4,55 +4,62 @@ require_once '../classes/Usuario.php';
 
 session_start();
 
-// Verificar si el usuario está autenticado
-if (!isset($_SESSION['usuario'])) {
-    // Redirigir al login
-    header('Location: ../../index.php');
-    exit;
+class Controlador_Actualizacion {
+    private $repositorio;
+    
+    public function __construct() {
+        $this->repositorio = new Repositorio_Usuario();
+    }
+    
+    public function verificarAutenticacion() {
+        if (!isset($_SESSION['usuario'])) {
+            header('Location: ../../index.php');
+            exit;
+        }
+    }
+    
+    public function actualizarUsuario($datos) {
+        // Obtener usuario actual de la sesión
+        $usuario = unserialize($_SESSION['usuario']);
+        
+        // Separar nombre y apellido
+        $partes = explode(' ', trim($datos['nombreApellido']), 2);
+        $nombre = $partes[0];
+        $apellido = isset($partes[1]) ? $partes[1] : '';
+
+        // Actualizar datos del usuario
+        $usuario->setNombre($nombre);
+        $usuario->setApellido($apellido);
+        $usuario->setFechaNac($datos['fechaNacimiento']);
+        $usuario->setDomicilio($datos['Direccion']);
+        $usuario->setTelefono($datos['telefono']);
+        $usuario->setCorreoElectronico($datos['CorreoElectronico']);
+        $usuario->setTipoUsuario($datos['tipoUsuario']);
+        
+        // Actualizar clave si se proporciona
+        if (!empty($datos['clave'])) {
+            $usuario->setClave(password_hash($datos['clave'], PASSWORD_DEFAULT));
+        }
+        
+        return $this->repositorio->update($usuario);
+    }
+    
+    public function procesarActualizacion() {
+        $this->verificarAutenticacion();
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if ($this->actualizarUsuario($_POST)) {
+                $_SESSION['usuario'] = serialize($this->repositorio->findById($_POST['id'])); // Obtener datos actualizados
+                header('Location: ../pages/internas/perfil.php');
+                exit;
+            } else {
+                echo "Error al actualizar los datos.";
+            }
+        }
+    }
 }
 
-$repositorio = new Repositorio_Usuario();
-
-// Obtener datos del formulario
-$nombreApellido = $_POST['nombreApellido'];
-$domicilio = $_POST['Direccion'];
-$telefono = $_POST['telefono'];
-$CorreoElectronico = $_POST['CorreoElectronico'];
-$fechaNacimiento = $_POST['fechaNacimiento'];
-$TipoDeUsuario = $_POST['tipoUsuario'];
-$clave = isset($_POST['clave']) ? $_POST['clave'] : null; // Clave (puede ser opcional)
-
-// Obtener el usuario actual de la sesión
-$usuario = unserialize($_SESSION['usuario']);
-
-// Separar nombre y apellido (asumiendo formato "Nombre Apellido")
-$partes = explode(' ', $nombreApellido);
-$nombre = $partes[0];
-$apellido = isset($partes[1]) ? $partes[1] : '';
-
-// Actualizar datos en el objeto usuario
-$usuario->setNombre($nombre);
-$usuario->setApellido($apellido);
-$usuario->setFechaNac($fechaNacimiento);
-$usuario->setDomicilio($domicilio);
-$usuario->setTelefono($telefono);
-$usuario->setCorreoElectronico($CorreoElectronico);
-$usuario->setTipoUsuario($TipoDeUsuario);
-
-// Verificar si se debe actualizar la clave
-if (!empty($clave)) {
-    $usuario->setClave(password_hash($clave, PASSWORD_DEFAULT)); // Encriptar y actualizar la clave
-}
-
-// Actualizar en la base de datos
-if ($repositorio->update($usuario)) {
-    echo "Datos actualizados correctamente.";
-    // Actualizar usuario en la sesión
-    $_SESSION['usuario'] = serialize($usuario);
-    // Redirigir a la página de perfil
-    header('Location: ../pages/internas/perfil.php');
-    exit;
-} else {
-    echo "Error al actualizar los datos.";
-}
+// Instancia y ejecución
+$controlador = new Controlador_Actualizacion();
+$controlador->procesarActualizacion();
 ?>

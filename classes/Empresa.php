@@ -1,4 +1,7 @@
 <?php
+
+require_once 'Usuario.php';
+
 class Empresa
 {
     protected $Nombre;

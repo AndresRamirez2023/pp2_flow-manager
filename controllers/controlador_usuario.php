@@ -1,44 +1,51 @@
 <?php
 require_once '../classes/Usuario.php'; // Clase Usuario
 require_once '../repositories/Repositorio_Usuario.php'; // Repositorio
+require_once '../classes/Departamento.php'; // Clase Departamento (si aplica)
+require_once '../classes/Empresa.php';
 
-$dni = trim($_POST['dni']); // Eliminar espacios adicionales
-$email = trim($_POST['email']); // Eliminar espacios adicionales
+class Controlador_Usuario {
+    private $usuarioRepo;
 
-// Validar que el DNI sea exactamente de 8 caracteres y numérico
-if (!preg_match('/^\d{8}$/', $dni)) {
-    die("DNI no válido. Debe contener exactamente 8 dígitos.");
+    public function __construct() {
+        $this->usuarioRepo = new Repositorio_Usuario();
+    }
+
+    public function crearUsuario($datos) {
+        $dni = trim($datos['dni']);
+        $email = trim($datos['email']);
+
+        if (!$this->validarDNI($dni)) {
+            die("DNI no válido. Debe contener exactamente 8 dígitos.");
+        }
+
+        $nombreApellido = $datos['nombreApellido'];
+        $domicilio = $datos['domicilio'];
+        $telefono = $datos['telefono'];
+        $fechaNacimiento = $datos['fechaNacimiento'];
+        $TipoDeUsuario = $datos['TipoDeUsuario'];
+        $empresa = $datos['empresa'];
+        $departamento = $datos['departamento'];
+        $clave = $datos['clave'];
+
+        list($nombre, $apellido) = explode(' ', $nombreApellido, 2);
+        $departamentoObj = empty($departamento) ? null : new Departamento($departamento);
+        $empresaObj = empty($empresa) ? : new Empresa($empresa);
+        $usuario = new Usuario($dni, $nombre, $apellido, $fechaNacimiento, $domicilio, $email, $telefono, $TipoDeUsuario, $empresaObj,  $departamentoObj, $clave);
+        
+        return $this->usuarioRepo->save($usuario, $clave);
+    }
+
+    private function validarDNI($dni) {
+        return preg_match('/^\d{8}$/', $dni);
+    }
 }
 
-
-// Instancia del repositorio
-$usuarioRepo = new Repositorio_Usuario();
-
-// Continuar con el proceso de creación del usuario si el DNI es válido
-$nombreApellido = $_POST['nombreApellido'];
-$domicilio = $_POST['domicilio'];
-$telefono = $_POST['telefono'];
-$email = $_POST['email'];
-$fechaNacimiento = $_POST['fechaNacimiento'];
-$TipoDeUsuario = $_POST['TipoDeUsuario'];
-$departamento = $_POST['departamento'];
-$clave = $_POST['clave']; // La contraseña
-
-// Separar nombre y apellido
-list($nombre, $apellido) = explode(' ', $nombreApellido, 2);
-
-// Crear instancia de Usuario
-$departamentoObj = empty($departamento) ? null : new Departamento($departamento);
-$usuario = new Usuario($dni, $nombre, $apellido, $fechaNacimiento, $domicilio, $email, $telefono, $TipoDeUsuario, $departamentoObj, $clave);
-
-// Guardar en la base de datos
-$usuarioRepo = new Repositorio_Usuario();
-$resultado = $usuarioRepo->save($usuario, $clave);
-
-if ($resultado) {
-    echo "Usuario agregado correctamente.";
-} else {
-    echo "Error al agregar el usuario.";
+// Uso del controlador
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $controlador = new Controlador_Usuario();
+    $resultado = $controlador->crearUsuario($_POST);
+    
+    echo $resultado ? "Usuario agregado correctamente." : "Error al agregar el usuario.";
 }
-
 ?>

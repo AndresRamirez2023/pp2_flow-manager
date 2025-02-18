@@ -1,5 +1,6 @@
 <?php
 require_once 'Departamento.php';
+require_once 'Empresa.php';
 
 class Usuario
 {
@@ -20,7 +21,8 @@ class Usuario
     protected $telefono;
     // Tipo de usuario (Director, Recursos Humanos, Empleado)
     protected $tipoUsuario; // TODO: Usar Enums para definir tipos
-    // Nombre del departamento al que pertenece
+    // Nombre de la empresa al que pertenece
+    protected $empresa;
     protected $departamento; // TODO: Ser un objeto de tipo Departamento
     // Clave de usuario (almacenada como hash)
     protected $clave;
@@ -34,6 +36,7 @@ class Usuario
         $CorreoElectronico,
         $telefono,
         $tipoUsuario,
+        ?Empresa $empresa,
         ?Departamento $departamento,
         $clave
     ) {
@@ -45,6 +48,7 @@ class Usuario
         $this->telefono = $telefono;
         $this->CorreoElectronico = $CorreoElectronico;
         $this->tipoUsuario = $tipoUsuario;
+        $this->empresa=$empresa;
         $this->departamento = $departamento;
         $this->clave = password_hash($clave, PASSWORD_DEFAULT); // Guardar clave como hash
     }
@@ -89,6 +93,13 @@ class Usuario
     {
         return $this->tipoUsuario;
     }
+
+    public function getEmpresa()
+    {
+        // devuelve la empresa
+       $this->empresa->getNombre();
+    }
+
 
     public function getDepartamento()
     {
@@ -170,6 +181,12 @@ public function esDirectivo()
     {
         $this->tipoUsuario = $tipoUsuario;
     }
+
+    public function setEmpresa($empresa)
+    {
+        $this->empresa = $empresa;
+    }
+
 
     public function setDepartamento($departamento)
     {

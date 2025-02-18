@@ -17,27 +17,36 @@ class Repositorio_Usuario extends Repositorio
         if (!self::$conexion) {
             throw new Exception("La conexión no ha sido inicializada.");
         }
-
+    
         $q = "SELECT * FROM usuarios WHERE CorreoElectronico = ?";
         $query = self::$conexion->prepare($q);
-
+    
         if (!$query) {
             throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
         }
-
+    
         $query->bind_param('s', $CorreoElectronico);
-
+    
         $query->execute();
         $result = $query->get_result(); // Obtiene los datos de la consulta
         if ($row = $result->fetch_assoc()) {
             // Verificar la contraseña
             if (password_verify($clave, $row['Clave'])) {
-                // Si el usuario tiene un departamento válido, crea el objeto
+                // Verificar el Departamento
                 $departamentoObj = null;
                 if ($row['Departamento'] !== 'Sin Departamento' && $row['Departamento'] !== null) {
                     $departamentoObj = new Departamento($row['Departamento']);
                 }
-
+    
+                // Verificar la Empresa (no puede ser NULL ni 'Sin Empresa')
+                $empresaObj = null;
+                if ($row['Empresa'] !== 'Sin Empresa' && $row['Empresa'] !== null) {
+                    $empresaObj = new Empresa($row['Empresa']);
+                } else {
+                    // Si la empresa es NULL o 'Sin Empresa', puedes lanzar una excepción o manejarlo de otra manera
+                    throw new Exception("El usuario no tiene una empresa válida.");
+                }
+    
                 // Retornar un objeto Usuario con los datos obtenidos
                 return new Usuario(
                     $row['Dni'],
@@ -48,15 +57,17 @@ class Repositorio_Usuario extends Repositorio
                     $row['CorreoElectronico'],
                     $row['Telefono'],
                     $row['TipoUsuario'],
+                    $empresaObj, // Pasa el objeto Empresa
                     $departamentoObj,  // Pasa el objeto Departamento o null
                     $clave
                 );
             }
         }
-
+    
         $query->close(); // Cierra la consulta
         return false; // Retorna false si el usuario no existe o la contraseña es incorrecta
     }
+    
     public function save(Usuario $usuario, $clave)
     {
         if (!self::$conexion) {
@@ -72,6 +83,7 @@ class Repositorio_Usuario extends Repositorio
         $CorreoElectronico = $usuario->getCorreoElectronico();
         $Telefono = $usuario->getTelefono();
         $TipoDeUsuario = $usuario->getTipoUsuario();
+        $Empresa = $usuario->getEmpresa();
         $Departamento = $usuario->getDepartamento();
 
         // **VALIDACIONES BACKEND**
@@ -136,8 +148,8 @@ class Repositorio_Usuario extends Repositorio
         // **INSERCIÓN EN LA BASE DE DATOS**
 
         // Definición de la consulta
-        $q = "INSERT INTO usuarios (Dni, Nombre, Apellido, FechaNacimiento, Direccion, CorreoElectronico, Telefono, TipoDeUsuario, Departamento, clave)";
-        $q .= " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $q = "INSERT INTO usuarios (Dni, Nombre, Apellido, FechaNacimiento, Direccion, CorreoElectronico, Telefono, TipoDeUsuario, Empresa, Departamento, clave)";
+        $q .= " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         // Preparar la consulta
         $query = self::$conexion->prepare($q);
@@ -147,7 +159,7 @@ class Repositorio_Usuario extends Repositorio
 
         // Vincular los parámetros
         $query->bind_param(
-            "ssssssssss",
+            "sssssssssss",
             $Dni,
             $Nombre,
             $Apellido,
@@ -156,6 +168,7 @@ class Repositorio_Usuario extends Repositorio
             $CorreoElectronico,
             $Telefono,
             $TipoDeUsuario,
+            $Empresa,
             $Departamento,
             $clave_encriptada
         );

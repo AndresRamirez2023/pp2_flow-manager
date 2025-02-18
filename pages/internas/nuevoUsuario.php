@@ -169,6 +169,17 @@ if (isset($_SESSION['usuario'])) {
                 title="El usuario debe ser mayor de edad."
                 required />
             </div>
+            
+            <div class="col-md-6">
+              <label for="empresa" class="form-label">Empresa</label>
+              <input
+                type="text"
+                class="form-control"
+                id="empresa"
+                name="empresa"
+                required />
+            </div>
+
 
             <div class="col-md-6">
               <label for="TipoDeUsuario" class="form-label">Tipo de usuario <b>*</b></label>
