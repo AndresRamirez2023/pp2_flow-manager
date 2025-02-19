@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $usuario_existe = $repositorio->getUsuarioPorDni($dni_director);
 
             if ($usuario_existe) {
-                $director = new Usuario($dni_director, null, null, null, null, null, null, null, null, null);
+                $director = new Usuario($dni_director, null, null, null, null, null, null, null, null, null, null);
                 $departamento = new Departamento($nombre_departamento, $director);
 
                 if ($repositorio->save($departamento)) {
