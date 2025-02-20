@@ -37,54 +37,278 @@ CREATE TABLE `archivos` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `usuarios`
+--
+
+CREATE TABLE `usuarios` (
+  `Dni` int(11) NOT NULL,
+  `Nombre` varchar(50) NOT NULL,
+  `Apellido` varchar(50) NOT NULL,
+  `FechaNacimiento` date DEFAULT NULL,
+  `Domicilio` varchar(100) DEFAULT NULL,
+  `CorreoElectronico` varchar(100) NOT NULL,
+  `Telefono` varchar(15) DEFAULT NULL,
+  `TipoDeUsuario` varchar(50) NOT NULL,
+  `Departamento` varchar(255) NOT NULL,
+  `Clave` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Triggers de `usuarios`
+--
+
+DELIMITER $$
+CREATE TRIGGER `before_insert_usuario` BEFORE INSERT ON `usuarios`
+FOR EACH ROW
+BEGIN
+    DECLARE director_actual INT;
+
+    IF NOT EXISTS (SELECT 1 FROM departamentos WHERE Nombre = NEW.Departamento) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se puede asignar un usuario a un departamento inexistente';
+    END IF;
+
+    IF NEW.TipoDeUsuario = 'Directivo' THEN
+        SELECT DirectorACargo INTO director_actual
+        FROM departamentos
+        WHERE Nombre = NEW.Departamento;
+
+        IF director_actual IS NOT NULL THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Error: El departamento ya tiene un director asignado';
+        END IF;
+    END IF;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER after_insert_usuario AFTER INSERT ON usuarios
+FOR EACH ROW 
+BEGIN
+    DECLARE empresa_nombre VARCHAR(100);
+    DECLARE usuario_actual INT;
+    DECLARE director_actual INT;
+
+    IF NEW.TipoDeUsuario = 'RRHH' THEN
+        SELECT Empresa INTO empresa_nombre
+        FROM departamentos 
+        WHERE Nombre = NEW.Departamento
+        LIMIT 1;
+
+        SELECT UsuarioPrincipal INTO usuario_actual
+        FROM empresas
+        WHERE Nombre = empresa_nombre;
+
+        IF usuario_actual IS NULL THEN
+            UPDATE empresas
+            SET UsuarioPrincipal = NEW.Dni
+            WHERE Nombre = empresa_nombre;
+        END IF;
+    END IF;
+
+    IF NEW.TipoDeUsuario = 'Directivo' AND NEW.Departamento <> 'Sin asignar' THEN
+        SELECT DirectorACargo INTO director_actual
+        FROM departamentos
+        WHERE Nombre = NEW.Departamento;
+
+        IF director_actual IS NULL THEN
+              UPDATE departamentos
+              SET DirectorACargo = NEW.Dni
+              WHERE Nombre = NEW.Departamento;
+        END IF;
+    END IF;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER `before_delete_usuario` BEFORE DELETE ON `usuarios`
+FOR EACH ROW
+BEGIN
+    UPDATE empresas
+    SET UsuarioPrincipal = NULL
+    WHERE UsuarioPrincipal = OLD.Dni;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER `after_delete_usuario` AFTER DELETE ON `usuarios`
+FOR EACH ROW 
+BEGIN
+    DECLARE empresa_nombre VARCHAR(100);
+    DECLARE nuevo_usuario INT;
+
+    SELECT Empresa INTO empresa_nombre
+    FROM departamentos
+    WHERE Nombre = OLD.Departamento
+    LIMIT 1;
+
+    IF (SELECT UsuarioPrincipal FROM empresas WHERE Nombre = empresa_nombre) = OLD.Dni THEN
+        SELECT Dni INTO nuevo_usuario
+        FROM usuarios 
+        WHERE TipoDeUsuario = 'Directivo' 
+        AND Departamento = 'Recursos Humanos'
+        ORDER BY Dni LIMIT 1;
+
+        IF nuevo_usuario IS NULL THEN
+            SELECT Dni INTO nuevo_usuario
+            FROM usuarios 
+            WHERE TipoDeUsuario = 'RRHH' 
+            AND Departamento = 'Recursos Humanos'
+            ORDER BY Dni LIMIT 1;
+        END IF;
+
+        UPDATE empresas 
+        SET UsuarioPrincipal = nuevo_usuario
+        WHERE Nombre = empresa_nombre;
+    END IF;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER `before_update_usuario` BEFORE UPDATE ON `usuarios`
+FOR EACH ROW 
+BEGIN
+    DECLARE director_actual INT;
+    
+    IF NEW.TipoDeUsuario = 'RRHH' AND OLD.TipoDeUsuario <> 'RRHH' THEN
+        SET NEW.Departamento = 'Recursos Humanos';
+    END IF;
+
+    IF NEW.TipoDeUsuario = 'Empleado' AND NEW.Departamento = 'Recursos Humanos' THEN
+        SET NEW.TipoDeUsuario = 'RRHH';
+    END IF;
+
+    IF NEW.TipoDeUsuario = 'Directivo' AND (OLD.TipoDeUsuario <> 'Directivo' OR OLD.Departamento <> NEW.Departamento) THEN
+        SELECT DirectorACargo INTO director_actual
+        FROM departamentos
+        WHERE Nombre = NEW.Departamento;
+
+        IF director_actual IS NOT NULL THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Error: El departamento ya tiene un director asignado';
+        END IF;
+    END IF;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER `after_update_usuario` AFTER UPDATE ON `usuarios`
+FOR EACH ROW 
+BEGIN
+    DECLARE director_actual INT;
+
+    SELECT DirectorACargo INTO director_actual
+    FROM departamentos
+    WHERE Nombre = NEW.Departamento;
+
+    IF NEW.TipoDeUsuario = 'Directivo' AND (OLD.TipoDeUsuario <> 'Directivo' OR OLD.Departamento <> NEW.Departamento) THEN
+        IF director_actual IS NULL THEN
+            UPDATE departamentos
+            SET DirectorACargo = NULL
+            WHERE Nombre = OLD.Departamento AND DirectorACargo = OLD.Dni;
+
+            IF NEW.Departamento <> 'Sin asignar' THEN
+                UPDATE departamentos
+                SET DirectorACargo = NEW.Dni
+                WHERE Nombre = NEW.Departamento;
+            END IF;
+        END IF;
+    END IF;
+
+    IF OLD.TipoDeUsuario = 'Directivo' AND NEW.TipoDeUsuario <> 'Directivo' THEN
+        UPDATE departamentos
+        SET DirectorACargo = NULL
+        WHERE DirectorACargo = OLD.Dni;
+    END IF;
+END $$
+DELIMITER ;
+
+-- --------------------------------------------------------
+--
+-- Estructura de tabla para la tabla `empresa`
+--
+
+CREATE TABLE `empresas` (
+  `Nombre` varchar(100) NOT NULL,
+  `Logo` varchar(255) NOT NULL,
+  `Fondo` varchar(255) NOT NULL,
+  `ArchivoInicio1` varchar(255) DEFAULT NULL,
+  `ArchivoInicio2` varchar(255) DEFAULT NULL,
+  `UsuarioPrincipal` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Triggers de `empresas`
+--
+
+DELIMITER $$
+CREATE TRIGGER `before_delete_empresa` 
+BEFORE DELETE ON `empresas`
+FOR EACH ROW
+BEGIN
+    DELETE FROM usuarios 
+    WHERE Departamento IN (SELECT Nombre FROM departamentos WHERE Empresa = OLD.Nombre);
+
+    DELETE FROM departamentos 
+    WHERE Empresa = OLD.Nombre;
+END$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `departamentos`
 --
 
 CREATE TABLE `departamentos` (
   `Nombre` varchar(50) NOT NULL,
-  `DirectorACargo` int(11) NOT NULL
+  `Empresa` varchar(100) NOT NULL,
+  `DirectorACargo` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Triggers de `departamentos`
 --
 DELIMITER $$
-CREATE TRIGGER `update_departamento_on_insert` AFTER INSERT ON `departamentos` FOR EACH ROW BEGIN
-    UPDATE usuarios
-    SET Departamento = NEW.Nombre
-    WHERE Dni = NEW.DirectorACargo;
-END
-$$
-DELIMITER ;
-DELIMITER $$
-CREATE TRIGGER `update_departamento_on_update` AFTER UPDATE ON `departamentos` FOR EACH ROW BEGIN
-    UPDATE usuarios
-    SET Departamento = NEW.Nombre
-    WHERE Dni = NEW.DirectorACargo;
-END
-$$
-DELIMITER ;
-DELIMITER $$
-CREATE TRIGGER `update_departamento_on_delete` AFTER DELETE ON `departamentos` FOR EACH ROW BEGIN
-      -- Si existe al menos uno actualiza el departamento a "nulo"
-      IF EXISTS (SELECT 1 FROM usuarios WHERE Departamento = OLD.Nombre) THEN
-        UPDATE usuarios 
-        SET Departamento = NULL
-        WHERE Departamento = OLD.Nombre;
+CREATE TRIGGER `before_insert_departamento` BEFORE INSERT ON `departamentos`
+FOR EACH ROW
+BEGIN
+
+    IF NOT EXISTS (SELECT 1 FROM empresas WHERE Nombre = NEW.Empresa) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se puede crear un departamento para una empresa inexistente';
     END IF;
-END
-$$
+END$$
 DELIMITER ;
+
 DELIMITER $$
-CREATE TRIGGER `cambiar_departamento_despues_dni` AFTER UPDATE ON `departamentos` FOR EACH ROW BEGIN
-     IF OLD.DirectorACargo <> NEW.DirectorACargo THEN
-        -- Actualiza el departamento a "Sin Departamento"
+CREATE TRIGGER `after_insert_departamento` AFTER INSERT ON `departamentos`
+FOR EACH ROW
+BEGIN
+
+    IF NEW.DirectorACargo IS NOT NULL THEN
+        UPDATE usuarios
+        SET Departamento = NEW.Nombre
+        WHERE Dni = NEW.DirectorACargo;
+    END IF;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER `after_update_director_departamento` AFTER UPDATE ON `departamentos`
+FOR EACH ROW
+BEGIN
+
+    IF OLD.DirectorACargo <> NEW.DirectorACargo THEN
         UPDATE usuarios 
-        SET Departamento = 'Sin Departamento'
+        SET Departamento = 'Sin asignar'
         WHERE Dni = OLD.DirectorACargo;
+        IF NEW.DirectorACargo IS NOT NULL THEN
+            UPDATE usuarios
+            SET Departamento = NEW.Nombre
+            WHERE Dni = NEW.DirectorACargo;
+        END IF;
     END IF;
-END
-$$
+
+END$$
 DELIMITER ;
 
 -- --------------------------------------------------------
@@ -133,47 +357,12 @@ CREATE TABLE `solicitudes` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `empresa`
---
-
-CREATE TABLE `empresas` (
-  `Nombre` varchar(100) NOT NULL,
-  `Logo` varchar(255) DEFAULT NULL,
-  `Fondo` varchar(255) DEFAULT NULL,
-  `ArchivoInicio1` varchar(255) DEFAULT NULL,
-  `ArchivoInicio2` varchar(255) DEFAULT NULL,
-  `DniPrincipal` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `usuarios`
---
-
-CREATE TABLE `usuarios` (
-  `Dni` int(11) NOT NULL,
-  `Nombre` varchar(50) NOT NULL,
-  `Apellido` varchar(50) NOT NULL,
-  `FechaNacimiento` date DEFAULT NULL,
-  `Direccion` varchar(100) DEFAULT NULL,
-  `CorreoElectronico` varchar(100) NOT NULL,
-  `Telefono` varchar(15) DEFAULT NULL,
-  `TipoDeUsuario` varchar(50) NOT NULL,
-  `Empresa` varchar(100) NOT NULL,
-  `Departamento` varchar(255) DEFAULT NULL,
-  `clave` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Estructura de tabla para la tabla `super_usuario`
 --
 
 CREATE TABLE `super_usuario` (
-  `username` varchar(20) NOT NULL,
-  `password` varchar(255) NOT NULL
+  `Username` varchar(20) NOT NULL,
+  `Password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO `super_usuario` (`username`, `password`) VALUES
@@ -209,7 +398,6 @@ ALTER TABLE `archivos`
 --
 ALTER TABLE `departamentos`
   ADD PRIMARY KEY (`Nombre`),
-  ADD UNIQUE KEY `DirectorACargo` (`DirectorACargo`),
   ADD KEY `departamentos_ibfk_1` (`DirectorACargo`);
 
 --
@@ -234,18 +422,17 @@ ALTER TABLE `solicitudes`
   ADD KEY `fk_solicitudes_Usuario1` (`DniSolicitante`);
 
 --
--- Indices de la tabla `empresas`
---
-ALTER TABLE `empresas`
-  ADD PRIMARY KEY (`Nombre`);
-
---
 -- Indices de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`Dni`),
-  ADD KEY `usuarios_ibfk_1` (`Departamento`),
-  ADD KEY `usuarios_ibfk_2` (`Empresa`);
+  ADD KEY `usuarios_ibfk_1` (`Departamento`);
+
+--
+-- Indices de la tabla `empresas`
+--
+ALTER TABLE `empresas`
+  ADD PRIMARY KEY (`Nombre`);
 
 --
 -- Indices de la tabla `super_usuario`
@@ -270,11 +457,18 @@ ALTER TABLE `usuarios_reuniones`
 ALTER TABLE `archivos`
   ADD CONSTRAINT `fk_mensajes_archivos` FOREIGN KEY (`DniCreador`) REFERENCES `mensajes` (`DniRemitente`);
 
+-- 
+-- Filtros para la tabla `empresas`
+-- 
+ALTER TABLE `empresas`
+  ADD CONSTRAINT `empresas_ibfk_1` FOREIGN KEY (`UsuarioPrincipal`) REFERENCES `usuarios` (`Dni`);
+
 --
 -- Filtros para la tabla `departamentos`
 --
-ALTER TABLE `departamentos`
-  ADD CONSTRAINT `departamentos_ibfk_1` FOREIGN KEY (`DirectorACargo`) REFERENCES `usuarios` (`Dni`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `departamentos` 
+  ADD CONSTRAINT `departamentos_ibfk_1` FOREIGN KEY (`DirectorACargo`) REFERENCES `usuarios` (`Dni`) ON DELETE SET NULL,
+  ADD CONSTRAINT `departamentos_ibfk_2` FOREIGN KEY (`Empresa`) REFERENCES `empresas` (`Nombre`);
 
 --
 -- Filtros para la tabla `mensajes`
@@ -293,8 +487,7 @@ ALTER TABLE `solicitudes`
 -- Filtros para la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  ADD CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`Departamento`) REFERENCES `departamentos` (`Nombre`),
-  ADD CONSTRAINT `usuarios_ibfk_2` FOREIGN KEY (`Empresa`) REFERENCES `empresas` (`Nombre`);
+  ADD CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`Departamento`) REFERENCES `departamentos` (`Nombre`);
 --
 -- Filtros para la tabla `usuarios_reuniones`
 --
