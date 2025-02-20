@@ -5,16 +5,20 @@ require_once __DIR__ . '/../classes/Usuario.php';
 
 class Controlador_Sesion
 {
-
 	protected $usuario = null;
-
 	protected $super_usuario = null;
+	protected $ru;
+	protected $rsu;
+
+	public function __construct()
+	{
+		$this->ru = new Repositorio_Usuario();
+		$this->rsu = new Repositorio_Super_Usuario();
+	}
 
 	public function login($CorreoElectronico, $clave)
 	{
-
-		$r = new Repositorio_Usuario();
-		$usuario = $r->login($CorreoElectronico, $clave);
+		$usuario = $this->ru->login($CorreoElectronico, $clave);
 
 		if ($usuario === false) {
 			//fallo el login
@@ -29,8 +33,7 @@ class Controlador_Sesion
 
 	public function loginInterno($username, $password)
 	{
-		$r = new Repositorio_Super_Usuario();
-		$super_usuario = $r->login($username, $password);
+		$super_usuario = $this->rsu->login($username, $password);
 
 		if ($super_usuario === false) {
 			//fallo el login

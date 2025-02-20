@@ -5,13 +5,13 @@ class Usuario
 {
 
     // DNI (Clave primaria)
-    protected $Dni;
+    protected $dni;
     // Nombre
     protected $nombre;
     // Apellido
     protected $apellido;
     // Correo Electrónico
-    protected $CorreoElectronico;
+    protected $correoElectronico;
     // Fecha de Nacimiento
     protected $fechaNac;
     // Dirección de domicilio
@@ -24,31 +24,31 @@ class Usuario
     protected $departamento; // TODO: Ser un objeto de tipo Departamento
 
     public function __construct(
-        $Dni,
-        $nombre,
-        $apellido,
-        $fechaNac,
-        $domicilio,
-        $CorreoElectronico,
-        $telefono,
+        $dni,
+        $correoElectronico,
         $tipoUsuario,
-        ?Departamento $departamento
+        ?Departamento $departamento = null,
+        $nombre = null,
+        $apellido = null,
+        $fechaNac = null,
+        $domicilio = null,
+        $telefono = null
     ) {
-        $this->Dni = $Dni;
+        $this->dni = $dni;
+        $this->correoElectronico = $correoElectronico;
+        $this->tipoUsuario = $tipoUsuario;
         $this->nombre = $nombre;
         $this->apellido = $apellido;
         $this->fechaNac = $fechaNac;
         $this->domicilio = $domicilio;
         $this->telefono = $telefono;
-        $this->CorreoElectronico = $CorreoElectronico;
-        $this->tipoUsuario = $tipoUsuario;
         $this->departamento = $departamento;
     }
 
     // Getters
     public function getDni()
     {
-        return $this->Dni;
+        return $this->dni;
     }
 
     public function getNombre()
@@ -78,7 +78,7 @@ class Usuario
 
     public function getCorreoElectronico()
     {
-        return $this->CorreoElectronico;
+        return $this->correoElectronico;
     }
 
     public function getTipoUsuario()
@@ -88,8 +88,9 @@ class Usuario
 
     public function getDepartamento()
     {
-        // Si el departamento es un objeto, devolver su nombre, sino 'Sin Departamento'
-        return $this->departamento ? $this->departamento->getNombre() : 'Sin Departamento';
+        // Si el departamento es un objeto, devolver su nombre, sino 'Sin asignar'
+        // TODO: Cambiar por el objeto departamento
+        return $this->departamento ? $this->departamento->getNombre() : 'Sin asignar';
     }
 
     // Validar si el usuario puede solicitar días
@@ -129,14 +130,14 @@ class Usuario
         $this->fechaNac = $fechaNacimiento;
     }
 
-    public function setDomicilio($direccion)
+    public function setDomicilio($domicilio)
     {
-        $this->domicilio = $direccion;
+        $this->domicilio = $domicilio;
     }
 
-    public function setCorreoElectronico($CorreoElectronico)
+    public function setCorreoElectronico($correoElectronico)
     {
-        $this->CorreoElectronico = $CorreoElectronico;
+        $this->correoElectronico = $correoElectronico;
     }
 
     public function setTelefono($telefono)
@@ -156,6 +157,6 @@ class Usuario
 
     public function setDni($dni)
     {
-        $this->Dni = $dni;
+        $this->dni = $dni;
     }
 }
