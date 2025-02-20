@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '../../classes/Empresa.php';
+require_once 'Repositorio_Usuario.php';
 require_once 'Repositorio.php';
 
 class Repositorio_Empresa extends Repositorio
@@ -12,31 +13,34 @@ class Repositorio_Empresa extends Repositorio
         }
 
         $sql = "SELECT ";
-        $sql .= "e.Nombre ";
+        $sql .= "e.Nombre, e.DniUsuarioPrincipal, e.Fondo, e.Logo, e.ArchivoInicio1, e.ArchivoInicio2 ";
         $sql .= "FROM Empresas e ";
-        $sql .= "INNER JOIN usuarios u ON u.Dni = e.DniPrincipal;";
+        $sql .= "INNER JOIN usuarios u ON u.Dni = e.UsuarioPrincipal;";
 
         $query = self::$conexion->prepare($sql);
 
-        $Nombre = null;
-        $DniPrincipal = null;
-        $Fondo = null;
-        $Logo = null;
-        $ArchivoInicio1 = null;
-        $ArchivoInicio2 = null;
+        $nombre = null;
+        $dni_usuario_principal = null;
+        $fondo = null;
+        $logo = null;
+        $archivo_inicio1 = null;
+        $archivo_inicio2 = null;
+        $ru = new Repositorio_Usuario();
 
         if ($query->execute()) {
             $query->bind_result(
-                $Nombre,
-                $DniPrincipal,
-                $Fondo,
-                $Logo,
-                $ArchivoInicio1,
-                $ArchivoInicio2
+                $nombre,
+                $dni_usuario_principal,
+                $fondo,
+                $logo,
+                $archivo_inicio1,
+                $archivo_inicio2
             );
+
+            $usuario_principal = $ru->get_by_dni($dni_usuario_principal);
             $empresas = [];
             while ($query->fetch()) {
-                $e = new Empresa($Nombre, $DniPrincipal, $Fondo, $Logo, $ArchivoInicio1, $ArchivoInicio2);
+                $e = new Empresa($nombre, $usuario_principal, $fondo, $logo, $archivo_inicio1, $archivo_inicio2);
                 $empresas[] = $e;
             }
             return $empresas;
@@ -49,18 +53,17 @@ class Repositorio_Empresa extends Repositorio
             throw new Exception("La conexión no ha sido inicializada.");
         }
 
-        $sql = "SELECT Nombre, DniPrincipal FROM Empresas WHERE Nombre = ? LIMIT 1;";
+        $sql = "SELECT Nombre, UsuarioPrincipal FROM Empresas WHERE Nombre = ? LIMIT 1;";
 
         $query = self::$conexion->prepare($sql);
         $query->bind_param("s", $nombre);
 
-        $Nombre = null;
-        $DniPrincipal = null;
+        $usuario_principal = null;
 
         if ($query->execute()) {
-            $query->bind_result($Nombre, $DniPrincipal);
+            $query->bind_result($nombre, $usuario_principal);
             if ($query->fetch()) {
-                return new Empresa($Nombre, $DniPrincipal);
+                return new Empresa($nombre, $usuario_principal);
             }
         }
         return null;
@@ -72,26 +75,66 @@ class Repositorio_Empresa extends Repositorio
             throw new Exception("La conexión no ha sido inicializada.");
         }
 
-        $sql = "INSERT INTO empresas (Nombre, Fondo, Logo, ArchivoInicio1, ArchivoInicio2, DniPrincipal) 
-                VALUES (?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO empresas (Nombre, Fondo, Logo) 
+                VALUES (?, ?, ?);";
         $query = self::$conexion->prepare($sql);
 
-        $Nombre = $e->getNombre();
-        $Fondo = $e->getFondo();
-        $Logo = $e->getLogo();
-        $ArchivoInicio1 = $e->getArchivoInicio1();
-        $ArchivoInicio2 = $e->getArchivoInicio2();
-        $DniPrincipal = $e->getDniPrincipal();
+        $nombre = $e->getNombre();
+        $fondo = $e->getFondo();
+        $logo = $e->getLogo();
 
-        if (!$query->bind_param("ssssss", $Nombre, $Fondo, $Logo, $ArchivoInicio1, $ArchivoInicio2, $DniPrincipal)) {
-            echo "Fallo la consulta";
+        // Revisar si usuarioPrincipal no da error si es NULL
+        if (!$query->bind_param("sss", $nombre, $fondo, $logo)) {
+            echo "Fallo la consulta a la base de datos.";
             return false;
         }
 
         return $query->execute();
     }
 
-    public function update(Empresa $e) {}
+    public function update(Empresa $e)
+    {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
 
-    public function delete($nombre) {}
+        $sql = "UPDATE empresas SET Fondo = ?, Logo = ?, ArchivoInicio1 = ?, ArchivoInicio2 = ?, UsuarioPrincipal = ? ";
+        $sql .= "WHERE Nombre = ?;";
+
+        $query = self::$conexion->prepare($sql);
+
+        $nombre = $e->getNombre();
+        $fondo = $e->getFondo();
+        $logo = $e->getLogo();
+        $archivo_inicio1 = $e->getArchivoInicio1();
+        $archivo_inicio2 = $e->getArchivoInicio2();
+        $usuario_principal = $e->getUsuarioPrincipal();
+
+        if ($usuario_principal) {
+            $dni_usuario = $usuario_principal->getDni();
+        }
+        // Revisar si usuarioPrincipal no da error si es NULL
+        if (!$query->bind_param("ssssss", $nombre, $fondo, $logo, $archivo_inicio1, $archivo_inicio2, $dni_usuario)) {
+            echo "Fallo la consulta a la base de datos.";
+            return false;
+        }
+
+        return $query->execute();
+    }
+
+    public function delete($nombre)
+    {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
+        $sql = "DELETE FROM empresas WHERE Nombre = ?;";
+        $query = self::$conexion->prepare($sql);
+
+        if (!$query->bind_param("s", $nombre)) {
+            echo "Fallo la consulta a la base de datos.";
+        }
+
+        return $query->execute();
+    }
 }
