@@ -1,71 +1,74 @@
 <?php
-
 require_once 'Usuario.php';
 
 class Empresa
 {
-    protected $Nombre;
-    protected $DniPrincipal;
-    protected $Fondo;
-    protected $Logo;
-    protected $ArchivoInicio1;
-    protected $ArchivoInicio2;
+    protected $nombre;
+    protected $usuarioPrincipal;
+    protected $fondo;
+    protected $logo;
+    protected $archivoInicio1;
+    protected $archivoInicio2;
 
     public function __construct(
-        $Nombre,
-        $Fondo = null,
-        $Logo = null,
-        $ArchivoInicio1 = null,
-        $ArchivoInicio2 = null,
-        $DniPrincipal = null
+        $nombre,
+        $fondo = null,
+        $logo = null,
+        $archivoInicio1 = null,
+        $archivoInicio2 = null,
+        Usuario $usuarioPrincipal = null
     ) {
-        $this->Nombre = $Nombre;
-        $this->Fondo = $Fondo;
-        $this->Logo = $Logo;
-        $this->ArchivoInicio1 = $ArchivoInicio1;
-        $this->ArchivoInicio2 = $ArchivoInicio2;
-        $this->DniPrincipal = $DniPrincipal;
+        $this->nombre = $nombre;
+        $this->fondo = $fondo;
+        $this->logo = $logo;
+        $this->archivoInicio1 = $archivoInicio1;
+        $this->archivoInicio2 = $archivoInicio2;
+        $this->usuarioPrincipal = $usuarioPrincipal;
     }
 
     public function getNombre()
     {
-        return $this->Nombre;
+        return $this->nombre;
     }
 
-    public function getDniPrincipal()
+    public function getUsuarioPrincipal()
     {
-        return $this->DniPrincipal;
+        return $this->usuarioPrincipal;
     }
-    public function setFondo($Fondo)
+    public function setUsuarioPrincipal(Usuario $usuarioPrincipal)
     {
-        $this->Fondo = $Fondo;
+        $this->usuarioPrincipal = $usuarioPrincipal;
+    }
+    public function setFondo($fondo)
+    {
+        $this->fondo = $fondo;
     }
     public function getFondo()
     {
-        return $this->Fondo;
+        return $this->fondo;
     }
-    public function setLogo($Logo)
+    public function setLogo($logo)
     {
-        $this->Logo = $Logo;
+        $this->logo = $logo;
     }
     public function getLogo()
     {
-        return $this->Logo;
+        return $this->logo;
     }
-    public function setArchivoInicio1($ArchivoInicio1)
+    public function setArchivoInicio1($archivoInicio1)
     {
-        $this->ArchivoInicio1 = $ArchivoInicio1;
+        $this->archivoInicio1 = $archivoInicio1;
     }
     public function getArchivoInicio1()
     {
-        return $this->ArchivoInicio1;
+        return $this->archivoInicio1;
     }
-    public function set($ArchivoInicio2)
+    public function setArchivoInicio2($archivoInicio2)
     {
-        $this->ArchivoInicio2 = $ArchivoInicio2;
+        $this->archivoInicio2 = $archivoInicio2;
     }
     public function getArchivoInicio2()
     {
-        return $this->ArchivoInicio2;
+        return $this->archivoInicio2;
     }
 }

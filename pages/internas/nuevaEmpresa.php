@@ -1,7 +1,9 @@
 <?php
 require_once '../../controllers/Controlador_Empresa.php';
+require_once '../../controllers/Controlador_Usuario.php';
+// require_once '../../controllers/Controlador_Departamento.php';
 require_once '../../classes/Empresa.php';
-// require_once '../../controllers/controlador_usuario.php';
+require_once '../../classes/Usuario.php';
 
 session_start();
 
@@ -23,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
 
     // Validar si la empresa ya existe
     if ($ce->get_by_name($nombreEmpresa) !== null) {
-        $_SESSION['mensaje'] = "La empresa ya existe en el sistema.";
+        $_SESSION['mensaje'] = "La empresa <b>ya se encuentra registrada</b> en el sistema. Verifique el nombre y/o las empresas creadas anteriormente.";
         $_SESSION['mensaje_tipo'] = "danger";
         header('Location: nuevaEmpresa.php');
         exit();
@@ -71,10 +73,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     if ($result) {
         $_SESSION['empresaCreada'] = true;
         $_SESSION['nombreEmpresa'] = $nombreEmpresa;
-        $_SESSION['mensaje'] = "Empresa creada correctamente.";
+        $_SESSION['mensaje'] = "Empresa <b>creada correctamente</b>. Ya puede crear el <b>primer usuario</b> asociado a la empresa para entregar al cliente.";
         $_SESSION['mensaje_tipo'] = "info";
     } else {
-        $_SESSION['mensaje'] = "Error al crear la empresa.";
+        $_SESSION['mensaje'] = "<b>Error</b> al crear la empresa. Verifique los datos, si el problema persiste <b>contacte a un administrador</b>.";
         $_SESSION['mensaje_tipo'] = "danger";
     }
     header('Location: nuevaEmpresa.php');
@@ -86,6 +88,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
         header('Location: nuevaEmpresa.php');
         exit();
     }
+
+    $cu = new Controlador_Usuario();
+    // $cd = new Controlador_Departamento();
+    $nombreEmpresa = $_SESSION['nombreEmpresa'];
+
+    // Datos del usuario
+    $dni = trim($_POST['dni']);
+    $nombreApellido = trim($_POST['nombreApellido']);
+    $email = trim($_POST['email']);
+    $tipoUsuario = "RRHH";
+    $claveGenerada = $nombreEmpresa . "123";
+
+    if (empty($dni) || empty($nombreApellido) || empty($email)) {
+        $_SESSION['mensaje'] = "Todos los campos son obligatorios. Revise los datos ingresados.";
+        $_SESSION['mensaje_tipo'] = "danger";
+        header('Location: nuevaEmpresa.php');
+        exit();
+    }
+
+    if ($cu->get_by_dni($dni) !== null) {
+        $_SESSION['mensaje'] = "El usuario ya está <b>registrado</b> (el DNI ya se encuentra en el sistema). Revise los datos ingresados y/o los usuarios creados anteriormente.";
+        $_SESSION['mensaje_tipo'] = "danger";
+        header('Location: nuevaEmpresa.php');
+        exit();
+    }
+
+    // // Crear objeto Departamento
+    /* Cambiar esto para que se cree un primer departamento de Recursos Humanos asociado a la empresa y el usuario asociado al departamento */
+    $departamento = new Departamento("Recursos Humanos");
+
+    // Objeto Usuario
+    $usuario = new Usuario(
+        $dni,
+        $email,
+        $tipoUsuario,
+        $departamento
+    );
+
+    $result = $cu->save($usuario, $nombreApellido, $claveGenerada);
+
+    if ($result) {
+        $_SESSION['empresaCreada'] = false;
+        $_SESSION['nombreEmpresa'] = null;
+        $_SESSION['mensaje'] = "Usuario <b>creado correctamente</b>. Ya puede compartir la <b>información inicial</b> con el cliente.";
+        $_SESSION['mensaje_tipo'] = "success";
+    }
+
+    header('Location: nuevaEmpresa.php');
+    exit();
 }
 
 // Control de estado de creación
@@ -183,9 +234,9 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
                         <button type="submit" class="btn btn-primary" name="accion" value="crearEmpresa" <?php echo $empresaCreada ? 'disabled' : ''; ?>>Crear Empresa</button>
 
                         <h2 class="mt-4">Datos del Usuario primario</h2>
-                        <div class="row g-3">
+                        <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label for="nombreApellido" class="form-label">Nombre y Apellido<b>*</b></label>
+                                <label for="nombreApellido" class="form-label">Nombre y Apellido <b>*</b></label>
                                 <input type="text" class="form-control" id="nombreApellido" name="nombreApellido" <?php echo !$empresaCreada ? 'disabled' : ''; ?> pattern="^[A-Za-zÀ-ÿ\s]{2,50}$"
                                     title="El nombre debe contener solo letras y espacios, entre 2 y 50 caracteres."
                                     required />
@@ -198,54 +249,13 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
                             </div>
 
                             <div class="col-md-6">
-                                <label for="domicilio" class="form-label">Domicilio</label>
-                                <input type="text" class="form-control" id="domicilio" name="domicilio" <?php echo !$empresaCreada ? 'disabled' : ''; ?> pattern="^[A-Za-z0-9\s,.-]{5,100}$"
-                                    title="El domicilio debe contener entre 5 y 100 caracteres, incluyendo letras, números, espacios, y símbolos como ',' o '-'."
-                                    required />
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="telefono" class="form-label">Número de Teléfono</label>
-                                <input type="tel" class="form-control" id="telefono" name="telefono" <?php echo !$empresaCreada ? 'disabled' : ''; ?> pattern="^\+?\d{7,15}$"
-                                    title="El teléfono debe contener entre 7 y 15 dígitos, opcionalmente iniciando con '+'."
-                                    required />
-                            </div>
-
-                            <div class="col-md-6">
                                 <label for="email" class="form-label">Email <b>*</b></label>
                                 <input type="email" class="form-control" id="email" name="email" <?php echo !$empresaCreada ? 'disabled' : ''; ?> required />
                             </div>
 
-                            <div class="col-md-6">
-                                <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento</label>
-                                <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento"
-                                    <?php echo !$empresaCreada ? 'disabled' : ''; ?> max="2006-12-31"
-                                    title="El usuario debe ser mayor de edad." required />
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="TipoDeUsuario" class="form-label">Tipo de usuario <b>*</b></label>
-                                <select name="TipoDeUsuario" id="TipoDeUsuario" class="form-select" <?php echo !$empresaCreada ? 'disabled' : ''; ?> required>
-                                    <option value="">Seleccione un tipo de usuario</option>
-                                    <option value="RRHH">RRHH</option>
-                                    <option value="Directivo">Directivo</option>
-                                    <option value="Empleado">Empleado</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="password" class="form-label">Contraseña temporal *</label>
-                                <input type="password" class="form-control" id="clave" name="clave" <?php echo !$empresaCreada ? 'disabled' : ''; ?>
-                                    pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$"
-                                    title="La contraseña debe tener al menos 8 caracteres, incluyendo una letra y un número."
-                                    required />
-                            </div>
-
-                            <div class="col-md-12">
-                                <button type="submit" class="btn btn-primary w-100 mt-3" name="accion"
-                                    value="crearUsuario" id="crearUsuarioBtn" <?php echo !$empresaCreada ? 'disabled' : ''; ?>>Crear Usuario</button>
-                            </div>
                         </div>
+                        <button type="submit" class="btn btn-primary" name="accion"
+                            value="crearUsuario" id="crearUsuarioBtn" <?php echo !$empresaCreada ? 'disabled' : ''; ?>>Crear Usuario</button>
                     </form>
                 </div>
         </div>

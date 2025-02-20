@@ -4,15 +4,15 @@ require_once 'Empresa.php';
 
 class Usuario
 {
-        
+
     // DNI (Clave primaria)
-    protected $Dni;
+    protected $dni;
     // Nombre
     protected $nombre;
     // Apellido
     protected $apellido;
     // Correo Electrónico
-    protected $CorreoElectronico;
+    protected $correoElectronico;
     // Fecha de Nacimiento
     protected $fechaNac;
     // Dirección de domicilio
@@ -24,39 +24,33 @@ class Usuario
     // Nombre de la empresa al que pertenece
     protected $empresa;
     protected $departamento; // TODO: Ser un objeto de tipo Departamento
-    // Clave de usuario (almacenada como hash)
-    protected $clave;
 
     public function __construct(
-        $Dni,
-        $nombre,
-        $apellido,
-        $fechaNac,
-        $domicilio,
-        $CorreoElectronico,
-        $telefono,
+        $dni,
+        $correoElectronico,
         $tipoUsuario,
-        ?Empresa $empresa,
-        ?Departamento $departamento,
-        $clave
+        ?Departamento $departamento = null,
+        $nombre = null,
+        $apellido = null,
+        $fechaNac = null,
+        $domicilio = null,
+        $telefono = null
     ) {
-        $this->Dni = $Dni;
+        $this->dni = $dni;
+        $this->correoElectronico = $correoElectronico;
+        $this->tipoUsuario = $tipoUsuario;
         $this->nombre = $nombre;
         $this->apellido = $apellido;
         $this->fechaNac = $fechaNac;
         $this->domicilio = $domicilio;
         $this->telefono = $telefono;
-        $this->CorreoElectronico = $CorreoElectronico;
-        $this->tipoUsuario = $tipoUsuario;
-        $this->empresa=$empresa;
         $this->departamento = $departamento;
-        $this->clave = password_hash($clave, PASSWORD_DEFAULT); // Guardar clave como hash
     }
 
     // Getters
     public function getDni()
     {
-        return $this->Dni;
+        return $this->dni;
     }
 
     public function getNombre()
@@ -86,7 +80,7 @@ class Usuario
 
     public function getCorreoElectronico()
     {
-        return $this->CorreoElectronico;
+        return $this->correoElectronico;
     }
 
     public function getTipoUsuario()
@@ -103,27 +97,10 @@ class Usuario
 
     public function getDepartamento()
     {
-        // Si el departamento es un objeto, devolver su nombre, sino 'Sin Departamento'
-        return $this->departamento ? $this->departamento->getNombre() : 'Sin Departamento';
+        // Si el departamento es un objeto, devolver su nombre, sino 'Sin asignar'
+        // TODO: Cambiar por el objeto departamento
+        return $this->departamento ? $this->departamento->getNombre() : 'Sin asignar';
     }
-
-    public function getClave()
-    {
-        return $this->clave;
-    }
-
-    // Métodos para manejar la clave
-    public function setClave($nuevaClave)
-    {
-        $this->clave = password_hash($nuevaClave, PASSWORD_DEFAULT); // Actualizar la clave como hash
-    }
-
-    public function validarClave($claveIngresada)
-    {
-        return password_verify($claveIngresada, $this->clave); // Verificar clave ingresada con el hash
-    }
-
-    
 
     // Validar si el usuario puede solicitar días
     public function puedeSolicitarDias()
@@ -132,19 +109,19 @@ class Usuario
     }
 
     public function esRRHH()
-{
-    return strtolower($this->tipoUsuario) === 'rrhh'; // Validar si el tipo de usuario es 'rrhh'
-}
+    {
+        return strtolower($this->tipoUsuario) === 'rrhh'; // Validar si el tipo de usuario es 'rrhh'
+    }
 
-public function esEmpleado()
-{
-    return strtolower($this->tipoUsuario) === 'empleado'; // Validar si el tipo de usuario es 'rrhh'
-}
+    public function esEmpleado()
+    {
+        return strtolower($this->tipoUsuario) === 'empleado'; // Validar si el tipo de usuario es 'rrhh'
+    }
 
-public function esDirectivo()
-{
-    return strtolower($this->tipoUsuario) === 'directivo'; // Validar si el tipo de usuario es 'director'
-}
+    public function esDirectivo()
+    {
+        return strtolower($this->tipoUsuario) === 'directivo'; // Validar si el tipo de usuario es 'director'
+    }
 
     // SETTERS
     public function setNombre($nombre)
@@ -162,14 +139,14 @@ public function esDirectivo()
         $this->fechaNac = $fechaNacimiento;
     }
 
-    public function setDomicilio($direccion)
+    public function setDomicilio($domicilio)
     {
-        $this->domicilio = $direccion;
+        $this->domicilio = $domicilio;
     }
 
-    public function setCorreoElectronico($CorreoElectronico)
+    public function setCorreoElectronico($correoElectronico)
     {
-        $this->CorreoElectronico = $CorreoElectronico;
+        $this->correoElectronico = $correoElectronico;
     }
 
     public function setTelefono($telefono)
@@ -195,6 +172,6 @@ public function esDirectivo()
 
     public function setDni($dni)
     {
-        $this->Dni = $dni;
+        $this->dni = $dni;
     }
 }

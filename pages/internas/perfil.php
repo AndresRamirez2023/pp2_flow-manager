@@ -101,8 +101,8 @@ $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
               <input type="text" class="form-control" id="dni" name="dni" disabled value="42178619" />
             </div>
             <div class="col-md-6">
-              <label for="Direccion" class="form-label">Domicilio</label>
-              <input type="text" class="form-control" id="Direccion" name="Direccion" value="254 Avenida Principal, Rosario" />
+              <label for="Domicilio" class="form-label">Domicilio</label>
+              <input type="text" class="form-control" id="Domicilio" name="Domicilio" value="254 Avenida Principal, Rosario" />
             </div>
             <div class="col-md-6">
               <label for="telefono" class="form-label">Número de Teléfono</label>
