@@ -1,5 +1,4 @@
 <?php
-require_once '../../classes/ControladorSesion.php';
 require_once '../../classes/Usuario.php';
 require_once __DIR__ . '/../../controllers/Controlador_Mensaje.php';
 

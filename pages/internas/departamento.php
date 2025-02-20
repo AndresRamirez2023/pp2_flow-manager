@@ -1,5 +1,4 @@
 <?php
-require_once '../../classes/ControladorSesion.php';
 require_once '../../classes/Usuario.php';
 require_once '../../repositories/Repositorio_Departamento.php';
 
