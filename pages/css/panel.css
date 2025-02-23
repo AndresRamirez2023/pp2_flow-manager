@@ -88,6 +88,9 @@
   max-width: 100%;
   padding: 2rem 3rem;
 }
+.vh {
+  min-height: 70vh;
+}
 .full-view {
   flex-grow: 1;
   display: flex;

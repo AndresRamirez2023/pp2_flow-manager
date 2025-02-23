@@ -42,8 +42,7 @@ CREATE TABLE `archivos` (
 
 CREATE TABLE `usuarios` (
   `Dni` int(11) NOT NULL,
-  `Nombre` varchar(50) NOT NULL,
-  `Apellido` varchar(50) NOT NULL,
+  `NombreApellido` varchar(100) NOT NULL,
   `FechaNacimiento` date DEFAULT NULL,
   `Domicilio` varchar(100) DEFAULT NULL,
   `CorreoElectronico` varchar(100) NOT NULL,

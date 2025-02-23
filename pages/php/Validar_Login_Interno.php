@@ -7,7 +7,7 @@ if (empty($_POST['username']) || empty($_POST['password'])) {
     $cs = new Controlador_Sesion();
     $login = $cs->loginInterno($_POST['username'], $_POST['password']);
     if ($login[0] === true) {
-        $redirigir = '../internas/nuevaEmpresa.php';
+        $redirigir = '../internas/empresas.php';
     } else {
         $redirigir = '../internas/loginInterno.php?mensaje=' . $login[1];
     }
