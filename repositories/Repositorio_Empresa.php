@@ -13,9 +13,9 @@ class Repositorio_Empresa extends Repositorio
         }
 
         $sql = "SELECT ";
-        $sql .= "e.Nombre, e.DniUsuarioPrincipal, e.Fondo, e.Logo, e.ArchivoInicio1, e.ArchivoInicio2 ";
+        $sql .= "e.Nombre, e.usuarioPrincipal, e.Fondo, e.Logo, e.ArchivoInicio1, e.ArchivoInicio2, u.CorreoElectronico, u.TipoDeUsuario, u.NombreApellido ";
         $sql .= "FROM Empresas e ";
-        $sql .= "INNER JOIN usuarios u ON u.Dni = e.UsuarioPrincipal;";
+        $sql .= "LEFT JOIN usuarios u ON u.Dni = e.UsuarioPrincipal;";
 
         $query = self::$conexion->prepare($sql);
 
@@ -25,7 +25,9 @@ class Repositorio_Empresa extends Repositorio
         $logo = null;
         $archivo_inicio1 = null;
         $archivo_inicio2 = null;
-        $ru = new Repositorio_Usuario();
+        $correo_electronico = null;
+        $tipo_de_usuario = null;
+        $nombre_apellido = null;
 
         if ($query->execute()) {
             $query->bind_result(
@@ -34,15 +36,18 @@ class Repositorio_Empresa extends Repositorio
                 $fondo,
                 $logo,
                 $archivo_inicio1,
-                $archivo_inicio2
+                $archivo_inicio2,
+                $correo_electronico,
+                $tipo_de_usuario,
+                $nombre_apellido
             );
 
-            $usuario_principal = $ru->get_by_dni($dni_usuario_principal);
             $empresas = [];
             while ($query->fetch()) {
-                $e = new Empresa($nombre, $usuario_principal, $fondo, $logo, $archivo_inicio1, $archivo_inicio2);
-                $empresas[] = $e;
+                $u = new Usuario($dni_usuario_principal, $correo_electronico, $tipo_de_usuario, null, $nombre_apellido);
+                $empresas[] = new Empresa($nombre, $u, $fondo, $logo, $archivo_inicio1, $archivo_inicio2);
             }
+
             return $empresas;
         }
     }
@@ -53,17 +58,21 @@ class Repositorio_Empresa extends Repositorio
             throw new Exception("La conexión no ha sido inicializada.");
         }
 
-        $sql = "SELECT Nombre, UsuarioPrincipal FROM Empresas WHERE Nombre = ? LIMIT 1;";
+        $sql = "SELECT e.UsuarioPrincipal, u.CorreoElectronico, u.TipoDeUsuario, u.NombreApellido FROM Empresas e  LEFT JOIN usuarios u ON u.Dni = e.UsuarioPrincipal WHERE Nombre = ? LIMIT 1;";
 
         $query = self::$conexion->prepare($sql);
         $query->bind_param("s", $nombre);
 
         $usuario_principal = null;
+        $correo_electronico = null;
+        $tipo_de_usuario = null;
+        $nombre_apellido = null;
 
         if ($query->execute()) {
-            $query->bind_result($nombre, $usuario_principal);
+            $query->bind_result($usuario_principal, $correo_electronico, $tipo_de_usuario, $nombre_apellido);
             if ($query->fetch()) {
-                return new Empresa($nombre, $usuario_principal);
+                $u = new Usuario($usuario_principal, $correo_electronico, $tipo_de_usuario, null, $nombre_apellido);
+                return new Empresa($nombre, $u);
             }
         }
         return null;
@@ -83,7 +92,6 @@ class Repositorio_Empresa extends Repositorio
         $fondo = $e->getFondo();
         $logo = $e->getLogo();
 
-        // Revisar si usuarioPrincipal no da error si es NULL
         if (!$query->bind_param("sss", $nombre, $fondo, $logo)) {
             echo "Fallo la consulta a la base de datos.";
             return false;
@@ -108,13 +116,13 @@ class Repositorio_Empresa extends Repositorio
         $logo = $e->getLogo();
         $archivo_inicio1 = $e->getArchivoInicio1();
         $archivo_inicio2 = $e->getArchivoInicio2();
-        $usuario_principal = $e->getUsuarioPrincipal();
+        $usuario_principal = $e->getUsuarioPrincipal() ? $e->getUsuarioPrincipal()->getDni() : null;
 
         if ($usuario_principal) {
             $dni_usuario = $usuario_principal->getDni();
         }
         // Revisar si usuarioPrincipal no da error si es NULL
-        if (!$query->bind_param("ssssss", $nombre, $fondo, $logo, $archivo_inicio1, $archivo_inicio2, $dni_usuario)) {
+        if (!$query->bind_param("ssssss", $fondo, $logo, $archivo_inicio1, $archivo_inicio2, $dni_usuario, $nombre)) {
             echo "Fallo la consulta a la base de datos.";
             return false;
         }

@@ -6,188 +6,95 @@ require_once __DIR__ . '/../classes/Usuario.php';
 
 class Repositorio_Departamento extends Repositorio
 {
-    // Verificar si el usuario (director) existe
-    public function getUsuarioPorDni($dni)
+    public function get_all()
     {
         if (!self::$conexion) {
             throw new Exception("La conexión no ha sido inicializada.");
         }
 
-        $dni_encontrado = null;
+        $sql = "SELECT ";
+        $sql .= "d.Nombre, d.Empresa, d.DirectorACargo, e.Nombre, e.usuarioPrincipal ";
+        $sql .= "FROM Departamentos d ";
+        $sql .= "INNER JOIN Empresas e ON e.Nombre = u.Empresa;";
 
-        $sql = "SELECT DNI FROM Usuarios WHERE DNI = ? and TipoDeUsuario = 'Directivo' ";
         $query = self::$conexion->prepare($sql);
-        $query->bind_param("s", $dni);
+
+        $nombre = null;
+        $empresa = null;
+        $director_a_cargo = null;
+        $nombre_empresa = null;
+        $usuario_principal = null;
 
         if ($query->execute()) {
-            $query->bind_result($dni_encontrado);
-            if ($query->fetch()) {
-                return $dni_encontrado;
-            } else {
-                print "El usuario no fue encontrado o el dni no pertenece a un directivo";
+            $query->bind_result(
+                $nombre,
+                $empresa,
+                $director_a_cargo,
+                $nombre_empresa,
+                $usuario_principal
+            );
+
+            $departamentos = [];
+            while ($query->fetch()) {
+                $e = new Empresa($nombre, $usuario_principal);
+                $departamentos[] = new Departamento($nombre, $director_a_cargo, $e);
             }
-            return null; // El usuario no existe
+
+            return $departamentos;
         }
     }
-    // Guardar el departamento y asignarlo al director
-    public function save(Departamento $d)
+
+    public function create(Departamento $d)
     {
         if (!self::$conexion) {
             throw new Exception("La conexión no ha sido inicializada.");
         }
 
-        $nombre_departamento = null;
-
-        $sql = "INSERT INTO Departamentos (nombre, DirectorAcargo) VALUES (?, ?)";
+        $sql = "INSERT INTO departamentos (Nombre, DirectorACargo, Empresa) 
+                VALUES (?, ?, ?);";
         $query = self::$conexion->prepare($sql);
 
-        $nombre_departamento = $d->getNombre();
-        $dni_director = $d->getDirectorAcargo(); // Obtiene el DNI del director
+        $nombre = $d->getNombre();
+        $director_a_cargo = $d->getDirectorAcargo() ? $d->getDirectorAcargo()->getDni() : null;
+        $empresa = $d->getEmpresa()->getNombre();
 
-        $query->bind_param("ss", $nombre_departamento, $dni_director);
+        if (!$query->bind_param("sis", $nombre, $director_a_cargo, $empresa)) {
+            echo "Fallo la consulta a la base de datos.";
+            return false;
+        }
+
         return $query->execute();
     }
 
-    public function obtenerDepartamentoPorDni($dni)
+    public function update(Departamento $d)
     {
         if (!self::$conexion) {
             throw new Exception("La conexión no ha sido inicializada.");
         }
 
-        $sql = "SELECT Departamento FROM Usuarios WHERE Dni = ?";
-        $query = self::$conexion->prepare($sql);
-
-        if (!$query) {
-            throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
-        }
-
-        $nombre_departamento = null;
-
-        $query->bind_param("s", $dni); // Asocia el DNI proporcionado al parámetro
-
-        if ($query->execute()) {
-            $query->bind_result($nombre_departamento);
-            if ($query->fetch()) {
-                $query->close();
-                return $nombre_departamento;
-            }
-        }
-
-        $query->close();
-        return null; // Retorna null si no hay resultados
-    }
-
-
-    public function obtenerDirectorACargo($departamento)
-    {
-        if (!self::$conexion) {
-            throw new Exception("La conexión no ha sido inicializada.");
-        }
-
-        $nombre = null;
-        $apellido = null;
-
-        $sql = "SELECT Nombre, Apellido FROM Usuarios WHERE Departamento = ? and TipoDeUsuario='Directivo' ";
-        $query = self::$conexion->prepare($sql);
-        $query->bind_param("s", $departamento);
-
-        if ($query->execute()) {
-            $query->bind_result($nombre, $apellido);
-            if ($query->fetch()) {
-                return $nombre . " " . $apellido; // Devuelve el nombre completo
-            }
-        }
-
-        return null; // El DNI no corresponde a ningún usuario
-    }
-
-    public function ObtenerListaDepartamento()
-    {
-        if (!self::$conexion) {
-            throw new Exception("La conexión no ha sido inicializada.");
-        }
-
-        $sql = "SELECT concat (u.nombre, ' ', u.apellido) as nombre, d.nombre AS NombreDepartamento, d.DirectorACargo as dni
-                FROM usuarios u
-                LEFT JOIN departamentos d ON u.Dni = d.DirectorACargo
-                WHERE TipoDeUsuario = 'Directivo' and u.Departamento != 'Sin Departamento'";
+        $sql = "UPDATE departamentos SET DirectorACargo = ?, Empresa = ? ";
+        $sql .= "WHERE Nombre = ?;";
 
         $query = self::$conexion->prepare($sql);
 
-        if ($query->execute()) {
-            $result = $query->get_result();
-            $listaDepartamento = []; // Declaración del array
+        $nombre = $d->getNombre();
+        $director_a_cargo = $d->getDirectorAcargo();
+        $empresa = $d->getEmpresa();
 
-            while ($fila = $result->fetch_assoc()) {
-                $listaDepartamento[] = [
-                    'nombreDepartamento' => $fila['NombreDepartamento'],
-                    'nombreDirector' => $fila['nombre'],
-                    'dniDirector' => $fila['dni']
-
-                ];
-            }
-
-            // Aquí devuelves todo el array acumulado
-            return $listaDepartamento;
+        if ($director_a_cargo) {
+            $dni_usuario = $director_a_cargo->getDni();
         }
-
-        // En caso de fallo de la consulta, devuelves un array vacío
-        return [];
-    }
-    public function actualizarDepartamento($nombreNuevo, $dniViejo, $dniNuevo)
-    {
-        if (!self::$conexion) {
-            throw new Exception("La conexión no ha sido inicializada.");
+        if ($empresa) {
+            $nombre_empresa = $empresa->getNombre();
         }
-
-        $sql = "UPDATE departamentos SET Nombre = ?, DirectorACargo = ? WHERE DirectorACargo = ?";
-        $query = self::$conexion->prepare($sql);
-        return $query->execute([$nombreNuevo, $dniNuevo, $dniViejo]);
-    }
-
-
-    public function verificarDniEnUso($dni)
-    {
-        if (!self::$conexion) {
-            throw new Exception("La conexión no ha sido inicializada.");
-        }
-
-        $count = null;
-
-        $sql = "SELECT COUNT(*) FROM departamentos WHERE DirectorACargo = ?";
-        $query = self::$conexion->prepare($sql);
-        $query->bind_param("s", $dni);
-        $query->execute();
-        $query->bind_result($count);
-        $query->fetch();
-        $query->close();
-
-        // Si el resultado es mayor que 0, el DNI ya está en uso
-        return $count > 0;
-    }
-
-    public function EliminarDepartamento($nombre_departamento)
-    {
-        if (!self::$conexion) {
-            throw new Exception("La conexión no ha sido inicializada.");
-        }
-
-        $sql = "DELETE FROM DEPARTAMENTOS WHERE Nombre = ?";
-        $query = self::$conexion->prepare($sql);
-
-        if (!$query) {
-            error_log("Error en la preparación de la consulta: " . self::$conexion->error);
+        // Revisar si usuarioPrincipal no da error si es NULL
+        if (!$query->bind_param("sis", $dni_usuario, $nombre_empresa, $nombre)) {
+            echo "Fallo la consulta a la base de datos.";
             return false;
         }
 
-        $query->bind_param("s", $nombre_departamento);
-        $resultado = $query->execute();
-
-        if (!$resultado) {
-            error_log("Error al ejecutar la consulta: " . $query->error);
-            return false;
-        }
-
-        return true; // Retorna true si se eliminó correctamente
+        return $query->execute();
     }
+
+    public function delete($nombre) {}
 }

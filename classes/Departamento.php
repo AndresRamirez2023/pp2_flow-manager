@@ -4,36 +4,37 @@ require_once 'Usuario.php';
 class Departamento
 {
     protected $nombre;
-    protected $directorAcargo; // Es correcto, pero mantén la consistencia
+    protected $directorAcargo;
+    protected $empresa;
 
-    // Constructor, el director puede ser null
-    public function __construct($nombre, Usuario $directorAcargo = null)
+    public function __construct($nombre, Usuario $directorAcargo = null, Empresa $empresa)
     {
         $this->nombre = $nombre;
         $this->directorAcargo = $directorAcargo;
+        $this->empresa = $empresa;
     }
 
-    // Obtener el nombre del departamento
     public function getNombre()
     {
         return $this->nombre;
     }
 
-    // Obtener el DNI del director, si existe
     public function getDirectorAcargo()
     {
-        // Verificar si el director existe antes de intentar obtener el DNI
-        return $this->directorAcargo ? $this->directorAcargo->getDni() : 'Sin director';
+        return $this->directorAcargo;
     }
 
-    // Establecer el director a cargo
     public function setDirectorAcargo(Usuario $director)
     {
         $this->directorAcargo = $director;
     }
+
+    public function setEmpresa(Empresa $empresa)
+    {
+        $this->empresa = $empresa;
+    }
+    public function getEmpresa()
+    {
+        return $this->empresa;
+    }
 }
-
-
-
-
-

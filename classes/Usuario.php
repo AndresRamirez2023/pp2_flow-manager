@@ -7,10 +7,8 @@ class Usuario
 
     // DNI (Clave primaria)
     protected $dni;
-    // Nombre
-    protected $nombre;
-    // Apellido
-    protected $apellido;
+    // Nombre y apellido
+    protected $nombreApellido;
     // Correo Electrónico
     protected $correoElectronico;
     // Fecha de Nacimiento
@@ -30,8 +28,7 @@ class Usuario
         $correoElectronico,
         $tipoUsuario,
         ?Departamento $departamento = null,
-        $nombre = null,
-        $apellido = null,
+        $nombreApellido = null,
         $fechaNac = null,
         $domicilio = null,
         $telefono = null
@@ -39,8 +36,7 @@ class Usuario
         $this->dni = $dni;
         $this->correoElectronico = $correoElectronico;
         $this->tipoUsuario = $tipoUsuario;
-        $this->nombre = $nombre;
-        $this->apellido = $apellido;
+        $this->nombreApellido = $nombreApellido;
         $this->fechaNac = $fechaNac;
         $this->domicilio = $domicilio;
         $this->telefono = $telefono;
@@ -53,14 +49,9 @@ class Usuario
         return $this->dni;
     }
 
-    public function getNombre()
+    public function getNombreApellido()
     {
-        return $this->nombre;
-    }
-
-    public function getApellido()
-    {
-        return $this->apellido;
+        return $this->nombreApellido;
     }
 
     public function getFechaNac()
@@ -91,7 +82,7 @@ class Usuario
     public function getEmpresa()
     {
         // devuelve la empresa
-       $this->empresa->getNombre();
+        $this->empresa->getNombre();
     }
 
 
@@ -124,14 +115,9 @@ class Usuario
     }
 
     // SETTERS
-    public function setNombre($nombre)
+    public function setNombreApellido($nombreApellido)
     {
-        $this->nombre = $nombre;
-    }
-
-    public function setApellido($apellido)
-    {
-        $this->apellido = $apellido;
+        $this->nombreApellido = $nombreApellido;
     }
 
     public function setFechaNac($fechaNacimiento)

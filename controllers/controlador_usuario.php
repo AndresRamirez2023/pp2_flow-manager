@@ -13,24 +13,19 @@ class Controlador_Usuario
         return $this->ru->get_all();
     }
 
-    public function get_by_dni($dni) {}
+    public function get_by_dni($dni)
+    {
+        return $this->ru->get_by_dni($dni);
+    }
 
     public function get_by_email($email)
     {
-        $this->ru->get_by_email($email);
+        return $this->ru->get_by_email($email);
     }
 
-    public function save(Usuario $usuario, $nombreApellido, $clave)
+    public function save(Usuario $usuario, $clave)
     {
         try {
-            // Separar nombre y apellido
-            $nombreApellidoArray = explode(" ", $nombreApellido, 2);
-            $nombre = $nombreApellidoArray[0];
-            $apellido = isset($nombreApellidoArray[1]) ? $nombreApellidoArray[1] : "";
-
-            $usuario->setNombre($nombre);
-            $usuario->setApellido($apellido);
-
             $this->validator($usuario, $clave);
 
             return $this->ru->save($usuario, $clave);
@@ -41,17 +36,9 @@ class Controlador_Usuario
         }
     }
 
-    public function update(Usuario $usuario, $nombreApellido, $clave)
+    public function update(Usuario $usuario, $clave)
     {
         try {
-            // Separar nombre y apellido
-            $nombreApellidoArray = explode(" ", $nombreApellido, 2);
-            $nombre = $nombreApellidoArray[0];
-            $apellido = isset($nombreApellidoArray[1]) ? $nombreApellidoArray[1] : "";
-
-            $usuario->setNombre($nombre);
-            $usuario->setApellido($apellido);
-
             $this->validator($usuario, $clave);
 
             return $this->ru->update($usuario, $clave);
@@ -94,8 +81,8 @@ class Controlador_Usuario
         }
 
         // Validar nombre y apellido (solo letras y espacios, entre 2 y 50 caracteres)
-        if (($usuario->getNombre() && $usuario->getApellido()) && (!preg_match('/^[A-Za-zÀ-ÿ\s]{2,50}$/', $usuario->getNombre()) || !preg_match('/^[A-Za-zÀ-ÿ\s]{2,50}$/', $usuario->getApellido()))) {
-            throw new Exception('Error: El nombre y el apellido solo pueden contener letras y espacios, entre 2 y 50 caracteres.');
+        if ($usuario->getNombreApellido() && !preg_match('/^[A-Za-zÀ-ÿ\s]{2,100}$/', $usuario->getNombreApellido())) {
+            throw new Exception('Error: El nombre y el apellido solo pueden contener letras y espacios.');
         }
 
         // Validar fecha de nacimiento (formato válido y usuario mayor de edad)
@@ -124,7 +111,7 @@ class Controlador_Usuario
         }
 
         // Validar contraseña (mínimo 8 caracteres, al menos una letra y un número)
-        if ($clave && !preg_match('/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/', $clave)) {
+        if ($clave && !preg_match('/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&.]{8,}$/', $clave)) {
             throw new Exception('Error: La contraseña debe tener al menos 8 caracteres, incluyendo una letra y un número.');
         }
     }

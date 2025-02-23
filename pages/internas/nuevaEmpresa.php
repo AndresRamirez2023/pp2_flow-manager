@@ -1,7 +1,7 @@
 <?php
 require_once '../../controllers/Controlador_Empresa.php';
 require_once '../../controllers/Controlador_Usuario.php';
-// require_once '../../controllers/Controlador_Departamento.php';
+require_once '../../controllers/Controlador_Departamento.php';
 require_once '../../classes/Empresa.php';
 require_once '../../classes/Usuario.php';
 
@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     }
 
     // Crear empresa
-    $empresa = new Empresa($nombreEmpresa, $fondoPath, $logoPath);
+    $empresa = new Empresa($nombreEmpresa, null, $fondoPath, $logoPath);
     $result = $ce->create($empresa);
 
     if ($result) {
@@ -90,15 +90,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     }
 
     $cu = new Controlador_Usuario();
-    // $cd = new Controlador_Departamento();
+    $cd = new Controlador_Departamento();
     $nombreEmpresa = $_SESSION['nombreEmpresa'];
 
     // Datos del usuario
     $dni = trim($_POST['dni']);
-    $nombreApellido = trim($_POST['nombreApellido']);
+    $nombreApellido = trim($_POST['nombre']) . ' ' . trim($_POST['apellido']);
     $email = trim($_POST['email']);
     $tipoUsuario = "RRHH";
-    $claveGenerada = $nombreEmpresa . "123";
+    $claveGenerada = preg_replace('/[^A-Za-z0-9_-]/', '.', $nombreEmpresa) . "123";
+
+    while (strlen($claveGenerada) < 8) {
+        $claveGenerada .= strlen($claveGenerada) - 2;
+    }
+
+    echo "<p>Clave generada: <strong>" . htmlspecialchars($claveGenerada, ENT_QUOTES, 'UTF-8') . "</strong></p>";
 
     if (empty($dni) || empty($nombreApellido) || empty($email)) {
         $_SESSION['mensaje'] = "Todos los campos son obligatorios. Revise los datos ingresados.";
@@ -108,31 +114,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     }
 
     if ($cu->get_by_dni($dni) !== null) {
-        $_SESSION['mensaje'] = "El usuario ya está <b>registrado</b> (el DNI ya se encuentra en el sistema). Revise los datos ingresados y/o los usuarios creados anteriormente.";
+        $_SESSION['mensaje'] = "El usuario <b>ya se encuentra registrado</b> en el sistema. Revise los datos ingresados y/o los usuarios creados anteriormente.";
         $_SESSION['mensaje_tipo'] = "danger";
         header('Location: nuevaEmpresa.php');
         exit();
     }
 
     // // Crear objeto Departamento
-    /* Cambiar esto para que se cree un primer departamento de Recursos Humanos asociado a la empresa y el usuario asociado al departamento */
-    $departamento = new Departamento("Recursos Humanos");
+    $empresa = new Empresa($nombreEmpresa);
+    $departamento = new Departamento($nombreEmpresa  . "_Recursos Humanos", null, $empresa);
+
+    $result = $cd->create($departamento);
 
     // Objeto Usuario
     $usuario = new Usuario(
         $dni,
         $email,
         $tipoUsuario,
-        $departamento
+        $departamento,
+        $nombreApellido
     );
 
-    $result = $cu->save($usuario, $nombreApellido, $claveGenerada);
+    $result = $cu->save($usuario, $claveGenerada);
 
     if ($result) {
         $_SESSION['empresaCreada'] = false;
         $_SESSION['nombreEmpresa'] = null;
         $_SESSION['mensaje'] = "Usuario <b>creado correctamente</b>. Ya puede compartir la <b>información inicial</b> con el cliente.";
-        $_SESSION['mensaje_tipo'] = "success";
+        $_SESSION['mensaje_tipo'] = "info";
+    } else {
+        $_SESSION['mensaje'] = "<b>Error</b> al crear la empresa. Verifique los datos, si el problema persiste <b>contacte a un administrador</b>.";
+        $_SESSION['mensaje_tipo'] = "danger";
     }
 
     header('Location: nuevaEmpresa.php');
@@ -168,14 +180,13 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
     <header>
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container-fluid">
-                <!-- Logo de la empresa cliente -->
-                <a class="navbar-brand" href="nuevaEmpresa.php">
+                <a class="navbar-brand" href="empresas.php">
                     <img id="logo" src="../img/Logo - FlowManager.svg" alt="Logo Empresa" />
                 </a>
 
                 <!-- Navegación -->
                 <div class="navbar-nav ms-auto">
-                    <!-- Foto de perfil y menú flotante -->
+                    <!-- menú flotante -->
                     <div class="profile-container position-relative">
                         <div class="nav-profile me-4" id="profileMenu" role="button">
                             <img src="../img/empleador.jpg" alt="Foto de perfil" class="profile-pic-img" />
@@ -207,7 +218,6 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
                         <?php
                         unset($_SESSION['mensaje']);
                         unset($_SESSION['mensaje_tipo']);
-                        unset($_SESSION['mensaje_mostrado']);
                         ?>
                     <?php endif; ?>
 
@@ -228,7 +238,7 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
                         <div class="mb-3">
                             <label for="fondoEmpresa" class="form-label">Fondo de inicio (JPG, PNG, SVG)</label>
                             <input type="file" class="form-control" id="fondoEmpresa" name="fondoEmpresa"
-                                accept="image/*" <?php echo $empresaCreada ? 'disabled' : ''; ?>>
+                                accept="image/*" <?php echo $empresaCreada ? 'disabled' : 'required'; ?>>
                         </div>
 
                         <button type="submit" class="btn btn-primary" name="accion" value="crearEmpresa" <?php echo $empresaCreada ? 'disabled' : ''; ?>>Crear Empresa</button>
@@ -236,9 +246,16 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
                         <h2 class="mt-4">Datos del Usuario primario</h2>
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label for="nombreApellido" class="form-label">Nombre y Apellido <b>*</b></label>
-                                <input type="text" class="form-control" id="nombreApellido" name="nombreApellido" <?php echo !$empresaCreada ? 'disabled' : ''; ?> pattern="^[A-Za-zÀ-ÿ\s]{2,50}$"
+                                <label for="nombre" class="form-label">Nombre/s <b>*</b></label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" <?php echo !$empresaCreada ? 'disabled' : ''; ?> pattern="^[A-Za-zÀ-ÿ\s]{2,50}$"
                                     title="El nombre debe contener solo letras y espacios, entre 2 y 50 caracteres."
+                                    required />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="apellido" class="form-label">Apellido/s <b>*</b></label>
+                                <input type="text" class="form-control" id="apellido" name="apellido" <?php echo !$empresaCreada ? 'disabled' : ''; ?> pattern="^[A-Za-zÀ-ÿ\s]{2,50}$"
+                                    title="El apellido debe contener solo letras y espacios, entre 2 y 50 caracteres."
                                     required />
                             </div>
 

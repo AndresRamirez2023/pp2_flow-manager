@@ -8,8 +8,8 @@ require_once 'Repositorio.php';
 class Repositorio_Usuario extends Repositorio
 {
 
-    protected $selectSql = "SELECT u.Dni, u.Nombre, u.Apellido, u.FechaNacimiento, u.Domicilio, u.CorreoElectronico, 
-                        u.Telefono, u.TipoDeUsuario, d.Nombre
+    protected $selectSql = "SELECT u.Dni, u.NombreApellido, u.FechaNacimiento, u.Domicilio, u.CorreoElectronico, 
+                        u.Telefono, u.TipoDeUsuario, d.Nombre, d.DirectorACargo, d.Empresa
                         FROM Usuarios u
                         LEFT JOIN Departamentos d ON d.Nombre = u.Departamento";
 
@@ -36,6 +36,7 @@ class Repositorio_Usuario extends Repositorio
         $telefono = null;
         $tipo_usuario = null;
         $nombre_departamento = null;
+        $nombre_empresa = null;
 
         if ($query->execute()) {
             $query->bind_result(
@@ -47,12 +48,14 @@ class Repositorio_Usuario extends Repositorio
                 $correo_electronico,
                 $telefono,
                 $tipo_usuario,
-                $nombre_departamento
+                $nombre_departamento,
+                $nombre_empresa
             );
 
             $usuarios = [];
             while ($query->fetch()) {
-                $departamento = new Departamento($nombre_departamento);
+                $e = new Empresa($nombre);
+                $departamento = new Departamento($nombre_departamento, null, $e);
 
                 $e = new Usuario(
                     $dni,
@@ -71,60 +74,68 @@ class Repositorio_Usuario extends Repositorio
         }
     }
 
-    public function login($correo_electronico, $clave)
+    public function login($username, $clave)
     {
         if (!self::$conexion) {
             throw new Exception("La conexión no ha sido inicializada.");
         }
-    
-        $q = "SELECT * FROM usuarios WHERE CorreoElectronico = ?";
+
+        $id = null;
+        $dni = null;
+        $nombre_apellido = null;
+        $fecha_nacimiento = null;
+        $domicilio = null;
+        $correo_electronico = null;
+        $telefono = null;
+        $tipoDeUsuario = null;
+        $departamento = null;
+        $clave_encriptada = '';
+
+        if (gettype($username) === 'integer') {
+            $q = "SELECT * FROM usuarios WHERE Dni = ?";
+        } elseif (gettype($username === 'string')) {
+            $q = "SELECT * FROM usuarios WHERE CorreoElectronico = ?";
+        }
+
         $query = self::$conexion->prepare($q);
-    
         if (!$query) {
             throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
         }
 
-        $query->bind_param('s', $correo_electronico);
+        $query->bind_param('s', $username);
 
-        $query->execute();
-        $result = $query->get_result();
-        if ($row = $result->fetch_assoc()) {
-            // Verificar la contraseña
-            if (password_verify($clave, $row['Clave'])) {
-                // Verificar el Departamento
-                $departamentoObj = null;
-                if ($row['Departamento'] !== 'Sin Departamento' && $row['Departamento'] !== null) {
-                    $departamentoObj = new Departamento($row['Departamento']);
+        if ($query->execute()) {
+            $query->bind_result(
+                "issssssss",
+                $dni,
+                $nombre_apellido,
+                $fecha_nacimiento,
+                $domicilio,
+                $correo_electronico,
+                $telefono,
+                $tipoDeUsuario,
+                $departamento,
+                $clave_encriptada
+            );
+            if ($query->fetch()) {
+                if (password_verify($clave, $clave_encriptada)) {
+
+                    return new Usuario(
+                        $dni,
+                        $nombre_apellido,
+                        $fecha_nacimiento,
+                        $domicilio,
+                        $correo_electronico,
+                        $telefono,
+                        $tipoDeUsuario,
+                        $departamento
+                    );
                 }
-    
-                // Verificar la Empresa (no puede ser NULL ni 'Sin Empresa')
-                $empresaObj = null;
-                if ($row['Empresa'] !== 'Sin Empresa' && $row['Empresa'] !== null) {
-                    $empresaObj = new Empresa($row['Empresa']);
-                } else {
-                    // Si la empresa es NULL o 'Sin Empresa', puedes lanzar una excepción o manejarlo de otra manera
-                    throw new Exception("El usuario no tiene una empresa válida.");
-                }
-    
-                // Retornar un objeto Usuario con los datos obtenidos
-                return new Usuario(
-                    $row['Dni'],
-                    $row['Nombre'],
-                    $row['Apellido'],
-                    $row['FechaNac'],
-                    $row['Domicilio'],
-                    $row['CorreoElectronico'],
-                    $row['Telefono'],
-                    $row['TipoUsuario'],
-                    $departamentoObj  // Pasa el objeto Departamento o null
-                );
             }
         }
-
-        $query->close();
-        return false; // Retorna false si el usuario no existe o la contraseña es incorrecta
+        return null;
     }
-    
+
     public function save(Usuario $usuario, $clave)
     {
         if (!self::$conexion) {
@@ -133,15 +144,13 @@ class Repositorio_Usuario extends Repositorio
 
         // Obtener los datos del objeto $usuario
         $dni = $usuario->getDni();
-        $nombre = $usuario->getNombre();
-        $apellido = $usuario->getApellido();
+        $nombre_apellido = $usuario->getNombreApellido();
         $fecha_nacimiento = $usuario->getfechaNac();
         $domicilio = $usuario->getDomicilio();
         $correo_electronico = $usuario->getCorreoElectronico();
         $telefono = $usuario->getTelefono();
         $tipoDeUsuario = $usuario->getTipoUsuario();
-        $Departamento = $usuario->getDepartamento();
-        $empresa = 'flowmanager';
+        $departamento = $usuario->getDepartamento();
 
         // Encriptar la contraseña
         $clave_encriptada = password_hash($clave, PASSWORD_DEFAULT);
@@ -149,8 +158,8 @@ class Repositorio_Usuario extends Repositorio
         // **INSERCIÓN EN LA BASE DE DATOS**
 
         // Definición de la consulta
-        $q = "INSERT INTO usuarios (Dni, Nombre, Apellido, FechaNacimiento, Domicilio, CorreoElectronico, Telefono, TipoDeUsuario, Departamento, clave)";
-        $q .= " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $q = "INSERT INTO usuarios (Dni, NombreApellido, FechaNacimiento, Domicilio, CorreoElectronico, Telefono, TipoDeUsuario, Departamento, clave)";
+        $q .= " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         // Preparar la consulta
         $query = self::$conexion->prepare($q);
@@ -160,16 +169,15 @@ class Repositorio_Usuario extends Repositorio
 
         // Vincular los parámetros
         $query->bind_param(
-            "isssssssss",
+            "issssssss",
             $dni,
-            $nombre,
-            $apellido,
+            $nombre_apellido,
             $fecha_nacimiento,
             $domicilio,
             $correo_electronico,
             $telefono,
             $tipoDeUsuario,
-            $Departamento,
+            $departamento,
             $clave_encriptada
         );
 
@@ -182,15 +190,15 @@ class Repositorio_Usuario extends Repositorio
             throw new Exception("La conexión no ha sido inicializada.");
         }
 
-        $dni = null;
-        $nombre = null;
-        $apellido = null;
+        $nombre_apellido = null;
         $fecha_nac = null;
         $domicilio = null;
         $correo_electronico = null;
         $telefono = null;
         $tipo_usuario = null;
         $nombre_departamento = null;
+        $director_a_cargo = null;
+        $nombre_empresa = null;
 
         $newSql = $this->selectSql . " WHERE u.Dni = ? LIMIT 1;";
 
@@ -203,23 +211,24 @@ class Repositorio_Usuario extends Repositorio
         $query->execute();
         $query->bind_result(
             $dni,
-            $nombre,
-            $apellido,
+            $nombre_apellido,
             $fecha_nac,
             $domicilio,
             $correo_electronico,
             $telefono,
             $tipo_usuario,
-            $nombre_departamento
+            $nombre_departamento,
+            $director_a_cargo,
+            $nombre_empresa
         );
 
         if ($query->fetch()) {
-            $departamento = new Departamento($nombre_departamento);
+            $e = new Empresa($nombre_empresa);
+            $departamento = new Departamento($nombre_departamento, $director_a_cargo, $e);
             $query->close();
             return new Usuario(
                 $dni,
-                $nombre,
-                $apellido,
+                $nombre_apellido,
                 $fecha_nac,
                 $domicilio,
                 $correo_electronico,
@@ -242,14 +251,15 @@ class Repositorio_Usuario extends Repositorio
         }
 
         $dni = null;
-        $nombre = null;
-        $apellido = null;
+        $nombre_apellido = null;
         $fecha_nac = null;
         $domicilio = null;
         $correo_electronico = null;
         $telefono = null;
         $tipo_usuario = null;
         $nombre_departamento = null;
+        $director_a_cargo = null;
+        $nombre_empresa = null;
 
         $newSql = $this->selectSql . " WHERE u.CorreoElectronico = ? LIMIT 1;";
 
@@ -265,23 +275,24 @@ class Repositorio_Usuario extends Repositorio
         // Vincular los resultados a variables
         $query->bind_result(
             $dni,
-            $nombre,
-            $apellido,
+            $nombre_apellido,
             $fecha_nac,
             $domicilio,
             $correo_electronico,
             $telefono,
             $tipo_usuario,
-            $nombre_departamento
+            $nombre_departamento,
+            $director_a_cargo,
+            $nombre_empresa
         );
 
         if ($query->fetch()) {
-            $departamento = new Departamento($nombre_departamento);
+            $e = new Empresa($nombre_empresa);
+            $departamento = new Departamento($nombre_departamento, $director_a_cargo, $e);
             $query->close();
             return new Usuario(
                 $dni,
-                $nombre,
-                $apellido,
+                $nombre_apellido,
                 $fecha_nac,
                 $domicilio,
                 $correo_electronico,
@@ -293,7 +304,6 @@ class Repositorio_Usuario extends Repositorio
         $query->close();
         return null;
     }
-
 
     public function update(Usuario $usuario, $clave = null)
     {
@@ -326,8 +336,7 @@ class Repositorio_Usuario extends Repositorio
 
         // Obtener los datos del objeto $usuario
         $dni = $usuario->getDni();
-        $nombre = $usuario->getNombre();
-        $apellido = $usuario->getApellido();
+        $nombre_apellido = $usuario->getNombreApellido();
         $fecha_nacimiento = $usuario->getFechaNac();
         $domicilio = $usuario->getDomicilio();
         $correo_electronico = $usuario->getCorreoElectronico();
@@ -339,9 +348,8 @@ class Repositorio_Usuario extends Repositorio
 
             // Vincular parámetros con la contraseña
             $query->bind_param(
-                "sssssssss", // Tipos
-                $nombre,
-                $apellido,
+                "sssssssi",
+                $nombre_apellido,
                 $fecha_nacimiento,
                 $domicilio,
                 $correo_electronico,
@@ -353,9 +361,8 @@ class Repositorio_Usuario extends Repositorio
         } else {
             // Vincular parámetros sin la contraseña
             $query->bind_param(
-                "ssssssss", // Tipos
-                $nombre,
-                $apellido,
+                "ssssssi",
+                $nombre_apellido,
                 $fecha_nacimiento,
                 $domicilio,
                 $correo_electronico,

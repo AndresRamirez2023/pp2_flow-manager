@@ -12,11 +12,11 @@ class Empresa
 
     public function __construct(
         $nombre,
+        Usuario $usuarioPrincipal = null,
         $fondo = null,
         $logo = null,
         $archivoInicio1 = null,
-        $archivoInicio2 = null,
-        Usuario $usuarioPrincipal = null
+        $archivoInicio2 = null
     ) {
         $this->nombre = $nombre;
         $this->fondo = $fondo;
