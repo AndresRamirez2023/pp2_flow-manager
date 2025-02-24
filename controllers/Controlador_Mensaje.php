@@ -47,4 +47,21 @@ class Controlador_Mensaje
 
         return false;
     }
+
+    public function UpdateMensajesArchivo($DniReceptor, $nuevoTitulo, $nuevoTipo, $nuevoCuerpo , $Contenido=null, $dniCreador=null){
+        $this->repositorioMensaje->UpdateMensajes($DniReceptor, $nuevoTitulo, $nuevoTipo, $nuevoCuerpo);
+
+        if (!empty($Contenido) && !empty($dniCreador)){
+            $this->repositorioArchivo->UpdateArchivo($Contenido, $dniCreador);
+        }
+        return true; 
+    }
+
+    public function DeleteMensajes($TituloMensaje, $DniReceptor, $Contenido=null, $dniCreador=null){
+        $this->repositorioMensaje->DeleteMensajes($TituloMensaje, $DniReceptor);
+        if (!empty($Contenido) && !empty($dniCreador)){
+            $this->repositorioArchivo->DeleteArchivo($Contenido, $dniCreador);
+        }
+        return true; 
+    }
 }

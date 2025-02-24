@@ -93,6 +93,7 @@ if (isset($_SESSION['usuario'])) {
         <div class="container my-4 bg-white rounded shadow-sm">
           <h2>Agregar Usuario</h2>
           <form
+  
             id="form-agregar-usuario"
             class="row g-3"
             action="../../controllers/controlador_usuario.php"
@@ -169,7 +170,7 @@ if (isset($_SESSION['usuario'])) {
                 title="El usuario debe ser mayor de edad."
                 required />
             </div>
-            
+
             <div class="col-md-6">
               <label for="empresa" class="form-label">Empresa</label>
               <input
@@ -223,39 +224,39 @@ if (isset($_SESSION['usuario'])) {
             }
           }
         </script>
-        </div>
-      </main>
     </div>
+    </main>
+  </div>
   </div>
   <!-- Script JavaScript -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const tipoEnvioRadios = document.querySelectorAll('input[name="tipoEnvio"]');
-    const seccionAviso = document.getElementById('seccion-aviso');
-    const seccionDocumento = document.getElementById('seccion-documento');
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const tipoEnvioRadios = document.querySelectorAll('input[name="tipoEnvio"]');
+      const seccionAviso = document.getElementById('seccion-aviso');
+      const seccionDocumento = document.getElementById('seccion-documento');
 
-    // Función para mostrar la sección correspondiente
-    function actualizarSeccion() {
+      // Función para mostrar la sección correspondiente
+      function actualizarSeccion() {
         const tipoEnvioSeleccionado = document.querySelector('input[name="tipoEnvio"]:checked').value;
 
         if (tipoEnvioSeleccionado === 'aviso') {
-            seccionAviso.classList.remove('d-none');
-            seccionDocumento.classList.add('d-none');
+          seccionAviso.classList.remove('d-none');
+          seccionDocumento.classList.add('d-none');
         } else if (tipoEnvioSeleccionado === 'documento') {
-            seccionAviso.classList.add('d-none');
-            seccionDocumento.classList.remove('d-none');
+          seccionAviso.classList.add('d-none');
+          seccionDocumento.classList.remove('d-none');
         }
-    }
+      }
 
-    // Inicializa las secciones basadas en la selección por defecto
-    actualizarSeccion();
+      // Inicializa las secciones basadas en la selección por defecto
+      actualizarSeccion();
 
-    // Actualiza la sección cuando se cambie la opción
-    tipoEnvioRadios.forEach(radio => {
+      // Actualiza la sección cuando se cambie la opción
+      tipoEnvioRadios.forEach(radio => {
         radio.addEventListener('change', actualizarSeccion);
+      });
     });
-});
-</script>
+  </script>
 
   <!-- Bootstrap 5 JS -->
   <script src="../../assets/dist/js/bootstrap.bundle.min.js"></script>
