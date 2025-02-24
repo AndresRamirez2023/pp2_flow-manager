@@ -83,7 +83,7 @@ unset($_SESSION['mensaje_mostrado']);
                             <?php
                             if (count($empresas) === 0) {
                                 echo '<tr>
-                            <th colspan="6" class="text-center"><h3>No se agregaron Empresas aún</h3></th>
+                            <th colspan="6" class="text-center"><h3>No se agregaron empresas al sistema</h3></th>
                             </tr>';
                             } else {
                                 foreach ($empresas as $empresa): ?>
