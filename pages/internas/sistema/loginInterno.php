@@ -12,28 +12,28 @@ if (isset($_SESSION['super_user'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login &#65381; Flow Manager</title>
-    <link rel="icon" href="../img/Icon - FlowManager.png">
+    <link rel="icon" href="../../img/Icon - FlowManager.png">
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Poppins&display=swap" rel="stylesheet">
 
     <!-- Bootstrap 5 CSS -->
     <link
-        href="../../assets/dist/css/bootstrap.min.css"
+        href="../../../assets/dist/css/bootstrap.min.css"
         rel="stylesheet" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/panel.css">
-    <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="../css/loginInterno.css">
+    <link rel="stylesheet" href="../../css/panel.css">
+    <link rel="stylesheet" href="../../css/styles.css">
+    <link rel="stylesheet" href="../../css/loginInterno.css">
 </head>
 
 <body>
     <div class="login-container">
         <div class="logo-container">
-            <img src="../img/Icon - FlowManager.png" alt="Flow Manager Logo">
+            <img src="../../img/Icon - FlowManager.png" alt="Flow Manager Logo">
         </div>
-        <form action="../php/Validar_Login_Interno.php" method="POST">
+        <form action="../../php/Validar_Login_Interno.php" method="POST">
             <h2><b>FLOW MANAGER</b></h2>
             <p class="text-center text-muted">Ingreso al sistema <b>Interno</b></p>
 
@@ -73,7 +73,7 @@ if (isset($_SESSION['super_user'])) {
     </div>
 
     <!-- Bootstrap 5 JS -->
-    <script src="../../assets/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../../assets/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

@@ -1,9 +1,9 @@
 <?php
-require_once '../../controllers/Controlador_Empresa.php';
-require_once '../../controllers/Controlador_Usuario.php';
-require_once '../../controllers/Controlador_Departamento.php';
-require_once '../../classes/Empresa.php';
-require_once '../../classes/Usuario.php';
+require_once '../../../controllers/Controlador_Empresa.php';
+require_once '../../../controllers/Controlador_Usuario.php';
+require_once '../../../controllers/Controlador_Departamento.php';
+require_once '../../../classes/Empresa.php';
+require_once '../../../classes/Usuario.php';
 
 session_start();
 
@@ -19,6 +19,20 @@ if (!isset($_SESSION['super_user'])) {
 }
 $superUser = unserialize($_SESSION['super_user']);
 
+$nombreEmpresa = null;
+if (isset($_GET['nombreEmpresa'])) {
+    $nombreEmpresa = $_GET['nombreEmpresa'];
+
+    $ce = new Controlador_Empresa();
+    $e = $ce->get_by_name($nombreEmpresa);
+
+    if ($e !== null) {
+        $_SESSION['empresaCreada'] = true;
+        $_SESSION['nombreEmpresa'] = $nombreEmpresa;
+    }
+}
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'crearEmpresa') {
     $ce = new Controlador_Empresa();
     $nombreEmpresa = trim($_POST['nombreEmpresa']);
@@ -33,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
 
     // Procesar archivos
     $nombreEmpresaLimpio = preg_replace('/[^A-Za-z0-9_-]/', '_', $nombreEmpresa);
-    $directorioBase = "../../uploads/$nombreEmpresaLimpio/";
+    $directorioBase = "../../../uploads/$nombreEmpresaLimpio/";
     $directorioImagenes = $directorioBase . "images/";
     $directorioArchivos = $directorioBase . "files/";
 
@@ -120,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
         exit();
     }
 
-    // // Crear objeto Departamento
+    // Crear objeto Departamento
     $empresa = new Empresa($nombreEmpresa);
     $departamento = new Departamento($nombreEmpresa  . "_Recursos Humanos", null, $empresa);
 
@@ -163,15 +177,15 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Agregar Empresa &#65381; Flow Manager</title>
-    <link rel="icon" href="../img/Icon - FlowManager.png">
+    <link rel="icon" href="../../img/Icon - FlowManager.png">
 
     <!-- Bootstrap 5 CSS -->
     <link
-        href="../../assets/dist/css/bootstrap.min.css"
+        href="../../../assets/dist/css/bootstrap.min.css"
         rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
-    <link rel="stylesheet" href="../css/styles.css" />
-    <link rel="stylesheet" href="../css/panel.css" />
+    <link rel="stylesheet" href="../../css/styles.css" />
+    <link rel="stylesheet" href="../../css/panel.css" />
 
 </head>
 
@@ -181,7 +195,7 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container-fluid">
                 <a class="navbar-brand" href="empresas.php">
-                    <img id="logo" src="../img/Logo - FlowManager.svg" alt="Logo Empresa" />
+                    <img id="logo" src="../../img/Logo - FlowManager.svg" alt="Logo Empresa" />
                 </a>
 
                 <!-- Navegación -->
@@ -189,7 +203,7 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
                     <!-- menú flotante -->
                     <div class="profile-container position-relative">
                         <div class="nav-profile me-4" id="profileMenu" role="button">
-                            <img src="../img/empleador.jpg" alt="Foto de perfil" class="profile-pic-img" />
+                            <img src="../../img/empleador.jpg" alt="Foto de perfil" class="profile-pic-img" />
                         </div>
 
                         <!-- Menú desplegable -->
@@ -283,8 +297,8 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
         <p>&copy; 2025 Flow Manager. Todos los derechos reservados.</p>
     </footer>
 
-    <script src="../../assets/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/profile-menu.js"></script>
+    <script src="../../../assets/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../js/profile-menu.js"></script>
 </body>
 
 </html>
