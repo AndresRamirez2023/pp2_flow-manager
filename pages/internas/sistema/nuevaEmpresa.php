@@ -208,7 +208,7 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
 
                         <!-- Menú desplegable -->
                         <div class="dropdown-menu" id="profileDropdown">
-                            <a href="logoutInterno.php" class="dropdown-item">
+                            <a href="../../php/logoutInterno.php" class="dropdown-item">
                                 <i class="bi bi-box-arrow-right"></i> Cerrar sesión
                             </a>
                         </div>
