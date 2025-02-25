@@ -7,7 +7,7 @@ if (empty($_POST['CorreoElectronico']) || empty($_POST['clave'])) {  // Cambié 
     $cs = new Controlador_Sesion();
     $login = $cs->login($_POST['CorreoElectronico'], $_POST['clave']);  // Cambié 'usuario' a 'CorreoElectronico' y 'password' a 'clave'
     if ($login[0] === true) {
-        $redirigir = '/pages/internas/panelPrincipal.php';
+        $redirigir = '../internas/panelPrincipal.php';
     } else {
         $redirigir = '../internas/login.php?mensaje=' . $login[1];
     }

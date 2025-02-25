@@ -1,9 +1,11 @@
 <?php
+
+require_once 'Usuario.php';
 class Reunion
 {
 
-    //Tema
-    protected $tema;
+    //Titulo
+    protected $titulo;
     //Fecha(Clave Primaria)
     protected $fecha;
     //HoraInicio(Clave Primaria)
@@ -14,9 +16,9 @@ class Reunion
     protected $descripcion;
 
 
-    public function __construct($tema, $fecha, $horaInicio, $horaFin, $descripcion)
+    public function __construct($titulo, $fecha, $horaInicio, $horaFin, $descripcion)
     {
-        $this->tema = $tema;
+        $this->titulo = $titulo;
         $this->fecha = $fecha;
         $this->horaInicio = $horaInicio;
         $this->horaFin = $horaFin;
@@ -24,9 +26,9 @@ class Reunion
     }
 
 
-    public function GetTema()
+    public function getTitulo()
     {
-        return "$this->tema";
+        return "$this->titulo";
     }
     public function getFecha()
     {
