@@ -1,6 +1,6 @@
 <?php
-require_once '../../controllers/Controlador_Empresa.php';
-require_once '../../controllers/Controlador_Usuario.php';
+require_once '../../../controllers/Controlador_Empresa.php';
+require_once '../../../controllers/Controlador_Usuario.php';
 
 session_start();
 
@@ -12,6 +12,8 @@ $superUser = unserialize($_SESSION['super_user']);
 
 $ce = new Controlador_Empresa();
 $empresas = $ce->get_all();
+
+unset($_SESSION['mensaje_mostrado']);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -20,15 +22,15 @@ $empresas = $ce->get_all();
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Empresas Registradas &#65381; Flow Manager</title>
-    <link rel="icon" href="../img/Icon - FlowManager.png">
+    <link rel="icon" href="../../img/Icon - FlowManager.png">
 
     <!-- Bootstrap 5 CSS -->
     <link
-        href="../../assets/dist/css/bootstrap.min.css"
+        href="../../../assets/dist/css/bootstrap.min.css"
         rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
-    <link rel="stylesheet" href="../css/styles.css" />
-    <link rel="stylesheet" href="../css/panel.css" />
+    <link rel="stylesheet" href="../../css/styles.css" />
+    <link rel="stylesheet" href="../../css/panel.css" />
 </head>
 
 <body>
@@ -37,7 +39,7 @@ $empresas = $ce->get_all();
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container-fluid">
                 <a class="navbar-brand" href="empresas.php">
-                    <img id="logo" src="../img/Logo - FlowManager.svg" alt="Logo Empresa" />
+                    <img id="logo" src="../../img/Logo - FlowManager.svg" alt="Logo Empresa" />
                 </a>
 
                 <!-- Navegación -->
@@ -45,12 +47,12 @@ $empresas = $ce->get_all();
                     <!-- menú flotante -->
                     <div class="profile-container position-relative">
                         <div class="nav-profile me-4" id="profileMenu" role="button">
-                            <img src="../img/empleador.jpg" alt="Foto de perfil" class="profile-pic-img" />
+                            <img src="../../img/empleador.jpg" alt="Foto de perfil" class="profile-pic-img" />
                         </div>
 
                         <!-- Menú desplegable -->
                         <div class="dropdown-menu" id="profileDropdown">
-                            <a href="logoutInterno.php" class="dropdown-item">
+                            <a href="../../php/logoutInterno.php" class="dropdown-item">
                                 <i class="bi bi-box-arrow-right"></i> Cerrar sesión
                             </a>
                         </div>
@@ -81,7 +83,7 @@ $empresas = $ce->get_all();
                             <?php
                             if (count($empresas) === 0) {
                                 echo '<tr>
-                            <th colspan="6" class="text-center"><h3>No se agregaron Empresas aún</h3></th>
+                            <th colspan="6" class="text-center"><h3>No se agregaron empresas al sistema</h3></th>
                             </tr>';
                             } else {
                                 foreach ($empresas as $empresa): ?>
@@ -91,7 +93,12 @@ $empresas = $ce->get_all();
                                         <td><?php echo htmlspecialchars($empresa->getUsuarioPrincipal()->getDni()); ?></td>
                                         <td><?php echo htmlspecialchars($empresa->getUsuarioPrincipal()->getCorreoElectronico()); ?></td>
                                         <td>
-                                            <a href="agregarUsuario.php?empresa_id=<?php echo $empresa->getNombre(); ?>" class="btn btn-primary btn-sm">Agregar Usuario</a>
+                                            <?php if (!$empresa->getUsuarioPrincipal()->getDni()): ?>
+                                                <a href="nuevaEmpresa.php?nombreEmpresa=<?php echo $empresa->getNombre(); ?>"
+                                                    class="btn btn-primary btn-sm">
+                                                    Agregar Usuario
+                                                </a>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                             <?php endforeach;
@@ -107,8 +114,8 @@ $empresas = $ce->get_all();
         <p>&copy; 2025 Flow Manager. Todos los derechos reservados.</p>
     </footer>
 
-    <script src="../../assets/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/profile-menu.js"></script>
+    <script src="../../../assets/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../js/profile-menu.js"></script>
 </body>
 
 </html>

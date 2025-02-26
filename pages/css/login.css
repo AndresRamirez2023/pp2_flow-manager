@@ -19,10 +19,22 @@ body {
   background: linear-gradient(rgba(48, 38, 110, 1), rgba(7, 4, 28, 1));
 }
 
+.logo-empresa {
+  width: 80px;
+  height: auto;
+  display: block;
+  margin: 0 auto 10px;
+}
+
 /* Fondo de la izquierda */
 .right-background {
   flex: 1;
   background-color: rgba(255, 255, 255, 1);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 50%;
+  height: 100vh;
 }
 
 /* Contenedor del formulario */

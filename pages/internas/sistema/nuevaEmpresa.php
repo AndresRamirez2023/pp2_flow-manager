@@ -1,9 +1,9 @@
 <?php
-require_once '../../controllers/Controlador_Empresa.php';
-require_once '../../controllers/Controlador_Usuario.php';
-require_once '../../controllers/Controlador_Departamento.php';
-require_once '../../classes/Empresa.php';
-require_once '../../classes/Usuario.php';
+require_once '../../../controllers/Controlador_Empresa.php';
+require_once '../../../controllers/Controlador_Usuario.php';
+require_once '../../../controllers/Controlador_Departamento.php';
+require_once '../../../classes/Empresa.php';
+require_once '../../../classes/Usuario.php';
 
 session_start();
 
@@ -19,6 +19,20 @@ if (!isset($_SESSION['super_user'])) {
 }
 $superUser = unserialize($_SESSION['super_user']);
 
+$nombreEmpresa = null;
+if (isset($_GET['nombreEmpresa'])) {
+    $nombreEmpresa = $_GET['nombreEmpresa'];
+
+    $ce = new Controlador_Empresa();
+    $e = $ce->get_by_name($nombreEmpresa);
+
+    if ($e !== null) {
+        $_SESSION['empresaCreada'] = true;
+        $_SESSION['nombreEmpresa'] = $nombreEmpresa;
+    }
+}
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'crearEmpresa') {
     $ce = new Controlador_Empresa();
     $nombreEmpresa = trim($_POST['nombreEmpresa']);
@@ -33,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
 
     // Procesar archivos
     $nombreEmpresaLimpio = preg_replace('/[^A-Za-z0-9_-]/', '_', $nombreEmpresa);
-    $directorioBase = "../../uploads/$nombreEmpresaLimpio/";
+    $directorioBase = "../../../uploads/$nombreEmpresaLimpio/";
     $directorioImagenes = $directorioBase . "images/";
     $directorioArchivos = $directorioBase . "files/";
 
@@ -98,13 +112,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     $nombreApellido = trim($_POST['nombre']) . ' ' . trim($_POST['apellido']);
     $email = trim($_POST['email']);
     $tipoUsuario = "RRHH";
-    $claveGenerada = preg_replace('/[^A-Za-z0-9_-]/', '.', $nombreEmpresa) . "123";
+    $clave_generada = preg_replace('/[^A-Za-z0-9-]/', '.', $nombreEmpresa) . "123";
 
-    while (strlen($claveGenerada) < 8) {
-        $claveGenerada .= strlen($claveGenerada) - 2;
+    while (strlen($clave_generada) < 8) {
+        $clave_generada .= strlen($clave_generada) - 2;
     }
 
-    echo "<p>Clave generada: <strong>" . htmlspecialchars($claveGenerada, ENT_QUOTES, 'UTF-8') . "</strong></p>";
+    echo "<p>Clave generada: <strong>" . htmlspecialchars($clave_generada, ENT_QUOTES, 'UTF-8') . "</strong></p>";
 
     if (empty($dni) || empty($nombreApellido) || empty($email)) {
         $_SESSION['mensaje'] = "Todos los campos son obligatorios. Revise los datos ingresados.";
@@ -120,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
         exit();
     }
 
-    // // Crear objeto Departamento
+    // Crear objeto Departamento
     $empresa = new Empresa($nombreEmpresa);
     $departamento = new Departamento($nombreEmpresa  . "_Recursos Humanos", null, $empresa);
 
@@ -135,16 +149,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
         $nombreApellido
     );
 
-    $result = $cu->save($usuario, $claveGenerada);
+    $result = $cu->save($usuario, $clave_generada);
 
     if ($result) {
         $_SESSION['empresaCreada'] = false;
         $_SESSION['nombreEmpresa'] = null;
-        $_SESSION['mensaje'] = "Usuario <b>creado correctamente</b>. Ya puede compartir la <b>información inicial</b> con el cliente.";
+        $_SESSION['mensaje'] = "Usuario <b>creado correctamente</b> con la clave <b>" . $clave_generada . "</b> . Ya puede compartir la <b>información inicial</b> con el cliente.";
         $_SESSION['mensaje_tipo'] = "info";
     } else {
-        $_SESSION['mensaje'] = "<b>Error</b> al crear la empresa. Verifique los datos, si el problema persiste <b>contacte a un administrador</b>.";
-        $_SESSION['mensaje_tipo'] = "danger";
+        if (!isset($_SESSION['mensaje']) && !isset($_SESSION['mensaje_tipo'])) {
+            $_SESSION['mensaje'] = "<b>Error</b> al crear el usuario. Verifique los datos, si el problema persiste <b>contacte a un administrador</b>.";
+            $_SESSION['mensaje_tipo'] = "danger";
+        }
     }
 
     header('Location: nuevaEmpresa.php');
@@ -163,15 +179,15 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Agregar Empresa &#65381; Flow Manager</title>
-    <link rel="icon" href="../img/Icon - FlowManager.png">
+    <link rel="icon" href="../../img/Icon - FlowManager.png">
 
     <!-- Bootstrap 5 CSS -->
     <link
-        href="../../assets/dist/css/bootstrap.min.css"
+        href="../../../assets/dist/css/bootstrap.min.css"
         rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
-    <link rel="stylesheet" href="../css/styles.css" />
-    <link rel="stylesheet" href="../css/panel.css" />
+    <link rel="stylesheet" href="../../css/styles.css" />
+    <link rel="stylesheet" href="../../css/panel.css" />
 
 </head>
 
@@ -181,7 +197,7 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container-fluid">
                 <a class="navbar-brand" href="empresas.php">
-                    <img id="logo" src="../img/Logo - FlowManager.svg" alt="Logo Empresa" />
+                    <img id="logo" src="../../img/Logo - FlowManager.svg" alt="Logo Empresa" />
                 </a>
 
                 <!-- Navegación -->
@@ -189,12 +205,12 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
                     <!-- menú flotante -->
                     <div class="profile-container position-relative">
                         <div class="nav-profile me-4" id="profileMenu" role="button">
-                            <img src="../img/empleador.jpg" alt="Foto de perfil" class="profile-pic-img" />
+                            <img src="../../img/empleador.jpg" alt="Foto de perfil" class="profile-pic-img" />
                         </div>
 
                         <!-- Menú desplegable -->
                         <div class="dropdown-menu" id="profileDropdown">
-                            <a href="logoutInterno.php" class="dropdown-item">
+                            <a href="../../php/logoutInterno.php" class="dropdown-item">
                                 <i class="bi bi-box-arrow-right"></i> Cerrar sesión
                             </a>
                         </div>
@@ -232,13 +248,13 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
                         <div class="mb-3">
                             <label for="logoEmpresa" class="form-label">Logo (JPG, PNG, SVG)</label>
                             <input type="file" class="form-control" id="logoEmpresa" name="logoEmpresa" accept="image/*"
-                                <?php echo $empresaCreada ? 'disabled' : 'required'; ?>>
+                                <?php echo $empresaCreada ? 'disabled' : ''; ?>>
                         </div>
 
                         <div class="mb-3">
                             <label for="fondoEmpresa" class="form-label">Fondo de inicio (JPG, PNG, SVG)</label>
                             <input type="file" class="form-control" id="fondoEmpresa" name="fondoEmpresa"
-                                accept="image/*" <?php echo $empresaCreada ? 'disabled' : 'required'; ?>>
+                                accept="image/*" <?php echo $empresaCreada ? 'disabled' : ''; ?>>
                         </div>
 
                         <button type="submit" class="btn btn-primary" name="accion" value="crearEmpresa" <?php echo $empresaCreada ? 'disabled' : ''; ?>>Crear Empresa</button>
@@ -283,8 +299,8 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
         <p>&copy; 2025 Flow Manager. Todos los derechos reservados.</p>
     </footer>
 
-    <script src="../../assets/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/profile-menu.js"></script>
+    <script src="../../../assets/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../js/profile-menu.js"></script>
 </body>
 
 </html>

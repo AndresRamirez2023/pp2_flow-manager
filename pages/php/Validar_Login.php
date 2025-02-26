@@ -1,15 +1,16 @@
 <?php
 require_once '../../controllers/Controlador_Sesion.php';
 
-if (empty($_POST['CorreoElectronico']) || empty($_POST['clave'])) {  // Cambié 'usuario' a 'CorreoElectronico' y 'password' a 'clave'
-    $redirigir = '/pages/internas/login.php?mensaje=Error: Todos los campos son obligatorios';
+if (empty($_POST['username']) || empty($_POST['password'])) {
+    $redirigir = '/pages/internas/login.php?mensaje=Error: Todos los campos son obligatorios.';
 } else {
     $cs = new Controlador_Sesion();
-    $login = $cs->login($_POST['CorreoElectronico'], $_POST['clave']);  // Cambié 'usuario' a 'CorreoElectronico' y 'password' a 'clave'
+    $login = $cs->login($_POST['username'], $_POST['password'], $_GET['empresa']);
     if ($login[0] === true) {
+        $_SESSION['empresa'] = $_GET['empresa'];
         $redirigir = '../internas/panelPrincipal.php';
     } else {
-        $redirigir = '../internas/login.php?mensaje=' . $login[1];
+        $redirigir = '../internas/login.php?' . 'empresa=' . $_GET['empresa'] . '&mensaje=' . $login[1] . '&tipo=danger';
     }
 }
-header('Location: '.$redirigir);
+header('Location: ' . $redirigir);

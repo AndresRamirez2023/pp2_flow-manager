@@ -28,8 +28,7 @@ class Repositorio_Usuario extends Repositorio
         $query = self::$conexion->prepare($this->selectSql);
 
         $dni = null;
-        $nombre = null;
-        $apellido = null;
+        $nombre_apellido = null;
         $fecha_nac = null;
         $domicilio = null;
         $correo_electronico = null;
@@ -41,8 +40,7 @@ class Repositorio_Usuario extends Repositorio
         if ($query->execute()) {
             $query->bind_result(
                 $dni,
-                $nombre,
-                $apellido,
+                $nombre_apellido,
                 $fecha_nac,
                 $domicilio,
                 $correo_electronico,
@@ -54,13 +52,12 @@ class Repositorio_Usuario extends Repositorio
 
             $usuarios = [];
             while ($query->fetch()) {
-                $e = new Empresa($nombre);
+                $e = new Empresa($nombre_empresa);
                 $departamento = new Departamento($nombre_departamento, null, $e);
 
                 $e = new Usuario(
                     $dni,
-                    $nombre,
-                    $apellido,
+                    $nombre_apellido,
                     $fecha_nac,
                     $domicilio,
                     $correo_electronico,
@@ -74,27 +71,32 @@ class Repositorio_Usuario extends Repositorio
         }
     }
 
-    public function login($username, $clave)
+    public function login($username, $clave, $empresa)
     {
         if (!self::$conexion) {
             throw new Exception("La conexión no ha sido inicializada.");
         }
 
-        $id = null;
+        $q = "SELECT * FROM usuarios u LEFT JOIN Departamentos d ON d.Nombre = u.Departamento ";
+
         $dni = null;
         $nombre_apellido = null;
         $fecha_nacimiento = null;
         $domicilio = null;
         $correo_electronico = null;
         $telefono = null;
-        $tipoDeUsuario = null;
+        $tipo_de_usuario = null;
         $departamento = null;
-        $clave_encriptada = '';
+        $clave_encriptada = null;
+        $nombre_departamento = null;
+        $nombre_empresa = null;
+        $director_a_cargo = null;
+        $type = is_numeric($username);
 
-        if (gettype($username) === 'integer') {
-            $q = "SELECT * FROM usuarios WHERE Dni = ?";
-        } elseif (gettype($username === 'string')) {
-            $q = "SELECT * FROM usuarios WHERE CorreoElectronico = ?";
+        if ($type === 'double') {
+            $q .= "WHERE Dni = ?;";
+        } elseif ($type === 'string') {
+            $q .= "WHERE CorreoElectronico = ?;";
         }
 
         $query = self::$conexion->prepare($q);
@@ -102,35 +104,46 @@ class Repositorio_Usuario extends Repositorio
             throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
         }
 
-        $query->bind_param('s', $username);
+        if ($type === 'double') {
+            $query->bind_param('i', $username);
+        } elseif ($type === 'string') {
+            $query->bind_param('s', $username);
+        }
 
         if ($query->execute()) {
             $query->bind_result(
-                "issssssss",
                 $dni,
                 $nombre_apellido,
                 $fecha_nacimiento,
                 $domicilio,
                 $correo_electronico,
                 $telefono,
-                $tipoDeUsuario,
+                $tipo_de_usuario,
                 $departamento,
-                $clave_encriptada
+                $clave_encriptada,
+                $nombre_departamento,
+                $nombre_empresa,
+                $director_a_cargo
             );
             if ($query->fetch()) {
-                if (password_verify($clave, $clave_encriptada)) {
+                // TODO: Comentado para pruebas, descomentar para versión final
+                // if ($nombre_empresa !== null && $empresa == $nombre_empresa) {
+                    if (password_verify($clave, $clave_encriptada ?: '')) {
+                        $e = new Empresa($nombre_empresa);
+                        $departamento = new Departamento($nombre_departamento, null, $e);
 
-                    return new Usuario(
-                        $dni,
-                        $nombre_apellido,
-                        $fecha_nacimiento,
-                        $domicilio,
-                        $correo_electronico,
-                        $telefono,
-                        $tipoDeUsuario,
-                        $departamento
-                    );
-                }
+                        return new Usuario(
+                            $dni,
+                            $nombre_apellido,
+                            $fecha_nacimiento,
+                            $domicilio,
+                            $correo_electronico,
+                            $telefono,
+                            $tipo_de_usuario,
+                            $departamento
+                        );
+                    }
+                // }
             }
         }
         return null;
@@ -149,7 +162,7 @@ class Repositorio_Usuario extends Repositorio
         $domicilio = $usuario->getDomicilio();
         $correo_electronico = $usuario->getCorreoElectronico();
         $telefono = $usuario->getTelefono();
-        $tipoDeUsuario = $usuario->getTipoUsuario();
+        $tipo_de_usuario = $usuario->getTipoUsuario();
         $departamento = $usuario->getDepartamento();
 
         // Encriptar la contraseña
@@ -176,7 +189,7 @@ class Repositorio_Usuario extends Repositorio
             $domicilio,
             $correo_electronico,
             $telefono,
-            $tipoDeUsuario,
+            $tipo_de_usuario,
             $departamento,
             $clave_encriptada
         );
@@ -341,7 +354,7 @@ class Repositorio_Usuario extends Repositorio
         $domicilio = $usuario->getDomicilio();
         $correo_electronico = $usuario->getCorreoElectronico();
         $telefono = $usuario->getTelefono();
-        $tipoDeUsuario = $usuario->getTipoUsuario();
+        $tipo_de_usuario = $usuario->getTipoUsuario();
 
         if (!empty($clave_encriptada)) {
             $clave_encriptada = password_hash($clave, PASSWORD_DEFAULT);
@@ -354,7 +367,7 @@ class Repositorio_Usuario extends Repositorio
                 $domicilio,
                 $correo_electronico,
                 $telefono,
-                $tipoDeUsuario,
+                $tipo_de_usuario,
                 $clave,
                 $dni
             );
@@ -367,7 +380,7 @@ class Repositorio_Usuario extends Repositorio
                 $domicilio,
                 $correo_electronico,
                 $telefono,
-                $tipoDeUsuario,
+                $tipo_de_usuario,
                 $dni
             );
         }
