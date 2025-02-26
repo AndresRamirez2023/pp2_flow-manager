@@ -228,8 +228,8 @@ DELIMITER ;
 
 CREATE TABLE `empresas` (
   `Nombre` varchar(100) NOT NULL,
-  `Logo` varchar(255) NOT NULL,
-  `Fondo` varchar(255) NOT NULL,
+  `Logo` varchar(255) DEFAULT NULL,
+  `Fondo` varchar(255) DEFAULT NULL,
   `ArchivoInicio1` varchar(255) DEFAULT NULL,
   `ArchivoInicio2` varchar(255) DEFAULT NULL,
   `UsuarioPrincipal` int(11) DEFAULT NULL
