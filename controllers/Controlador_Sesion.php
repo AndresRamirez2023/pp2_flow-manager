@@ -16,18 +16,19 @@ class Controlador_Sesion
 		$this->rsu = new Repositorio_Super_Usuario();
 	}
 
-	public function login($CorreoElectronico, $clave)
+	public function login($username, $password, $empresa)
 	{
-		$usuario = $this->ru->login($CorreoElectronico, $clave);
+		var_dump($empresa);
+		$usuario = $this->ru->login($username, $password, $empresa);
 
-		if ($usuario === false) {
+		if (!$usuario) {
 			//fallo el login
-			return [false, "Usuario o clave incorrecta"];
+			return [false, "Usuario o clave incorrecta."];
 		} else {
-			//login correcto se ingresa al sistema
+			//login correcto, se ingresa al sistema
 			session_start();
 			$_SESSION['usuario'] = serialize($usuario);
-			return [true, "Ingreso correcto"];
+			return [true, "Ingreso correcto."];
 		}
 	}
 
@@ -37,12 +38,12 @@ class Controlador_Sesion
 
 		if ($super_usuario === false) {
 			//fallo el login
-			return [false, "Usuario o clave incorrecta"];
+			return [false, "Usuario o clave incorrecta."];
 		} else {
-			//login correcto se ingresa al sistema
+			//login correcto, se ingresa al sistema
 			session_start();
 			$_SESSION['super_user'] = serialize($super_usuario);
-			return [true, "Ingreso correcto"];
+			return [true, "Ingreso correcto."];
 		}
 	}
 }

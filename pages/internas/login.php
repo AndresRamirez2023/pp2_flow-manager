@@ -1,14 +1,22 @@
 <?php
 require_once '../../controllers/Controlador_Empresa.php';
+session_start();
+
+if (isset($_SESSION['usuario'])) {
+  header('Location: panelPrincipal.php');
+}
+if (isset($_GET['mensaje']) && isset($_GET['tipo'])) {
+  $_SESSION['mensaje'] = $_GET['mensaje'];
+  $_SESSION['mensaje_tipo'] = $_GET['tipo'];
+}
 
 $nombre_empresa = null;
-if (isset($_GET['nombreEmpresa'])) {
-  $nombre_empresa = null;
-  $buscar_nombre_empresa = trim($_GET['nombreEmpresa']);
-  
+if (isset($_GET['empresa'])) {
+  $buscar_nombre_empresa = trim($_GET['empresa']);
+
   $ce = new Controlador_Empresa();
   $e = $ce->get_by_name($buscar_nombre_empresa);
-  
+
   if ($e) {
     $nombre_empresa = $e->getNombre();
     $nombre_empresa_limpio = preg_replace('/[^A-Za-z0-9_-]/', '_', $nombre_empresa);
@@ -60,29 +68,29 @@ if (isset($_GET['nombreEmpresa'])) {
   <div class="full-container">
     <div class="login-container">
       <div class="form-container">
-        <form class="login-form" action="../php/Validar_Login.php" method="POST">
-          <?php if (isset($path_logo_empresa)) : ?>
-            <div class="text-center">
-              <img src="<?php echo $path_logo_empresa; ?>" alt="Logo de la Empresa" class="logo-empresa">
-            </div>
-          <?php endif; ?>
+        <form class="login-form" action="../php/Validar_Login.php?empresa=<?php echo $nombre_empresa ?>" method="POST">
+          <div class="text-center">
+            <img src="<?php echo isset($path_logo_empresa) ? $path_logo_empresa : '../img/Icon - FlowManager.png'; ?>" alt="Logo de la Empresa" class="logo-empresa">
+          </div>
           <h2 class="text-center mb-4"><b><?php echo $nombre_empresa ?: 'Nombre empresa'; ?></b><br />Ingreso</h2>
           <p class="text-center text-muted">
             Bienvenido al gestor de empleados<br /><b>Flow Manager</b>
           </p>
-          <?php
-          if (isset($_GET['mensaje'])) {
-            echo '<div id="mensaje" class="alert alert-danger text-center">
-                    <p>' . $_GET['mensaje'] . '</p></div>';
-          }
-          ?>
+          <?php if (isset($_SESSION['mensaje'])): ?>
+            <div id="mensaje" class="text-center alert alert-<?php echo $_SESSION['mensaje_tipo']; ?> mt-3">
+              <?php echo $_SESSION['mensaje']; ?>
+            </div>
+            <?php
+            unset($_SESSION['mensaje']);
+            unset($_SESSION['mensaje_tipo']);
+            ?>
+          <?php endif; ?>
           <!-- Username -->
           <div class="mb-3">
-            <label for="CorreoElectronico" class="form-label">Correo electronico o DNI</label>
+            <label for="username" class="form-label">Correo electronico o DNI</label>
             <input
-              type="text"
-              id="CorreoElectronico"
-              name="CorreoElectronico"
+              id="username"
+              name="username"
               class="form-control"
               placeholder="Ingrese el mail o DNI del usuario"
               required />
@@ -92,9 +100,9 @@ if (isset($_GET['nombreEmpresa'])) {
           <div class="mb-3">
             <label for="password" class="form-label">Contraseña</label>
             <input
-              type="clave"
-              id="clave"
-              name="clave"
+              type="password"
+              id="password"
+              name="password"
               class="form-control"
               placeholder="Ingrese la contraseña"
               required />
