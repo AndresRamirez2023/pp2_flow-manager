@@ -1,0 +1,9 @@
+1. Ingresar al login interno: http://localhost/pp2_flow-manager/pages/internas/sistema/loginInterno.php
+2. Usuario: admin / password: admin
+3. Ir a Agregar Empresa
+4. Ingresar nombre y opcional dos imágenes para el login, una para logo y otra para fondo
+3. Ingresar datos del primer usuario: Nombre, apellido, DNI y mail
+
+5. Ingresar a login de cliente: http://localhost/pp2_flow-manager/pages/internas/login.php
+5.1. Opcional agregar al final ?empresa=(nombre de la empresa) para ver el login personalizado
+6. Usuario puede ser DNI o email registrados, la password es el nombre de la empresa + 123 (Se muestra al crear al usuario)
