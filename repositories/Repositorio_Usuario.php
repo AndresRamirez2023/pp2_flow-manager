@@ -134,13 +134,13 @@ class Repositorio_Usuario extends Repositorio
 
                         return new Usuario(
                             $dni,
+                            $correo_electronico,
+                            $tipo_de_usuario,
+                            $departamento,
                             $nombre_apellido,
                             $fecha_nacimiento,
                             $domicilio,
-                            $correo_electronico,
-                            $telefono,
-                            $tipo_de_usuario,
-                            $departamento
+                            $telefono
                         );
                     }
                 // }
