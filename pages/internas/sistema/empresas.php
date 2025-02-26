@@ -93,7 +93,12 @@ unset($_SESSION['mensaje_mostrado']);
                                         <td><?php echo htmlspecialchars($empresa->getUsuarioPrincipal()->getDni()); ?></td>
                                         <td><?php echo htmlspecialchars($empresa->getUsuarioPrincipal()->getCorreoElectronico()); ?></td>
                                         <td>
-                                            <a href="nuevaEmpresa.php?nombreEmpresa=<?php echo $empresa->getNombre(); ?>" class="btn btn-primary btn-sm">Agregar Usuario</a>
+                                            <?php if (!$empresa->getUsuarioPrincipal()->getDni()): ?>
+                                                <a href="nuevaEmpresa.php?nombreEmpresa=<?php echo $empresa->getNombre(); ?>"
+                                                    class="btn btn-primary btn-sm">
+                                                    Agregar Usuario
+                                                </a>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                             <?php endforeach;
