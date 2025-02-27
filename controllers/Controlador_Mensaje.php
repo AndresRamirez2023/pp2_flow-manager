@@ -16,20 +16,15 @@ class Controlador_Mensaje
         $this->repositorioArchivo = new Repositorio_Archivo();
     }
 
-    public function redactarMensaje($titulo, $dniRemitente, $tipo, $mensaje, $dniReceptor, $archivo = null)
+    public function redactarMensaje(Mensaje $mensaje, $archivo = null)
     {
         $fechaHora = date('Y-m-d H:i:s');
-        $resultado = $this->repositorioMensaje->redactar_mensaje(
-            $fechaHora, 
-            $titulo, 
-            $dniRemitente, 
-            $tipo, 
-            $mensaje, 
-            $dniReceptor, 
+        $dniRemitente=$mensaje->getRemitente();
+        $resultado = $this->repositorioMensaje->redactar_mensaje( $mensaje,
             $archivo
         );
 
-        if ($resultado && $tipo === "Documentacion" && $archivo) {
+        if ($resultado && $mensaje->getTipoMensaje() === "Documentacion" && $archivo) {
             return $this->guardarArchivo($archivo, $fechaHora, $dniRemitente);
         }
 

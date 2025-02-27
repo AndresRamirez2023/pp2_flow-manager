@@ -12,17 +12,27 @@ require_once __DIR__ . '/../classes/Solicitud.php';
 class Repositorio_Mensaje extends Repositorio_Archivo
 {
 
-    public function redactar_mensaje($FechaHoraMensaje, $TituloMensaje, $DniRemitente, $TipoMensaje, $CuerpoMensaje, $DniReceptor, $archivo = null)
+    public function redactar_mensaje(Mensaje $m, $archivo = null)
     {
         if (!self::$conexion) {
             throw new Exception("La conexión no ha sido inicializada.");
         }
+
+        $FechaHoraMensaje= $m->getFechaHora();
+        $TituloMensaje=$m->getTituloMensaje();
+        $DniRemitente=$m->getRemitente();
+        $TipoMensaje=$m->getTipoMensaje();
+        $CuerpoMensaje=$m->getCuerpoMensaje();
+        $DniReceptor=$m->getDniReceptor();
+
 
         $sql_dni = "SELECT Dni from usuarios where Dni=?";
         $query_dni = self::$conexion->prepare($sql_dni);
         $query_dni->bind_param("s", $DniReceptor);
         $query_dni->execute();
         $resultado_dni = $query_dni->get_result();
+
+
 
         if ($resultado_dni->num_rows == 0) {
             exit("El DNI del receptor no fue encontrado");
