@@ -6,6 +6,96 @@ require_once __DIR__ . '/../classes/Usuario.php';
 
 class Repositorio_Departamento extends Repositorio
 {
+ //OBTIENE EL DEPARTAMENTO AL QUE PERTENECE EL USUARIO LOGUEADO Y LO MUESTRA EN PANTALLA
+    public function obtenerDepartamentoPorDni($dni) {
+
+
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+        $nombre_departamento=null;
+        $sql = "SELECT Departamento FROM Usuarios WHERE Dni = ?";
+        $query = self::$conexion->prepare($sql);
+        
+        if (!$query) {
+            throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
+        }
+    
+        $query->bind_param("s", $dni); // Asocia el DNI proporcionado al parámetro
+    
+        if ($query->execute()) {
+            $query->bind_result($nombre_departamento);
+            if ($query->fetch()) {
+                $query->close();
+                return $nombre_departamento;
+            }
+        }
+    
+        $query->close();
+        return null; // Retorna null si no hay resultados
+    }
+
+    //OBTIENE EL DIRECTOR DEL DEPARTAMENTO
+
+    public function obtenerDirectorACargo($departamento)
+    {
+
+        $NombreApellido=null;
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
+        $sql = "SELECT NombreApellido FROM Usuarios WHERE Departamento = ? and TipoDeUsuario='Directivo' ";
+        $query = self::$conexion->prepare($sql);
+        $query->bind_param("s", $departamento);
+    
+        if ($query->execute()) {
+            $query->bind_result($NombreApellido);
+            if ($query->fetch()) {
+                return $NombreApellido; // Devuelve el nombre completo
+            }
+        }
+    
+        return null; // El DNI no corresponde a ningún usuario
+    }
+
+
+//OBTENER LISTA DEPARTAMENTOS, ESTARA BIEN ASI?
+
+    public function ObtenerListaDepartamento() {
+
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
+        $sql = "SELECT u.NombreApellido, d.nombre AS NombreDepartamento, d.DirectorACargo as dni
+                FROM usuarios u
+                LEFT JOIN departamentos d ON u.Dni = d.DirectorACargo
+                WHERE TipoDeUsuario = 'Directivo' and u.Departamento != 'Sin Departamento'";
+        
+        $query = self::$conexion->prepare($sql);
+    
+        if ($query->execute()) {
+            $result = $query->get_result();
+            $listaDepartamento = []; // Declaración del array
+    
+            while ($fila = $result->fetch_assoc()) {
+                $listaDepartamento[] = [
+                    'nombreDepartamento' => $fila['NombreDepartamento'],
+                    'nombreDirector' => $fila['nombre'],
+                    'dniDirector' => $fila['dni']                   
+                    
+                ];
+            }
+    
+            // Aquí devuelves todo el array acumulado
+            return $listaDepartamento;
+        }
+    
+        // En caso de fallo de la consulta, devuelves un array vacío
+        return [];
+    }
+
     public function get_all()
     {
         if (!self::$conexion) {
@@ -95,6 +185,9 @@ class Repositorio_Departamento extends Repositorio
 
         return $query->execute();
     }
+
+
+
 
     public function delete($nombre) {}
 }

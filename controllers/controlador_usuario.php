@@ -1,6 +1,10 @@
 <?php
+require_once __DIR__ . '/../repositories/Repositorio_Usuario.php';
+
 class Controlador_Usuario
 {
+
+
     protected $ru;
 
     public function __construct()

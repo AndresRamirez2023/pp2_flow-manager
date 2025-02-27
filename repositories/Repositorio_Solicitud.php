@@ -1,6 +1,5 @@
 <?php
-require_once __DIR__ . './../.env.php';
-require_once __DIR__ . '/../classes/config.php';
+require_once __DIR__ . '/../.env.php';
 // Incluir clases necesarias
 require_once __DIR__ . '/../classes/Usuario.php';
 require_once 'Repositorio.php';
