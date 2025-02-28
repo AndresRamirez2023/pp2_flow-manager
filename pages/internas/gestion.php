@@ -204,6 +204,10 @@ $listaDepartamento = $objetoClase->ObtenerListaDepartamento();
                 required />
             </div>
 
+            <div class="col-md-6">
+              <label for="departamento" class="form-label">Departamento <b>*</b></label>
+              <input type="text" class="form-control" id="departamento" name="departamento" required />
+            </div>
             <input
               type="hidden"
               class="form-control"

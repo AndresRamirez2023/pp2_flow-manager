@@ -8,6 +8,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 // Verificar si el usuario está logueado
+
 if (!isset($_SESSION['usuario'])) {
     // Redirigir con un mensaje de error si no está logueado
     header('Location: login.php?mensaje=Error: Debes iniciar sesión');
@@ -19,6 +20,8 @@ $usuario = unserialize($_SESSION['usuario']);
 
 // Verificar si el usuario es de tipo RRHH
 $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
+
+
 ?>
 
 <!DOCTYPE html>
@@ -140,7 +143,8 @@ $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
         </main>
       </div>
     </div>
-  <?php endif; ?>
+  <?php 
+endif; ?>
 
   <!-- Historial de licencias como tabla -->
   <div class="container my-4 p-4 bg-white rounded shadow-sm">

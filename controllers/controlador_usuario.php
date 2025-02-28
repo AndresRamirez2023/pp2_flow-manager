@@ -1,10 +1,10 @@
 <?php
-require_once __DIR__ . '/../repositories/Repositorio_Usuario.php';
 
+
+require_once __DIR__ . '/../repositories/Repositorio_Usuario.php';
+require_once __DIR__ . '/../classes/Usuario.php';
 class Controlador_Usuario
 {
-
-
     protected $ru;
 
     public function __construct()
@@ -29,6 +29,7 @@ class Controlador_Usuario
 
     public function save(Usuario $usuario, $clave)
     {
+        
         try {
             $this->validator($usuario, $clave);
 
@@ -119,4 +120,8 @@ class Controlador_Usuario
             throw new Exception('Error: La contraseña debe tener al menos 8 caracteres, incluyendo una letra y un número.');
         }
     }
+    
 }
+
+
+

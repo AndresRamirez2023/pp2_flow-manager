@@ -18,7 +18,7 @@ class Usuario
     // Teléfono
     protected $telefono;
     // Tipo de usuario (Director, Recursos Humanos, Empleado)
-    protected $tipoUsuario; // TODO: Usar Enums para definir tipos
+    protected $tipo_de_usuario; // TODO: Usar Enums para definir tipos
     // Nombre de la empresa al que pertenece
     protected $empresa;
     protected $departamento; // TODO: Ser un objeto de tipo Departamento
@@ -26,7 +26,7 @@ class Usuario
     public function __construct(
         $dni,
         $correoElectronico,
-        $tipoUsuario,
+        $tipo_de_usuario,
         ?Departamento $departamento = null,
         $nombreApellido = null,
         $fechaNac = null,
@@ -35,7 +35,7 @@ class Usuario
     ) {
         $this->dni = $dni;
         $this->correoElectronico = $correoElectronico;
-        $this->tipoUsuario = $tipoUsuario;
+        $this->tipo_de_usuario = $tipo_de_usuario;
         $this->nombreApellido = $nombreApellido;
         $this->fechaNac = $fechaNac;
         $this->domicilio = $domicilio;
@@ -76,7 +76,7 @@ class Usuario
 
     public function getTipoUsuario()
     {
-        return $this->tipoUsuario;
+        return $this->tipo_de_usuario;
     }
 
     public function getEmpresa()
@@ -96,22 +96,22 @@ class Usuario
     // Validar si el usuario puede solicitar días
     public function puedeSolicitarDias()
     {
-        return strtolower($this->tipoUsuario) === 'empleado';
+        return strtolower($this->tipo_de_usuario) === 'empleado';
     }
 
     public function esRRHH()
     {
-        return strtolower($this->tipoUsuario) === 'rrhh'; // Validar si el tipo de usuario es 'rrhh'
+        return strtolower(trim($this->tipo_de_usuario)) === 'rrhh';
     }
 
     public function esEmpleado()
     {
-        return strtolower($this->tipoUsuario) === 'empleado'; // Validar si el tipo de usuario es 'rrhh'
+        return strtolower($this->tipo_de_usuario) === 'empleado'; // Validar si el tipo de usuario es 'rrhh'
     }
 
     public function esDirectivo()
     {
-        return strtolower($this->tipoUsuario) === 'directivo'; // Validar si el tipo de usuario es 'director'
+        return strtolower($this->tipo_de_usuario) === 'directivo'; // Validar si el tipo de usuario es 'director'
     }
 
     // SETTERS
@@ -140,9 +140,9 @@ class Usuario
         $this->telefono = $telefono;
     }
 
-    public function setTipoUsuario($tipoUsuario)
+    public function setTipoUsuario($tipo_de_usuario)
     {
-        $this->tipoUsuario = $tipoUsuario;
+        $this->tipo_de_usuario = $tipo_de_usuario;
     }
 
     public function setEmpresa($empresa)
