@@ -15,10 +15,10 @@ class Controlador_Departamento
         return $this->rd->get_all();
     }
 
-    // public function get_by_name($nombre)
-    // {
-    //     return $this->rd->get_by_name($nombre);
-    // }
+    public function get_by_name($nombre)
+    {
+        return $this->rd->get_by_name($nombre);
+    }
 
     public function create(Departamento $departamento)
     {
@@ -32,6 +32,6 @@ class Controlador_Departamento
 
     public function delete($nombre)
     {
-        // TODO: Crear uno nuevo con el nuevo nombre, pasar los usuarios y borrar el viejo
+        // TODO: Crear un nuevo departamento con el nuevo nombre, pasar los usuarios y borrar el viejo
     }
 }
