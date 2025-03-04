@@ -10,16 +10,16 @@ if (isset($_GET['mensaje']) && isset($_GET['tipo'])) {
   $_SESSION['mensaje_tipo'] = $_GET['tipo'];
 }
 
-$nombre_empresa = null;
+$empresa = null;
 if (isset($_GET['empresa'])) {
   $buscar_nombre_empresa = trim($_GET['empresa']);
 
   $ce = new Controlador_Empresa();
-  $e = $ce->get_by_name($buscar_nombre_empresa);
+  $empresa = $ce->get_by_name($buscar_nombre_empresa);
 
-  if ($e) {
-    $nombre_empresa = $e->getNombre();
-    $nombre_empresa_limpio = preg_replace('/[^A-Za-z0-9_-]/', '_', $nombre_empresa);
+  if ($empresa) {
+    $_SESSION['empresa'] = serialize($empresa);
+    $nombre_empresa_limpio = preg_replace('/[^A-Za-z0-9_-]/', '_', $empresa->getNombre());
 
     function encontrarImagen($directorio, $nombre_base)
     {
@@ -59,7 +59,7 @@ if (isset($_GET['empresa'])) {
     rel="stylesheet" />
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="../css/panel.css" />
+  <link rel="stylesheet" href="../css/internas.css" />
   <link rel="stylesheet" href="../css/styles.css" />
   <link href="../css/login.css" rel="stylesheet" />
 </head>
@@ -68,11 +68,11 @@ if (isset($_GET['empresa'])) {
   <div class="full-container">
     <div class="login-container">
       <div class="form-container">
-        <form class="login-form" action="../php/Validar_Login.php?empresa=<?php echo $nombre_empresa ?>" method="POST">
+        <form class="login-form" action="../php/Validar_Login.php" method="POST">
           <div class="text-center">
             <img src="<?php echo isset($path_logo_empresa) ? $path_logo_empresa : '../img/Icon - FlowManager.png'; ?>" alt="Logo de la Empresa" class="logo-empresa">
           </div>
-          <h2 class="text-center mb-4"><b><?php echo $nombre_empresa ?: 'Nombre empresa'; ?></b><br />Ingreso</h2>
+          <h2 class="text-center mb-4"><b><?php echo isset($empresa) ? $empresa->getNombre() : 'Nombre empresa'; ?></b><br />Ingreso</h2>
           <p class="text-center text-muted">
             Bienvenido al gestor de empleados<br /><b>Flow Manager</b>
           </p>
