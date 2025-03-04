@@ -57,7 +57,7 @@ $repositorio = new Repositorio_Mensaje();
 
   <!-- Hoja de estilo personalizada -->
   <link rel="stylesheet" href="../css/styles.css" />
-  <link rel="stylesheet" href="../css/panel.css" />
+  <link rel="stylesheet" href="../css/internas.css" />
 </head>
 
 <body>

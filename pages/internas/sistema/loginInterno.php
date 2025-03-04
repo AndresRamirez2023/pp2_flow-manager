@@ -23,7 +23,7 @@ if (isset($_SESSION['super_user'])) {
         rel="stylesheet" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="../../css/panel.css">
+    <link rel="stylesheet" href="../../css/internas.css">
     <link rel="stylesheet" href="../../css/styles.css">
     <link rel="stylesheet" href="../../css/loginInterno.css">
 </head>

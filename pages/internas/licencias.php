@@ -48,7 +48,7 @@ $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
   <!-- Hoja de estilo personalizada -->
   <link rel="stylesheet" href="../css/styles.css" />
-  <link rel="stylesheet" href="../css/panel.css" />
+  <link rel="stylesheet" href="../css/internas.css" />
 </head>
 
 <body>

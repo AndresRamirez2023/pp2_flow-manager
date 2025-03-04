@@ -1,3 +1,11 @@
+header {
+  /* overflow: hidden; */
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+}
+
 /* Perfil de usuario */
 .nav-profile {
   width: 40px;
@@ -81,6 +89,7 @@
 /* Contenido principal */
 .main-content {
   padding: 2rem;
+  margin-top: 59.2px;
 }
 .main-content > .container {
   background-color: #f8f9fa;
@@ -171,8 +180,19 @@
 
 /* Documentos informativos */
 .row iframe {
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+  height: 80vh;
+  width: 100%;
+  border: none;
+  overflow: hidden;
+  overflow: hidden;
+}
+
+.img-fluid {
+  max-width: 90%;
+}
+
+li + li {
+  margin-top: 20px;
 }
 
 /* Formulario horizontal */

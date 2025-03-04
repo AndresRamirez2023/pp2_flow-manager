@@ -19,7 +19,7 @@ if (!$usuario->esRRHH()) {
   exit;
 }
 $objetoClase = new Repositorio_Departamento();
-$listaDepartamento = $objetoClase->ObtenerListaDepartamento();
+$listaDepartamento = $objetoClase->get_all();
 ?>
 
 <!DOCTYPE html>
@@ -43,7 +43,7 @@ $listaDepartamento = $objetoClase->ObtenerListaDepartamento();
 
   <!-- Hoja de estilo personalizada -->
   <link rel="stylesheet" href="../css/styles.css" />
-  <link rel="stylesheet" href="../css/panel.css" />
+  <link rel="stylesheet" href="../css/internas.css" />
 </head>
 
 <body>

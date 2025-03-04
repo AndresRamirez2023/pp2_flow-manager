@@ -40,7 +40,7 @@ $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
 
   <!-- Hoja de estilo personalizada -->
   <link rel="stylesheet" href="../css/styles.css" />
-  <link rel="stylesheet" href="../css/panel.css" />
+  <link rel="stylesheet" href="../css/internas.css" />
 </head>
 
 <body>
@@ -62,6 +62,10 @@ $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
           <a class="btn btn-custom nav-link" href="mensajes.php">Mensajes y Archivos</a>
           <a class="btn btn-custom nav-link" href="departamento.php">Departamento</a>
           <a class="btn btn-custom nav-link" href="licencias.php">Licencias y Vacaciones</a>
+          <?php if ($isRRHH): // Solo mostrar el botón si es RRHH 
+          ?>
+            <a class="btn btn-custom nav-link" href="gestion.php">Gestión</a>
+          <?php endif; ?>
           <!-- Foto de perfil y menú flotante -->
           <div class="profile-container position-relative">
             <div class="nav-profile me-4" id="profileMenu" role="button">
@@ -116,25 +120,25 @@ $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
               <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento</label>
               <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento" required />
             </div>
-            
-              <?php if ($isRRHH): ?>
-                <div class="col-md-6">
+
+            <?php if ($isRRHH): ?>
+              <div class="col-md-6">
                 <label for="tipoUsuario" class="form-label">Tipo de usuario</label>
                 <select name="tipoUsuario" id="tipoUsuario" class="form-select">
                   <option value="Empleado">Empleado</option>
                   <option value="RRHH">RRHH</option>
                   <option value="Directivo">Directivo</option>
                 </select>
-            </div><!-- Columna solo para RRHH -->
-          <?php endif; ?>
+              </div><!-- Columna solo para RRHH -->
+            <?php endif; ?>
 
-          <div class="col-md-6">
-            <label for="nueva_clave" class="form-label">Cambiar Contraseña</label>
-            <input type="password" class="form-control" id="nueva_clave" name="nueva_clave" />
-          </div>
-          <div class="col-md-12">
-            <button type="submit" class="btn btn-primary w-100">Guardar Datos</button>
-          </div>
+            <div class="col-md-6">
+              <label for="nueva_clave" class="form-label">Cambiar Contraseña</label>
+              <input type="password" class="form-control" id="nueva_clave" name="nueva_clave" />
+            </div>
+            <div class="col-md-12">
+              <button type="submit" class="btn btn-primary w-100">Guardar Datos</button>
+            </div>
           </form>
 
         </div>

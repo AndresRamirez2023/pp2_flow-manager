@@ -30,7 +30,7 @@ unset($_SESSION['mensaje_mostrado']);
         rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
     <link rel="stylesheet" href="../../css/styles.css" />
-    <link rel="stylesheet" href="../../css/panel.css" />
+    <link rel="stylesheet" href="../../css/internas.css" />
 </head>
 
 <body>

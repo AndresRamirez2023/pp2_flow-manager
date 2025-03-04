@@ -127,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
         exit();
     }
 
-    if ($cu->get_by_dni($dni) !== null) {
+    if ($cu->get_by_param($dni) !== null) {
         $_SESSION['mensaje'] = "El usuario <b>ya se encuentra registrado</b> en el sistema. Revise los datos ingresados y/o los usuarios creados anteriormente.";
         $_SESSION['mensaje_tipo'] = "danger";
         header('Location: nuevaEmpresa.php');
@@ -187,7 +187,7 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
         rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
     <link rel="stylesheet" href="../../css/styles.css" />
-    <link rel="stylesheet" href="../../css/panel.css" />
+    <link rel="stylesheet" href="../../css/internas.css" />
 
 </head>
 
