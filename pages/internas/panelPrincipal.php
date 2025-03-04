@@ -1,7 +1,8 @@
 <?php
 require_once '../../classes/Usuario.php';
+require_once '../../controllers/Controlador_Departamento.php';
+require_once '../../controllers/controlador_usuario.php';
 session_start();
-
 
 // Verificar si el usuario está logueado
 if (!isset($_SESSION['usuario'])) {
@@ -14,8 +15,42 @@ $usuario = unserialize($_SESSION['usuario']);
 
 // Verificar si el usuario es de tipo RRHH
 $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
-?>
 
+$cd = new Controlador_Departamento();
+
+$cu = new Controlador_Usuario();
+
+$departamento = $cd->get_by_name($usuario->getDepartamento()->getNombre());
+
+// TODO: Línea para versión de pruebas, borrar unserialize usuario para versión final
+$empresa = isset($_SESSION['empresa']) ? unserialize($_SESSION['empresa']) : $usuario->getDepartamento()->getEmpresa()->getNombre();
+
+// Función para obtener la extensión del archivo
+function obtenerExtension($nombreArchivo)
+{
+  return strtolower(pathinfo($nombreArchivo, PATHINFO_EXTENSION));
+}
+
+if ($empresa) {
+  $nombre_empresa = $empresa->getNombre();
+  $nombre_empresa_limpio = preg_replace('/[^A-Za-z0-9_-]/', '_', $nombre_empresa);
+
+  function encontrarArchivos($directorio, $nombre_base)
+  {
+    $extensiones_posibles = ['png', 'jpg', 'jpeg', 'svg', 'gif', 'pdf'];
+    foreach ($extensiones_posibles as $ext) {
+      $ruta = "$directorio/$nombre_base.$ext";
+      if (file_exists($ruta)) {
+        return $ruta;
+      }
+    }
+    return null;
+  }
+
+  $path_archivo1 = encontrarArchivos("../../uploads/$nombre_empresa_limpio/files", "ArchivoInicio1");
+  $path_archivo2 = encontrarArchivos("../../uploads/$nombre_empresa_limpio/files", "ArchivoInicio2");
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -46,7 +81,7 @@ $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
 
   <!-- Hoja de estilo personalizada -->
   <link rel="stylesheet" href="../css/styles.css" />
-  <link rel="stylesheet" href="../css/panel.css" />
+  <link rel="stylesheet" href="../css/internas.css" />
 </head>
 
 <body>
@@ -102,29 +137,50 @@ $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
       <!-- Contenido principal -->
       <main class="main-content">
         <div class="container">
-          <h1>Avisos</h1>
 
           <!-- Documentos informativos -->
           <div class="row full-view">
+            <h1>Bienvenido al sistema de gestión de <b><?php echo isset($nombre_empresa) ? $nombre_empresa : 'empresa' ?></b></h1>
+
+            <hr>
+
             <div class="col-md-6">
-              <iframe
-                src="DS_PP2_Proyecto_Gestión_de_Empleados.docx.pdf"
-                width="90%"
-                height="100%"></iframe>
+              <!-- Calendario -->
+              <h2>Calendario Laboral</h2>
+              <div class="justify-content-center">
+                <div id="calendar" class="mb-4 w-75"></div>
+              </div>
+
+              <hr>
+
+              <h2>Tu departamento:</h2>
+              <?php
+              $nombre_departamento = $departamento->getNombre();
+              $nombre = strstr($nombre_departamento, '_') ? substr(strstr($nombre_departamento, '_'), 1) : $nombre_departamento;
+              ?>
+              <ul>
+                <li>Nombre: <b><?php echo $nombre ?></b><br></li>
+                <li>Director a cargo: <b><?php echo $departamento->getDirectorAcargo()->getNombreApellido() ?></b><br></li>
+                <li>Mail de contacto: <b><?php echo $departamento->getDirectorAcargo()->getCorreoElectronico() ?></b><br></li>
+                <li>Cantidad de integrantes: <b><?php echo count($cu->get_by_param($departamento)) ?></b><br></li>
+              </ul>
             </div>
             <div class="col-md-6">
-              <iframe
-                src="DS_PP2_Proyecto_Gestión_de_Empleados_Final.docx.pdf"
-                width="90%"
-                height="100%"></iframe>
+              <h2>Avisos/Documentos</h2>
+              <?php
+              if (isset($path_archivo1)) {
+                if (obtenerExtension($path_archivo1) !== 'pdf') {
+                  echo '<img src="' . $path_archivo1 . '" alt="Aviso/documento de la empresa" class="img-fluid"/>';
+                } else {
+                  echo '<iframe
+                  src="' . $path_archivo1 . '#toolbar=0&view=FitHW&navpanes=0"
+                  scrolling="no"></iframe>';
+                }
+              } else {
+                echo '<img src="../img/sin_imagen.png" alt="No hay archivos disponibles" class="img-fluid"/>';
+              }
+              ?>
             </div>
-          </div>
-
-          <!-- Calendario -->
-          <h1>Calendario Laboral</h1>
-
-          <div class="justify-content-center">
-            <div id="calendar" class="mb-4 w-50"></div>
           </div>
         </div>
       </main>
