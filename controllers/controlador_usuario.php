@@ -17,14 +17,20 @@ class Controlador_Usuario
         return $this->ru->get_all();
     }
 
-    public function get_by_dni($dni)
+    public function get_by_param($param)
     {
-        return $this->ru->get_by_dni($dni);
-    }
-
-    public function get_by_email($email)
-    {
-        return $this->ru->get_by_email($email);
+        if ($param instanceof Departamento) {
+            $usuarios = $this->get_all();
+            $usuarios_filtrados = [];
+            foreach ($usuarios as $usuario) {
+                if ($usuario->getDepartamento() != null && $usuario->getDepartamento()->getNombre() == $param->getNombre()) {
+                    $usuarios_filtrados[] = $usuario;
+                }
+            }
+            return $usuarios_filtrados;
+        } else {
+            return $this->ru->get_by_param($param);
+        }
     }
 
     public function save(Usuario $usuario, $clave)
@@ -63,7 +69,7 @@ class Controlador_Usuario
         // **VALIDACIONES BACKEND**
         if ($usuario->getDni()) {
             // Validar si el DNI ya existe en la base de datos
-            if ($this->get_by_dni($usuario->getDni())) {
+            if ($this->get_by_param($usuario->getDni())) {
                 throw new Exception('Error: El DNI ingresado ya está registrado.');
             }
             // Validar DNI (exactamente 8 dígitos)
@@ -74,7 +80,7 @@ class Controlador_Usuario
 
         if ($usuario->getCorreoElectronico()) {
             // Validar si el correo electrónico ya existe en la base de datos
-            if ($this->get_by_email($usuario->getCorreoElectronico())) {
+            if ($this->get_by_param($usuario->getCorreoElectronico())) {
                 throw new Exception('Error: El correo electrónico ingresado ya está registrado.');
             }
 

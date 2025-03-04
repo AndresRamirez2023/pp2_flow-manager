@@ -35,6 +35,7 @@ class Repositorio_Usuario extends Repositorio
         $telefono = null;
         $tipo_usuario = null;
         $nombre_departamento = null;
+        $director_a_cargo = null;
         $nombre_empresa = null;
 
         if ($query->execute()) {
@@ -47,6 +48,7 @@ class Repositorio_Usuario extends Repositorio
                 $telefono,
                 $tipo_usuario,
                 $nombre_departamento,
+                $director_a_cargo,
                 $nombre_empresa
             );
 
@@ -55,17 +57,17 @@ class Repositorio_Usuario extends Repositorio
                 $e = new Empresa($nombre_empresa);
                 $departamento = new Departamento($nombre_departamento, null, $e);
 
-                $e = new Usuario(
+                $u = new Usuario(
                     $dni,
+                    $correo_electronico,
+                    $tipo_usuario,
+                    $departamento,
                     $nombre_apellido,
                     $fecha_nac,
                     $domicilio,
-                    $correo_electronico,
-                    $telefono,
-                    $tipo_usuario,
-                    $departamento
+                    $telefono
                 );
-                $usuarios[] = $e;
+                $usuarios[] = $u;
             }
             return $usuarios;
         }
@@ -86,16 +88,16 @@ class Repositorio_Usuario extends Repositorio
         $correo_electronico = null;
         $telefono = null;
         $tipo_de_usuario = null;
-        $departamento = null;
+        $departamento_usuario = null;
         $clave_encriptada = null;
         $nombre_departamento = null;
         $nombre_empresa = null;
         $director_a_cargo = null;
-        $type = is_numeric($username);
+        $type_numeric = is_numeric($username);
 
-        if ($type === 'double') {
+        if ($type_numeric) {
             $q .= "WHERE Dni = ?;";
-        } elseif ($type === 'string') {
+        } else {
             $q .= "WHERE CorreoElectronico = ?;";
         }
 
@@ -104,9 +106,9 @@ class Repositorio_Usuario extends Repositorio
             throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
         }
 
-        if ($type === 'double') {
+        if ($type_numeric) {
             $query->bind_param('i', $username);
-        } elseif ($type === 'string') {
+        } else {
             $query->bind_param('s', $username);
         }
 
@@ -119,7 +121,7 @@ class Repositorio_Usuario extends Repositorio
                 $correo_electronico,
                 $telefono,
                 $tipo_de_usuario,
-                $departamento,
+                $departamento_usuario,
                 $clave_encriptada,
                 $nombre_departamento,
                 $nombre_empresa,
@@ -128,21 +130,21 @@ class Repositorio_Usuario extends Repositorio
             if ($query->fetch()) {
                 // TODO: Comentado para pruebas, descomentar para versión final
                 // if ($nombre_empresa !== null && $empresa == $nombre_empresa) {
-                    if (password_verify($clave, $clave_encriptada ?: '')) {
-                        $e = new Empresa($nombre_empresa);
-                        $departamento = new Departamento($nombre_departamento, null, $e);
+                if ($clave !== '' && password_verify($clave, $clave_encriptada ?: '')) {
+                    $e = new Empresa($nombre_empresa);
+                    $departamento = new Departamento($nombre_departamento, null, $e);
 
-                        return new Usuario(
-                            $dni,
-                            $correo_electronico,
-                            $tipo_de_usuario,
-                            $departamento,
-                            $nombre_apellido,
-                            $fecha_nacimiento,
-                            $domicilio,
-                            $telefono
-                        );
-                    }
+                    return new Usuario(
+                        $dni,
+                        $correo_electronico,
+                        $tipo_de_usuario,
+                        $departamento,
+                        $nombre_apellido,
+                        $fecha_nacimiento,
+                        $domicilio,
+                        $telefono
+                    );
+                }
                 // }
             }
         }
@@ -197,67 +199,8 @@ class Repositorio_Usuario extends Repositorio
         return $query->execute();
     }
 
-    public function get_by_dni($dni)
-    {
-        if (!self::$conexion) {
-            throw new Exception("La conexión no ha sido inicializada.");
-        }
-
-        $nombre_apellido = null;
-        $fecha_nac = null;
-        $domicilio = null;
-        $correo_electronico = null;
-        $telefono = null;
-        $tipo_usuario = null;
-        $nombre_departamento = null;
-        $director_a_cargo = null;
-        $nombre_empresa = null;
-
-        $newSql = $this->selectSql . " WHERE u.Dni = ? LIMIT 1;";
-
-        $query = self::$conexion->prepare($newSql);
-        if (!$query) {
-            throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
-        }
-
-        $query->bind_param("i", $dni);
-        $query->execute();
-        $query->bind_result(
-            $dni,
-            $nombre_apellido,
-            $fecha_nac,
-            $domicilio,
-            $correo_electronico,
-            $telefono,
-            $tipo_usuario,
-            $nombre_departamento,
-            $director_a_cargo,
-            $nombre_empresa
-        );
-
-        if ($query->fetch()) {
-            $e = new Empresa($nombre_empresa);
-            $departamento = new Departamento($nombre_departamento, $director_a_cargo, $e);
-            $query->close();
-            return new Usuario(
-                $dni,
-                $nombre_apellido,
-                $fecha_nac,
-                $domicilio,
-                $correo_electronico,
-                $telefono,
-                $tipo_usuario,
-                $departamento
-            );
-        }
-        $query->close();
-        return null;
-    }
-
-    /**
-     * Verificar si el correo electrónico ya existe
-     */
-    public function get_by_email($correo_electronico)
+    // Función genérica para buscar por Dni y Correo Electrónico
+    public function get_by_param($param)
     {
         if (!self::$conexion) {
             throw new Exception("La conexión no ha sido inicializada.");
@@ -273,37 +216,27 @@ class Repositorio_Usuario extends Repositorio
         $nombre_departamento = null;
         $director_a_cargo = null;
         $nombre_empresa = null;
+        $type_numeric = is_numeric($param);
 
-        $newSql = $this->selectSql . " WHERE u.CorreoElectronico = ? LIMIT 1;";
+        if ($type_numeric) {
+            $newSql = $this->selectSql . " WHERE u.Dni = ? LIMIT 1;";
+        } else {
+            $newSql = $this->selectSql . " WHERE u.CorreoElectronico = ? LIMIT 1;";
+        }
 
         $query = self::$conexion->prepare($newSql);
         if (!$query) {
             throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
         }
 
-        $query->bind_param("i", $correo_electronico);
+        if ($type_numeric) {
+            $query->bind_param('i', $param);
+        } else {
+            $query->bind_param('s', $param);
+        }
 
-        $query->execute();
-
-        // Vincular los resultados a variables
-        $query->bind_result(
-            $dni,
-            $nombre_apellido,
-            $fecha_nac,
-            $domicilio,
-            $correo_electronico,
-            $telefono,
-            $tipo_usuario,
-            $nombre_departamento,
-            $director_a_cargo,
-            $nombre_empresa
-        );
-
-        if ($query->fetch()) {
-            $e = new Empresa($nombre_empresa);
-            $departamento = new Departamento($nombre_departamento, $director_a_cargo, $e);
-            $query->close();
-            return new Usuario(
+        if ($query->execute()) {
+            $query->bind_result(
                 $dni,
                 $nombre_apellido,
                 $fecha_nac,
@@ -311,8 +244,26 @@ class Repositorio_Usuario extends Repositorio
                 $correo_electronico,
                 $telefono,
                 $tipo_usuario,
-                $departamento
+                $nombre_departamento,
+                $director_a_cargo,
+                $nombre_empresa
             );
+
+            if ($query->fetch()) {
+                $e = new Empresa($nombre_empresa);
+                $departamento = new Departamento($nombre_departamento, null, $e);
+                $query->close();
+                return new Usuario(
+                    $dni,
+                    $correo_electronico,
+                    $tipo_usuario,
+                    $departamento,
+                    $nombre_apellido,
+                    $fecha_nac,
+                    $domicilio,
+                    $telefono
+                );
+            }
         }
         $query->close();
         return null;

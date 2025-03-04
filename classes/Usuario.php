@@ -19,9 +19,7 @@ class Usuario
     protected $telefono;
     // Tipo de usuario (Director, Recursos Humanos, Empleado)
     protected $tipoUsuario; // TODO: Usar Enums para definir tipos
-    // Nombre de la empresa al que pertenece
-    protected $empresa;
-    protected $departamento; // TODO: Ser un objeto de tipo Departamento
+    protected $departamento;
 
     public function __construct(
         $dni,
@@ -79,18 +77,9 @@ class Usuario
         return $this->tipoUsuario;
     }
 
-    public function getEmpresa()
-    {
-        // devuelve la empresa
-        $this->empresa->getNombre();
-    }
-
-
     public function getDepartamento()
     {
-        // Si el departamento es un objeto, devolver su nombre, sino 'Sin asignar'
-        // TODO: Cambiar por el objeto departamento
-        return $this->departamento ? $this->departamento->getNombre() : 'Sin asignar';
+        return $this->departamento;
     }
 
     // Validar si el usuario puede solicitar días
@@ -101,12 +90,14 @@ class Usuario
 
     public function esRRHH()
     {
-        return strtolower($this->tipoUsuario) === 'rrhh'; // Validar si el tipo de usuario es 'rrhh'
+        $nombre_departamento = $this->departamento->getNombre();
+        $nombre = strstr($nombre_departamento, '_') ? substr(strstr($nombre_departamento, '_'), 1) : $nombre_departamento;
+        return strtolower($nombre) === 'recursos humanos'; // Validar si el tipo de usuario es 'rrhh'
     }
 
     public function esEmpleado()
     {
-        return strtolower($this->tipoUsuario) === 'empleado'; // Validar si el tipo de usuario es 'rrhh'
+        return strtolower($this->tipoUsuario) === 'empleado'; // Validar si el tipo de usuario es 'empleado'
     }
 
     public function esDirectivo()
@@ -144,12 +135,6 @@ class Usuario
     {
         $this->tipoUsuario = $tipoUsuario;
     }
-
-    public function setEmpresa($empresa)
-    {
-        $this->empresa = $empresa;
-    }
-
 
     public function setDepartamento($departamento)
     {

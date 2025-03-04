@@ -18,7 +18,6 @@ class Controlador_Sesion
 
 	public function login($username, $password, $empresa)
 	{
-		var_dump($empresa);
 		$usuario = $this->ru->login($username, $password, $empresa);
 
 		if (!$usuario) {
