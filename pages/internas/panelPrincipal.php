@@ -23,7 +23,7 @@ $cu = new Controlador_Usuario();
 $departamento = $cd->get_by_name($usuario->getDepartamento()->getNombre());
 
 // TODO: Línea para versión de pruebas, borrar unserialize usuario para versión final
-$empresa = isset($_SESSION['empresa']) ? unserialize($_SESSION['empresa']) : $usuario->getDepartamento()->getEmpresa()->getNombre();
+$empresa = isset($_SESSION['empresa']) ? unserialize($_SESSION['empresa']) : $usuario->getDepartamento()->getEmpresa();
 
 // Función para obtener la extensión del archivo
 function obtenerExtension($nombreArchivo)
@@ -108,6 +108,13 @@ if ($empresa) {
           ?>
             <a class="btn btn-custom nav-link" href="gestion.php">Gestión</a>
           <?php endif; ?>
+          <a
+            href="soporte.php"
+            class="btn btn-help"
+            role="button"
+            aria-label="Soporte">
+            <i class="bi bi-question-circle"></i>
+          </a>
           <!-- Foto de perfil y menú flotante -->
           <div class="profile-container position-relative">
             <div class="nav-profile me-4" id="profileMenu" role="button">
