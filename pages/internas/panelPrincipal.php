@@ -22,6 +22,8 @@ $cu = new Controlador_Usuario();
 
 $departamento = $cd->get_by_name($usuario->getDepartamento()->getNombre());
 
+$cant_usuarios = count($cu->get_all($departamento));
+
 // TODO: Línea para versión de pruebas, borrar unserialize usuario para versión final
 $empresa = isset($_SESSION['empresa']) ? unserialize($_SESSION['empresa']) : $usuario->getDepartamento()->getEmpresa();
 
@@ -169,7 +171,7 @@ if ($empresa) {
                 <li>Nombre: <b><?php echo $nombre ?></b><br></li>
                 <li>Director a cargo: <b><?php echo $departamento->getDirectorAcargo()->getNombreApellido() ?></b><br></li>
                 <li>Mail de contacto: <b><?php echo $departamento->getDirectorAcargo()->getCorreoElectronico() ?></b><br></li>
-                <li>Cantidad de integrantes: <b><?php echo count($cu->get_by_param($departamento)) ?></b><br></li>
+                <li>Cantidad de integrantes: <b><?php echo $cant_usuarios ?></b><br></li>
               </ul>
             </div>
             <div class="col-md-6">

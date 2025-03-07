@@ -12,25 +12,14 @@ class Controlador_Usuario
         $this->ru = new Repositorio_Usuario();
     }
 
-    public function get_all()
+    public function get_all($param)
     {
-        return $this->ru->get_all();
+        return $this->ru->get_all($param);
     }
 
     public function get_by_param($param)
     {
-        if ($param instanceof Departamento) {
-            $usuarios = $this->get_all();
-            $usuarios_filtrados = [];
-            foreach ($usuarios as $usuario) {
-                if ($usuario->getDepartamento() != null && $usuario->getDepartamento()->getNombre() == $param->getNombre()) {
-                    $usuarios_filtrados[] = $usuario;
-                }
-            }
-            return $usuarios_filtrados;
-        } else {
-            return $this->ru->get_by_param($param);
-        }
+        return $this->ru->get_by_param($param);
     }
 
     public function save(Usuario $usuario, $clave)

@@ -311,3 +311,12 @@ button {
 .btn-help:hover > i {
   background-color: #cbcbcb;
 }
+.col-relative {
+  position: relative;
+}
+.button-absolute {
+  width: 150px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}

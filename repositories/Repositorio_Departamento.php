@@ -65,31 +65,34 @@ class Repositorio_Departamento extends Repositorio
         }
 
         $sql = "SELECT ";
-        $sql .= "d.Nombre, d.Empresa, d.DirectorACargo, e.Nombre, e.usuarioPrincipal ";
+        $sql .= "d.Nombre, d.Empresa, d.DirectorACargo, u.CorreoElectronico, u.TipoDeUsuario, u.NombreApellido ";
         $sql .= "FROM Departamentos d ";
-        $sql .= "INNER JOIN Empresas e ON e.Nombre = u.Empresa;";
+        $sql .= "LEFT JOIN Usuarios u ON u.Dni = d.DirectorACargo;";
 
         $query = self::$conexion->prepare($sql);
 
         $nombre = null;
         $empresa = null;
         $director_a_cargo = null;
-        $nombre_empresa = null;
-        $usuario_principal = null;
+        $correo_electronico = null;
+        $tipo_de_usuario = null;
+        $nombre_apellido = null;
 
         if ($query->execute()) {
             $query->bind_result(
                 $nombre,
                 $empresa,
                 $director_a_cargo,
-                $nombre_empresa,
-                $usuario_principal
+                $correo_electronico,
+                $tipo_de_usuario,
+                $nombre_apellido
             );
 
             $departamentos = [];
             while ($query->fetch()) {
-                $e = new Empresa($nombre, $usuario_principal);
-                $departamentos[] = new Departamento($nombre, $director_a_cargo, $e);
+                $e = new Empresa($empresa);
+                $u = new Usuario($director_a_cargo, $correo_electronico, $tipo_de_usuario, null, $nombre_apellido);
+                $departamentos[] = new Departamento($nombre, $u, $e);
             }
 
             return $departamentos;

@@ -18,14 +18,11 @@ class Repositorio_Usuario extends Repositorio
         parent::__construct();
     }
 
-    // Revisar Departamento y Empresa
-    public function get_all()
+    public function get_all($param)
     {
         if (!self::$conexion) {
             throw new Exception("La conexión no ha sido inicializada.");
         }
-
-        $query = self::$conexion->prepare($this->selectSql);
 
         $dni = null;
         $nombre_apellido = null;
@@ -37,6 +34,31 @@ class Repositorio_Usuario extends Repositorio
         $nombre_departamento = null;
         $director_a_cargo = null;
         $nombre_empresa = null;
+        $sql = $this->selectSql;
+        $bindType = '';
+        $bindValue = null;
+
+        if ($param !== null) {
+            if ($param instanceof Departamento) {
+                $param = $param->getNombre();
+                $sql .= " WHERE u.Departamento LIKE ?";
+            } elseif (is_numeric($param)) {
+                $sql .= " WHERE u.Dni LIKE ?";
+            } else {
+                $sql .= " WHERE u.NombreApellido LIKE ?";
+            }
+            $bindType = 's';
+            $bindValue = "%$param%";
+        }
+
+        $query = self::$conexion->prepare($sql);
+        if ($query === false) {
+            throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
+        }
+
+        if ($param !== null) {
+            $query->bind_param($bindType, $bindValue);
+        }
 
         if ($query->execute()) {
             $query->bind_result(
@@ -93,9 +115,9 @@ class Repositorio_Usuario extends Repositorio
         $nombre_departamento = null;
         $nombre_empresa = null;
         $director_a_cargo = null;
-        $type_numeric = is_numeric($username);
+        $is_numeric = is_numeric($username);
 
-        if ($type_numeric) {
+        if ($is_numeric) {
             $q .= "WHERE Dni = ?;";
         } else {
             $q .= "WHERE CorreoElectronico = ?;";
@@ -106,7 +128,7 @@ class Repositorio_Usuario extends Repositorio
             throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
         }
 
-        if ($type_numeric) {
+        if ($is_numeric) {
             $query->bind_param('i', $username);
         } else {
             $query->bind_param('s', $username);
@@ -216,9 +238,9 @@ class Repositorio_Usuario extends Repositorio
         $nombre_departamento = null;
         $director_a_cargo = null;
         $nombre_empresa = null;
-        $type_numeric = is_numeric($param);
+        $is_numeric = is_numeric($param);
 
-        if ($type_numeric) {
+        if ($is_numeric) {
             $newSql = $this->selectSql . " WHERE u.Dni = ? LIMIT 1;";
         } else {
             $newSql = $this->selectSql . " WHERE u.CorreoElectronico = ? LIMIT 1;";
@@ -229,7 +251,7 @@ class Repositorio_Usuario extends Repositorio
             throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
         }
 
-        if ($type_numeric) {
+        if ($is_numeric) {
             $query->bind_param('i', $param);
         } else {
             $query->bind_param('s', $param);
