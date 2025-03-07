@@ -52,7 +52,7 @@ unset($_SESSION['mensaje_mostrado']);
 
                         <!-- Menú desplegable -->
                         <div class="dropdown-menu" id="profileDropdown">
-                            <a href="../../php/logoutInterno.php" class="dropdown-item">
+                            <a href="../../php/Logout_Interno.php" class="dropdown-item">
                                 <i class="bi bi-box-arrow-right"></i> Cerrar sesión
                             </a>
                         </div>
