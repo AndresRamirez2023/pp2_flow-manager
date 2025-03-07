@@ -61,6 +61,13 @@ if (isset($_SESSION['usuario'])) {
             aria-label="Soporte">
             <i class="bi bi-question-circle"></i>
           </a>
+          <a
+            href="soporte.php"
+            class="btn btn-help"
+            role="button"
+            aria-label="Soporte">
+            <i class="bi bi-question-circle"></i>
+          </a>
           <!-- Foto de perfil y menú flotante -->
           <div class="profile-container position-relative">
             <div class="nav-profile me-4" id="profileMenu" role="button">

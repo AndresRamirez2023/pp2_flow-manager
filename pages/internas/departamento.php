@@ -99,11 +99,17 @@ $isRRHH = $usuario->esRRHH();
           <a class="btn btn-custom nav-link" href="mensajes.php">Mensajes y Archivos</a>
           <a class="btn btn-custom nav-link" href="departamento.php">Departamento</a>
           <a class="btn btn-custom nav-link" href="licencias.php">Licencias y Vacaciones</a>
-
           <?php if ($isRRHH): // Solo mostrar el botón si es RRHH 
           ?>
             <a class="btn btn-custom nav-link" href="gestion.php">Gestión</a>
           <?php endif; ?>
+          <a
+            href="soporte.php"
+            class="btn btn-help"
+            role="button"
+            aria-label="Soporte">
+            <i class="bi bi-question-circle"></i>
+          </a>
           <!-- Foto de perfil y menú flotante -->
           <div class="profile-container position-relative">
             <div class="nav-profile me-4" id="profileMenu" role="button">
