@@ -320,3 +320,29 @@ button {
   bottom: 0;
   right: 0;
 }
+/* Botones personalizados */
+.btn-custom-rrhh {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #4796fd;
+  color: white;
+  border-radius: 25px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+  margin-right: 2rem;
+}
+.btn-custom-rrhh > a {
+  color: #ffffff !important;
+}
+.btn-custom-rrhh:hover {
+  background-color: #7db2f8;
+}
+.custom-color {
+  background-color: #4a3aff;
+  border-color: #4a3aff;
+  color: white;
+}
+.custom-color:hover {
+  background-color: #796dfd;
+  border-color: #796dfd;
+}

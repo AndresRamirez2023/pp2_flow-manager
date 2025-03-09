@@ -71,7 +71,7 @@ $isRRHH = $usuario->esRRHH(); // Guardamos el valor si es RRHH
           <a class="btn btn-custom nav-link" href="departamento.php">Departamento</a>
           <a class="btn btn-custom nav-link" href="licencias.php">Licencias y Vacaciones</a>
           <?php if ($isRRHH): // Solo mostrar el botón si es RRHH ?>
-            <a class="btn btn-custom nav-link" href="gestion.php">Gestión</a>
+            <a class="btn btn-custom-rrhh nav-link" href="gestion.php">Gestión</a>
           <?php endif; ?>
           <a
             href="soporte.php"
