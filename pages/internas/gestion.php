@@ -8,8 +8,6 @@ require_once __DIR__ . '/../../controllers/controlador_usuario.php';
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' && !isset($_SESSION['mensaje_mostrado'])) {
-  unset($_SESSION['usuarioCreado']);
-  unset($_SESSION['departamentoCreado']);
   unset($_SESSION['formulario']);
   unset($_SESSION['usuarioEditar']);
   unset($_SESSION['departamentoEditar']);
@@ -47,6 +45,11 @@ if (!$usuario->esRRHH()) {
 if (isset($_GET['dni'])) {
   $usuario_editar = $cu->get_by_param($_GET['dni']);
   $_SESSION['usuarioEditar'] = serialize($usuario_editar);
+}
+
+if (isset($_GET['departamento'])) {
+  $departamento_editar = $cd->get_by_name($_GET['departamento']);
+  $_SESSION['departamentoEditar'] = serialize($departamento_editar);
 }
 
 foreach ($departamentos as $departamento) {
@@ -121,10 +124,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
   }
 
   if ($result) {
-    $_SESSION['empresaCreada'] = false;
-    $_SESSION['nombreEmpresa'] = null;
     unset($_SESSION['usuarioEditar']);
-    $_SESSION['mensaje'] = "Usuario <b>" . ($usuario_editar ? 'editado correctamente</b>.' : 'creado correctamente</b> con la clave provisoria: <b>"' . $clave_generada . '"</b>.');
+    $_SESSION['mensaje'] = "Usuario <b>" . ($usuario_editar ? 'editado correctamente</b>.' : 'creado correctamente</b> con la clave provisoria: <b>' . $clave_generada . '</b>.');
     $_SESSION['mensaje_tipo'] = "info";
   } else {
     if (!isset($_SESSION['mensaje']) && !isset($_SESSION['mensaje_tipo'])) {
@@ -134,6 +135,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
   }
 
   header('Location: gestion.php');
+  exit();
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'agregarDepartamento') {
+  $_SESSION['formulario'] = 'departamento';
+  if (isset($_SESSION['departamentoEditar'])) {
+    $departamento_editar = $_SESSION['departamentoEditar'];
+  }
+  // Datos del departamento
+  $nombre_departamento = trim($_POST['nombreDepartamento']);
+  $dni_director = trim($_POST['dniDirector']);
+  $empresa = new Empresa($nombre_empresa);
+
+  if (empty($nombre_departamento)) {
+    $_SESSION['mensaje'] = "Hay campos obligatorios incompletos. Revise los datos ingresados.";
+    $_SESSION['mensaje_tipo'] = "warning";
+    header('Location: gestion.php' . ($departamento_editar ? '?departamento=' . $departamento_editar->getNombre() : '') . '#departamentos');
+    exit();
+  }
+
+  $nombre_completo = $nombre_empresa  . "_" . $nombre_departamento;
+
+  if (!$departamento_editar && $cd->get_by_name($nombre_completo) !== null) {
+    $_SESSION['mensaje'] = "El departamento <b>ya se encuentra registrado</b> en el sistema. Revise los datos ingresados y/o los departamentos creados anteriormente.";
+    $_SESSION['mensaje_tipo'] = "danger";
+    header('Location: gestion.php#departamentos');
+    exit();
+  }
+
+  // Buscar Usuario
+  if ($dni_director) {
+    $usuario_a_cargo = $cu->get_by_param($dni_director);
+  }
+
+  if ($dni_director && $usuario_a_cargo == null) {
+    $_SESSION['mensaje'] = "El usuario <b>no existe</b> en el sistema. Revise los datos ingresados.";
+    $_SESSION['mensaje_tipo'] = "danger";
+    header('Location: gestion.php' . ($departamento_editar ? '?departamento=' . $departamento_editar->getNombre() : '') . '#departamentos');
+    exit();
+  }
+
+  // Objeto Departamento
+  $departamento = new Departamento(
+    $nombre_completo,
+    $usuario_a_cargo,
+    $empresa
+  );
+
+  if ($departamento_editar) {
+    $old_departamento = $cd->get_by_name($usuario_a_cargo->getDepartamento()->getNombre());
+    // var_dump('old '. $old_departamento->getNombre(), 'new '. $nombre_completo);
+    // die;
+    if ($nombre_completo !== $old_departamento->getNombre()) {
+      $old_departamento->setDirectorAcargo(null);
+      $cd->update($old_departamento);
+    }
+    $result = $cd->update($departamento);
+  } else {
+    $result = $cd->create($departamento);
+  }
+
+  if ($result) {
+    unset($_SESSION['departamentoEditar']);
+    $_SESSION['mensaje'] = 'Departamento <b>"' . $nombre_departamento . ($departamento_editar ? '"</b> editado correctamente' : '"</b> creado correctamente') . ($dni_director ? ' con el director: <b>"' . $dni_director . '"</b>.' : '.');
+    $_SESSION['mensaje_tipo'] = "info";
+  } else {
+    if (!isset($_SESSION['mensaje']) && !isset($_SESSION['mensaje_tipo'])) {
+      $_SESSION['mensaje'] = "<b>Error</b> al crear el departamento. Verifique los datos, si el problema persiste <b>contacte a un administrador</b>.";
+      $_SESSION['mensaje_tipo'] = "danger";
+    }
+  }
+
+  header('Location: gestion.php#departamentos');
   exit();
 }
 
@@ -351,7 +423,7 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
                   $tipo_depto = str_contains($nombre, "Recursos Humanos") ? "Recursos Humanos" : "Otro";
                   $selected = ($usuario_editar && $usuario_editar->getDepartamento()->getNombre() === $nombre) ? 'selected' : '';
                 ?>
-                  <option value="<?= $nombre ?>" data-director="<?= $tiene_director ?>" data-tipo="<?= $tipo_depto ?>" <?= $selected ?>>
+                  <option value="<?= $nombre ?>" data-director="<?= $tiene_director ? 'true' : 'false' ?>" data-tipo="<?= $tipo_depto ?>" <?= $selected ?>>
                     <?= $departamento[1] ?>
                   </option>
                 <?php endforeach; ?>
@@ -385,9 +457,15 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
 
         <!-- Contenedor principal -->
         <div class="container my-4 bg-white rounded shadow-sm">
-          <h2>Gestión de Departamentos</h2>
+          <h2 id="departamentos">Gestión de Departamentos</h2>
           <hr>
-          <h3>Agregar departamento</h3>
+          <?php
+          if (!is_null($departamento_editar)) {
+            echo '<h3>Editar departamento</h3>';
+          } else {
+            echo '<h3>Agregar departamento</h3>';
+          }
+          ?>
 
           <?php if (isset($_SESSION['mensaje']) && isset($_SESSION['formulario']) && $_SESSION['formulario'] == 'departamento'): ?>
             <div class="alert alert-<?php echo $_SESSION['mensaje_tipo']; ?> mt-3">
@@ -402,14 +480,22 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
           <div class="row">
             <!-- Columna izquierda: Agregar departamento -->
             <div class="col-12 mb-3">
-              <form id="form-agregar-departamento" class="row g-3" action="../../controllers/Controlador_Departamento.php" method="POST">
+              <form id="form-agregar-departamento" class="row g-3" action="gestion.php#departamentos" method="POST">
                 <div class="col-5">
-                  <label for="nombreDepartamento" class="form-label">Nombre del Departamento</label>
+                  <label for="nombreDepartamento" class="form-label">Nombre del Departamento <b>*</b></label>
                   <input
                     type="text"
                     class="form-control"
                     id="nombreDepartamento"
                     name="nombreDepartamento"
+                    value="<?php
+                            if ($departamento_editar) {
+                              $nombre = $departamento_editar->getNombre();
+                              $nombre_departamento = strstr($nombre, '_') ? substr(strstr($nombre, '_'), 1) : $nombre;
+                            }
+                            echo $departamento_editar ? $nombre_departamento : ''
+                            ?>"
+                    <?php echo $departamento_editar ? 'readonly' : '' ?>
                     required />
                 </div>
                 <div class="col-5">
@@ -418,12 +504,13 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
                     type="text"
                     class="form-control"
                     id="dniDirector"
-                    name="dniDirector"
-                    required />
+                    value="<?php echo $departamento_editar ? $departamento_editar->getDirectorAcargo()->getDni() : '' ?>"
+                    name="dniDirector" />
+
                 </div>
                 <div class="col-2 col-relative">
                   <button type="submit" name="accion" value="agregarDepartamento" class="btn custom-color button-absolute">
-                    Agregar
+                    <?php echo !is_null($departamento_editar) ? 'Guardar' : 'Agregar' ?>
                   </button>
                 </div>
               </form>
@@ -455,12 +542,13 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
                         ?>
                         <tr>
                           <td><?php echo htmlspecialchars($departamento[1]); ?></td>
-                          <td><?php echo htmlspecialchars($departamento[0]->getDirectorAcargo()->getNombreApellido()); ?></td>
-                          <td><?php echo htmlspecialchars($departamento[0]->getDirectorAcargo()->getDni()); ?></td>
+                          <td><?php echo htmlspecialchars($departamento[0]->getDirectorAcargo() ? $departamento[0]->getDirectorAcargo()->getNombreApellido() : ''); ?></td>
+                          <td><?php echo htmlspecialchars($departamento[0]->getDirectorAcargo() ? $departamento[0]->getDirectorAcargo()->getDni() : ''); ?></td>
                           <td>
-                            <button type='button' class='btn btn-primary btn-sm'
-                              onclick="mostrarFormularioEditar(<?php echo htmlspecialchars($departamento[0]->getNombre()) ?>,<?php echo htmlspecialchars($departamento[0]->getDirectorAcargo()->getDni()) ?>)">Editar</button>
-                            <button type='button' class='btn btn-danger btn-sm'>Borrar</button>
+                            <a href="gestion.php?departamento=<?php echo htmlspecialchars($nombre_empresa . '_' . $departamento[1]); ?>#departamentos" class="btn btn-sm btn-primary">Editar</a>
+                            <button class="btn btn-sm btn-danger confirmar-borrar" data-tipo="departamento" data-nombre="<?php echo $nombre_empresa . '_' . $departamento[1]; ?>">
+                              Borrar
+                            </button>
                           </td>
                       <?php endforeach;
                     } ?>
@@ -583,14 +671,14 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
         <!-- Modal para confirmar borrado de usuario -->
         <div
           class="modal fade"
-          id="deleteUsuarioModal"
+          id="deleteModal"
           tabindex="-1"
-          aria-labelledby="deleteUsuarioModalLabel"
+          aria-labelledby="deleteModalLabel"
           aria-hidden="true">
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="deleteUsuarioModalLabel">
+                <h5 class="modal-title" id="deleteModalLabel">
                   Borrar Usuario
                 </h5>
                 <button
@@ -602,7 +690,7 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
               <div class="modal-body">
                 <form>
                   <div class="mb-3">
-                    <p>¿Está seguro que desea eliminar al usuario con DNI: <b id="dniUsuarioBorrar"></b>?</p>
+                    <p>¿Está seguro que desea eliminar <span id="tipoBorrar"></span>: <b id="nombreBorrar"></b>?</p>
                   </div>
                 </form>
               </div>

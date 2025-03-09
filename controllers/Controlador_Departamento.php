@@ -32,6 +32,6 @@ class Controlador_Departamento
 
     public function delete($nombre)
     {
-        // TODO: Crear un nuevo departamento con el nuevo nombre, pasar los usuarios y borrar el viejo
+        return $this->rd->delete($nombre);
     }
 }

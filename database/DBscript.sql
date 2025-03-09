@@ -176,17 +176,6 @@ BEGIN
     IF NEW.TipoDeUsuario = 'Empleado' AND NEW.Departamento = 'Recursos Humanos' THEN
         SET NEW.TipoDeUsuario = 'RRHH';
     END IF;
-
-    IF NEW.TipoDeUsuario = 'Directivo' AND (OLD.TipoDeUsuario <> 'Directivo' OR OLD.Departamento <> NEW.Departamento) THEN
-        SELECT DirectorACargo INTO director_actual
-        FROM departamentos
-        WHERE Nombre = NEW.Departamento;
-
-        IF director_actual IS NOT NULL THEN
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Error: El departamento ya tiene un director asignado.';
-        END IF;
-    END IF;
 END $$
 DELIMITER ;
 
@@ -206,20 +195,6 @@ BEGIN
     FROM departamentos 
     WHERE Nombre = NEW.Departamento
     LIMIT 1;
-
-    IF NEW.TipoDeUsuario = 'Directivo' AND (OLD.TipoDeUsuario <> 'Directivo' OR OLD.Departamento <> NEW.Departamento) THEN
-        IF director_actual IS NULL THEN
-            UPDATE departamentos
-            SET DirectorACargo = NULL
-            WHERE Nombre = OLD.Departamento AND DirectorACargo = OLD.Dni;
-
-            IF NOT NEW.Departamento LIKE CONCAT(empresa_nombre, '_Sin asignar') THEN
-                UPDATE departamentos
-                SET DirectorACargo = NEW.Dni
-                WHERE Nombre = NEW.Departamento;
-            END IF;
-        END IF;
-    END IF;
 
     IF OLD.TipoDeUsuario = 'Directivo' AND NEW.TipoDeUsuario <> 'Directivo' THEN
         UPDATE departamentos
@@ -284,6 +259,29 @@ BEGIN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se puede crear un departamento para una empresa inexistente';
     END IF;
 END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER `before_delete_departamento` 
+BEFORE DELETE ON `departamentos`
+FOR EACH ROW 
+BEGIN
+    DECLARE departamento_sin_asignar VARCHAR(255);
+
+    SELECT Nombre INTO departamento_sin_asignar 
+    FROM departamentos 
+    WHERE Empresa = OLD.Empresa AND Nombre LIKE '%_Sin asignar'
+    LIMIT 1;
+
+    IF departamento_sin_asignar IS NOT NULL THEN
+        UPDATE usuarios 
+        SET Departamento = departamento_sin_asignar 
+        WHERE Departamento = OLD.Nombre;
+    ELSE
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No se puede eliminar el departamento porque no existe un departamento "Sin asignar" en esta empresa.';
+    END IF;
+END $$
 DELIMITER ;
 
 DELIMITER $$

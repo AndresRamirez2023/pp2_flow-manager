@@ -93,7 +93,7 @@ class Repositorio_Departamento extends Repositorio
             $departamentos = [];
             while ($query->fetch()) {
                 $e = new Empresa($empresa);
-                $u = new Usuario($director_a_cargo, $correo_electronico, $tipo_de_usuario, null, $nombre_apellido);
+                $u = $director_a_cargo ? new Usuario($director_a_cargo, $correo_electronico, $tipo_de_usuario, null, $nombre_apellido) : null;
                 $departamentos[] = new Departamento($nombre, $u, $e);
             }
 
@@ -145,7 +145,7 @@ class Repositorio_Departamento extends Repositorio
             $nombre_empresa = $empresa->getNombre();
         }
         // Revisar si usuarioPrincipal no da error si es NULL
-        if (!$query->bind_param("sis", $dni_usuario, $nombre_empresa, $nombre)) {
+        if (!$query->bind_param("iss", $dni_usuario, $nombre_empresa, $nombre)) {
             echo "Fallo la consulta a la base de datos.";
             return false;
         }
@@ -153,7 +153,21 @@ class Repositorio_Departamento extends Repositorio
         return $query->execute();
     }
 
-    public function delete($nombre) {}
+    public function delete($nombre)
+    {
+        if (!self::$conexion) {
+            throw new Exception("La conexión no ha sido inicializada.");
+        }
+
+        $sql = "DELETE FROM departamentos WHERE Nombre = ?;";
+        $query = self::$conexion->prepare($sql);
+
+        if (!$query->bind_param("s", $nombre)) {
+            throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
+        }
+
+        return $query->execute();
+    }
 
     public function get_by_name($nombre)
     {

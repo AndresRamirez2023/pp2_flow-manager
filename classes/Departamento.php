@@ -24,7 +24,7 @@ class Departamento
         return $this->directorAcargo;
     }
 
-    public function setDirectorAcargo(Usuario $director)
+    public function setDirectorAcargo($director)
     {
         $this->directorAcargo = $director;
     }

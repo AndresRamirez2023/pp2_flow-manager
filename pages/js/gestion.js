@@ -25,11 +25,12 @@ document.addEventListener('DOMContentLoaded', function () {
     let tipoUsuario = tipoUsuarioSelect.value;
 
     for (let option of departamentoSelect.options) {
-      let tieneDirector = option.getAttribute('data-director');
+      let tieneDirector = option.getAttribute('data-director') === 'true';
       let tipoDepto = option.getAttribute('data-tipo');
 
       if (
         (tipoUsuario === 'RRHH' && tipoDepto !== 'Recursos Humanos') ||
+        (tipoUsuario === 'Empleado' && tipoDepto === 'Recursos Humanos') ||
         (tipoUsuario === 'Directivo' && tieneDirector) ||
         (tipoUsuario === '' && option.value !== '')
       ) {
@@ -39,17 +40,14 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
-    if (
-      departamentoSelect.selectedIndex !== -1 &&
-      departamentoSelect.options[departamentoSelect.selectedIndex].style
-        .display === 'none'
-    ) {
+    let selectedOption =
+      departamentoSelect.options[departamentoSelect.selectedIndex];
+    if (selectedOption && selectedOption.style.display === 'none') {
       departamentoSelect.selectedIndex = 0;
     }
   }
 
   filtrarDepartamentos();
-
   tipoUsuarioSelect.addEventListener('change', filtrarDepartamentos);
 });
 
@@ -57,8 +55,37 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener('DOMContentLoaded', function () {
   let buscador = document.getElementById('buscador');
   let tablaResultados = document.getElementById('resultados');
-  let dniAEliminar = null;
 
+  function asignarEventosBorrar() {
+    document.querySelectorAll('.confirmar-borrar').forEach((boton) => {
+      boton.addEventListener('click', function () {
+        let nombreBorrar = this.getAttribute('data-nombre');
+        let tipoBorrar = this.getAttribute('data-tipo');
+
+        document.getElementById('tipoBorrar').textContent = tipoBorrar;
+        document.getElementById('nombreBorrar').textContent =
+          tipoBorrar == 'departamento'
+            ? nombreBorrar.split('_', 2)[1]
+            : nombreBorrar;
+
+        let deleteModal = new bootstrap.Modal(
+          document.getElementById('deleteModal')
+        );
+        deleteModal.show();
+
+        document.getElementById('btnConfirmarBorrar').onclick = function () {
+          let url =
+            tipoBorrar === 'usuario'
+              ? `../php/Borrar_Usuario.php?dni=${nombreBorrar}`
+              : `../php/Borrar_Departamento.php?nombre=${nombreBorrar}`;
+
+          window.location.href = url;
+        };
+      });
+    });
+  }
+
+  // Buscar usuarios dinámicamente
   buscador.addEventListener('keyup', function () {
     let termino = buscador.value.trim();
     tablaResultados.innerHTML = '';
@@ -80,36 +107,22 @@ document.addEventListener('DOMContentLoaded', function () {
           let fila = document.createElement('tr');
 
           fila.innerHTML = `
-            <td>${usuario.dni}</td>
-            <td>${usuario.nombre}</td>
-            <td>${usuario.email}</td>
-            <td>
-              <a href="gestion.php?dni=${usuario.dni}" class="btn btn-sm btn-primary">Editar</a>
-              <button class="btn btn-sm btn-danger confirmar-borrar-usuario" data-dni="${usuario.dni}">Borrar</button>
-            </td>
-          `;
+                      <td>${usuario.dni}</td>
+                      <td>${usuario.nombre}</td>
+                      <td>${usuario.email}</td>
+                      <td>
+                          <a href="gestion.php?dni=${usuario.dni}" class="btn btn-sm btn-primary">Editar</a>
+                          <button class="btn btn-sm btn-danger confirmar-borrar" data-tipo="usuario" data-nombre="${usuario.dni}">
+                              Borrar
+                          </button>
+                      </td>
+                  `;
 
           tablaResultados.appendChild(fila);
         });
-
-        // Agregar eventos a los botones de borrar
-        document.querySelectorAll('.confirmar-borrar-usuario').forEach((boton) => {
-          boton.addEventListener('click', function () {
-            dniAEliminar = this.getAttribute('data-dni');
-            document.getElementById('dniUsuarioBorrar').textContent = dniAEliminar;
-            let deleteUsuarioModal = new bootstrap.Modal(document.getElementById('deleteUsuarioModal'));
-            deleteUsuarioModal.show();
-          });
-        });
+        asignarEventosBorrar();
       })
       .catch((error) => console.error('Error al buscar usuario:', error));
   });
-
-  // Confirmar eliminación
-  document.getElementById('btnConfirmarBorrar').addEventListener('click', function () {
-    if (dniAEliminar) {
-      window.location.href = `../php/Borrar_Usuario.php?dni=${dniAEliminar}`;
-    }
-  });
+  asignarEventosBorrar();
 });
-
