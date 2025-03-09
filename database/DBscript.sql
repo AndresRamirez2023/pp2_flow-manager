@@ -73,7 +73,7 @@ BEGIN
 
         IF director_actual IS NOT NULL THEN
             SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Error: El departamento ya tiene un director asignado';
+            SET MESSAGE_TEXT = 'Error: El departamento ya tiene un director asignado.';
         END IF;
     END IF;
 END$$
@@ -87,12 +87,13 @@ BEGIN
     DECLARE usuario_actual INT;
     DECLARE director_actual INT;
 
-    IF NEW.TipoDeUsuario = 'RRHH' THEN
-        SELECT Empresa INTO empresa_nombre
-        FROM departamentos 
-        WHERE Nombre = NEW.Departamento
-        LIMIT 1;
+    -- Obtener la empresa del usuario
+    SELECT Empresa INTO empresa_nombre
+    FROM departamentos 
+    WHERE Nombre = NEW.Departamento
+    LIMIT 1;
 
+    IF NEW.TipoDeUsuario = 'RRHH' THEN
         SELECT UsuarioPrincipal INTO usuario_actual
         FROM empresas
         WHERE Nombre = empresa_nombre;
@@ -104,7 +105,7 @@ BEGIN
         END IF;
     END IF;
 
-    IF NEW.TipoDeUsuario = 'Directivo' AND NEW.Departamento <> 'Sin asignar' THEN
+    IF NEW.TipoDeUsuario = 'Directivo' AND NOT NEW.Departamento LIKE CONCAT(empresa_nombre, '_Sin asignar') THEN
         SELECT DirectorACargo INTO director_actual
         FROM departamentos
         WHERE Nombre = NEW.Departamento;
@@ -183,7 +184,7 @@ BEGIN
 
         IF director_actual IS NOT NULL THEN
             SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Error: El departamento ya tiene un director asignado';
+            SET MESSAGE_TEXT = 'Error: El departamento ya tiene un director asignado.';
         END IF;
     END IF;
 END $$
@@ -193,11 +194,18 @@ DELIMITER $$
 CREATE TRIGGER `after_update_usuario` AFTER UPDATE ON `usuarios`
 FOR EACH ROW 
 BEGIN
+    DECLARE empresa_nombre VARCHAR(100);
     DECLARE director_actual INT;
 
     SELECT DirectorACargo INTO director_actual
     FROM departamentos
     WHERE Nombre = NEW.Departamento;
+
+    -- Obtener la empresa del usuario
+    SELECT Empresa INTO empresa_nombre
+    FROM departamentos 
+    WHERE Nombre = NEW.Departamento
+    LIMIT 1;
 
     IF NEW.TipoDeUsuario = 'Directivo' AND (OLD.TipoDeUsuario <> 'Directivo' OR OLD.Departamento <> NEW.Departamento) THEN
         IF director_actual IS NULL THEN
@@ -205,7 +213,7 @@ BEGIN
             SET DirectorACargo = NULL
             WHERE Nombre = OLD.Departamento AND DirectorACargo = OLD.Dni;
 
-            IF NEW.Departamento <> 'Sin asignar' THEN
+            IF NOT NEW.Departamento LIKE CONCAT(empresa_nombre, '_Sin asignar') THEN
                 UPDATE departamentos
                 SET DirectorACargo = NEW.Dni
                 WHERE Nombre = NEW.Departamento;
@@ -298,7 +306,7 @@ BEGIN
 
     IF OLD.DirectorACargo <> NEW.DirectorACargo THEN
         UPDATE usuarios 
-        SET Departamento = 'Sin asignar'
+        SET Departamento = CONCAT(OLD.Empresa, '_Sin asignar')
         WHERE Dni = OLD.DirectorACargo;
         IF NEW.DirectorACargo IS NOT NULL THEN
             UPDATE usuarios
