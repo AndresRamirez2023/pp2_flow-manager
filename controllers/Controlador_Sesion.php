@@ -27,6 +27,9 @@ class Controlador_Sesion
 			//login correcto, se ingresa al sistema
 			session_start();
 			$_SESSION['usuario'] = serialize($usuario);
+			if(!isset($_SESSION['empresa'])) {
+				$_SESSION['empresa'] = serialize($usuario->getDepartamento()->getEmpresa());
+			}
 			return [true, "Ingreso correcto."];
 		}
 	}

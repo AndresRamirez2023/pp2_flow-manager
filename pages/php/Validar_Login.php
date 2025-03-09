@@ -11,11 +11,11 @@ if (empty($_POST['username']) || empty($_POST['password'])) {
     if (isset($_SESSION['empresa'])) {
         $empresa = unserialize($_SESSION['empresa']);
     }
-    $login = $cs->login($_POST['username'], $_POST['password'], $empresa === null ?: $empresa->getNombre());
+    $login = $cs->login($_POST['username'], $_POST['password'], is_null($empresa) ?: $empresa->getNombre());
     if ($login[0] === true) {
         $redirigir = '../internas/panelPrincipal.php';
     } else {
-        $redirigir = '../internas/login.php?' . 'empresa=' . $empresa === null ?: $empresa->getNombre() . '&mensaje=' . $login[1] . '&tipo=danger';
+        $redirigir = '../internas/login.php?' . (is_null($empresa) === null ? '' : 'empresa=' . $empresa->getNombre() . '&') . 'mensaje=' . $login[1] . '&tipo=danger';
     }
 }
 header('Location: ' . $redirigir);
