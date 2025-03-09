@@ -1,5 +1,6 @@
 <?php
 require_once '../../controllers/Controlador_Sesion.php';
+require_once '../../controllers/Controlador_Empresa.php';
 
 session_start();
 
@@ -7,8 +8,12 @@ if (empty($_POST['username']) || empty($_POST['password'])) {
     $redirigir = '/pages/internas/login.php?mensaje=Error: Todos los campos son obligatorios.';
 } else {
     $cs = new Controlador_Sesion();
+    $ce = new Controlador_Empresa();
     $empresa = null;
-    if (isset($_SESSION['empresa'])) {
+    if (isset($_GET['empresa'])) {
+        $empresa = $ce->get_by_name($_GET['empresa']);
+        $_SESSION['empresa'] = serialize($empresa);
+
         $empresa = unserialize($_SESSION['empresa']);
     }
     $login = $cs->login($_POST['username'], $_POST['password'], is_null($empresa) ?: $empresa->getNombre());

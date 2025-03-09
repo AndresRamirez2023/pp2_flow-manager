@@ -205,7 +205,7 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
               <a href="perfil.php" class="dropdown-item">
                 <i class="bi bi-person-fill"></i> Perfil
               </a>
-              <a href="login.php" class="dropdown-item">
+              <a href="../php/Logout.php" class="dropdown-item">
                 <i class="bi bi-box-arrow-right"></i> Cerrar sesión
               </a>
             </div>

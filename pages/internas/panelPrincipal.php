@@ -24,7 +24,6 @@ $departamento = $cd->get_by_name($usuario->getDepartamento()->getNombre());
 
 $cant_usuarios = count($cu->get_all($departamento));
 
-// TODO: Línea para versión de pruebas, borrar unserialize usuario para versión final
 $empresa = unserialize($_SESSION['empresa']);
 
 // Función para obtener la extensión del archivo

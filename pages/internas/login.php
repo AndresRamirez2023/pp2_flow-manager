@@ -18,7 +18,6 @@ if (isset($_GET['empresa'])) {
   $empresa = $ce->get_by_name($buscar_nombre_empresa);
 
   if ($empresa) {
-    $_SESSION['empresa'] = serialize($empresa);
     $nombre_empresa_limpio = preg_replace('/[^A-Za-z0-9_-]/', '_', $empresa->getNombre());
 
     function encontrarImagen($directorio, $nombre_base)
@@ -68,7 +67,7 @@ if (isset($_GET['empresa'])) {
   <div class="full-container">
     <div class="login-container">
       <div class="form-container">
-        <form class="login-form" action="../php/Validar_Login.php" method="POST">
+        <form class="login-form" action="../php/Validar_Login.php <?php !is_null($empresa) ? $empresa->getNombre() : '' ?>" method="POST">
           <div class="text-center">
             <img src="<?php echo isset($path_logo_empresa) ? $path_logo_empresa : '../img/Icon - FlowManager.png'; ?>" alt="Logo de la Empresa" class="logo-empresa">
           </div>
