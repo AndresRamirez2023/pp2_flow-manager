@@ -57,6 +57,9 @@ foreach ($departamentos as $departamento) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'agregarUsuario') {
   $_SESSION['formulario'] = 'usuario';
+  if (isset($_SESSION['usuarioEditar'])) {
+    $usuario_editar = $_SESSION['usuarioEditar'];
+  }
   // Datos del usuario
   $nombre_apellido = trim($_POST['nombreApellido']);
   $dni = trim($_POST['dni']);
@@ -77,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
   if (empty($dni) || empty($nombre_apellido) || empty($email) || empty($tipo_de_usuario)) {
     $_SESSION['mensaje'] = "Hay campos obligatorios incompletos. Revise los datos ingresados.";
     $_SESSION['mensaje_tipo'] = "warning";
-    header('Location: gestion.php' . ($usuario_editar ? '?dni=' . $usuario_editar->getDni() : '' ));
+    header('Location: gestion.php' . ($usuario_editar ? '?dni=' . $usuario_editar->getDni() : ''));
     exit();
   }
 
@@ -95,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
   if ($departamento == null) {
     $_SESSION['mensaje'] = "El departamento <b>no existe</b> en el sistema. Revise los datos ingresados.";
     $_SESSION['mensaje_tipo'] = "danger";
-    header('Location: gestion.php' . ($usuario_editar ? '?dni=' . $usuario_editar->getDni() : '' ));
+    header('Location: gestion.php' . ($usuario_editar ? '?dni=' . $usuario_editar->getDni() : ''));
     exit();
   }
 
