@@ -10,9 +10,9 @@ class Controlador_Departamento
         $this->rd = new Repositorio_Departamento();
     }
 
-    public function get_all()
+    public function get_all($nombre_empresa)
     {
-        return $this->rd->get_all();
+        return $this->rd->get_all($nombre_empresa);
     }
 
     public function get_by_name($nombre)

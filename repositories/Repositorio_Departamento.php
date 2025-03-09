@@ -58,7 +58,7 @@ class Repositorio_Departamento extends Repositorio
         return null;
     }
 
-    public function get_all()
+    public function get_all($nombre_empresa)
     {
         if (!self::$conexion) {
             throw new Exception("La conexión no ha sido inicializada.");
@@ -67,7 +67,7 @@ class Repositorio_Departamento extends Repositorio
         $sql = "SELECT ";
         $sql .= "d.Nombre, d.Empresa, d.DirectorACargo, u.CorreoElectronico, u.TipoDeUsuario, u.NombreApellido ";
         $sql .= "FROM Departamentos d ";
-        $sql .= "LEFT JOIN Usuarios u ON u.Dni = d.DirectorACargo;";
+        $sql .= "LEFT JOIN Usuarios u ON u.Dni = d.DirectorACargo WHERE d.Empresa = ?;";
 
         $query = self::$conexion->prepare($sql);
 
@@ -77,6 +77,8 @@ class Repositorio_Departamento extends Repositorio
         $correo_electronico = null;
         $tipo_de_usuario = null;
         $nombre_apellido = null;
+
+        $query->bind_param('s', $nombre_empresa);
 
         if ($query->execute()) {
             $query->bind_result(

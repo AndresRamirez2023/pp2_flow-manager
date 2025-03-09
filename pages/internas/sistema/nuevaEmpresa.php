@@ -19,26 +19,27 @@ if (!isset($_SESSION['super_user'])) {
 }
 $superUser = unserialize($_SESSION['super_user']);
 
-$nombreEmpresa = null;
-if (isset($_GET['nombreEmpresa'])) {
-    $nombreEmpresa = $_GET['nombreEmpresa'];
+$ce = new Controlador_Empresa();
+$cu = new Controlador_Usuario();
+$cd = new Controlador_Departamento();
 
-    $ce = new Controlador_Empresa();
-    $e = $ce->get_by_name($nombreEmpresa);
+$nombre_empresa = null;
+if (isset($_GET['nombreEmpresa'])) {
+    $nombre_empresa = $_GET['nombreEmpresa'];
+    $e = $ce->get_by_name($nombre_empresa);
 
     if ($e !== null) {
         $_SESSION['empresaCreada'] = true;
-        $_SESSION['nombreEmpresa'] = $nombreEmpresa;
+        $_SESSION['nombreEmpresa'] = $nombre_empresa;
     }
 }
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'crearEmpresa') {
-    $ce = new Controlador_Empresa();
-    $nombreEmpresa = trim($_POST['nombreEmpresa']);
+    $nombre_empresa = trim($_POST['nombreEmpresa']);
 
     // Validar si la empresa ya existe
-    if ($ce->get_by_name($nombreEmpresa) !== null) {
+    if ($ce->get_by_name($nombre_empresa) !== null) {
         $_SESSION['mensaje'] = "La empresa <b>ya se encuentra registrada</b> en el sistema. Verifique el nombre y/o las empresas creadas anteriormente.";
         $_SESSION['mensaje_tipo'] = "danger";
         header('Location: nuevaEmpresa.php');
@@ -46,8 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     }
 
     // Procesar archivos
-    $nombreEmpresaLimpio = preg_replace('/[^A-Za-z0-9_-]/', '_', $nombreEmpresa);
-    $directorioBase = "../../../uploads/$nombreEmpresaLimpio/";
+    $nombre_empresa_limpio = preg_replace('/[^A-Za-z0-9_-]/', '_', $nombre_empresa);
+    $directorioBase = "../../../uploads/$nombre_empresa_limpio/";
     $directorioImagenes = $directorioBase . "images/";
     $directorioArchivos = $directorioBase . "files/";
 
@@ -81,12 +82,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     }
 
     // Crear empresa
-    $empresa = new Empresa($nombreEmpresa, null, $fondoPath, $logoPath);
+    $empresa = new Empresa($nombre_empresa, null, $fondoPath, $logoPath);
     $result = $ce->create($empresa);
 
     if ($result) {
+        // Crear Departamentos básicos
+        $departamento = new Departamento($nombre_empresa  . "_Recursos Humanos", null, $empresa);
+        $result = $cd->create($departamento);
+
+        $departamento = new Departamento($nombre_empresa  . "_Sin asignar", null, $empresa);
+        $result = $cd->create($departamento);
+
         $_SESSION['empresaCreada'] = true;
-        $_SESSION['nombreEmpresa'] = $nombreEmpresa;
+        $_SESSION['nombreEmpresa'] = $nombre_empresa;
         $_SESSION['mensaje'] = "Empresa <b>creada correctamente</b>. Ya puede crear el <b>primer usuario</b> asociado a la empresa para entregar al cliente.";
         $_SESSION['mensaje_tipo'] = "info";
     } else {
@@ -103,24 +111,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
         exit();
     }
 
-    $cu = new Controlador_Usuario();
-    $cd = new Controlador_Departamento();
-    $nombreEmpresa = $_SESSION['nombreEmpresa'];
+    $nombre_empresa = $_SESSION['nombreEmpresa'];
 
     // Datos del usuario
     $dni = trim($_POST['dni']);
-    $nombreApellido = trim($_POST['nombre']) . ' ' . trim($_POST['apellido']);
+    $nombre_apellido = trim($_POST['nombre']) . ' ' . trim($_POST['apellido']);
     $email = trim($_POST['email']);
-    $tipoUsuario = "RRHH";
-    $clave_generada = preg_replace('/[^A-Za-z0-9-]/', '.', $nombreEmpresa) . "123";
+    $tipo_de_usuario = "RRHH";
+    $clave_generada = preg_replace('/[^A-Za-z0-9-]/', '.', $nombre_empresa) . "123";
 
+    $nextNumber = 4;
     while (strlen($clave_generada) < 8) {
-        $clave_generada .= strlen($clave_generada) - 2;
+        $clave_generada .= $nextNumber;
+        $nextNumber++;
     }
 
-    echo "<p>Clave generada: <strong>" . htmlspecialchars($clave_generada, ENT_QUOTES, 'UTF-8') . "</strong></p>";
-
-    if (empty($dni) || empty($nombreApellido) || empty($email)) {
+    if (empty($dni) || empty($nombre_apellido) || empty($email)) {
         $_SESSION['mensaje'] = "Todos los campos son obligatorios. Revise los datos ingresados.";
         $_SESSION['mensaje_tipo'] = "danger";
         header('Location: nuevaEmpresa.php');
@@ -135,18 +141,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     }
 
     // Crear objeto Departamento
-    $empresa = new Empresa($nombreEmpresa);
-    $departamento = new Departamento($nombreEmpresa  . "_Recursos Humanos", null, $empresa);
-
-    $result = $cd->create($departamento);
+    $empresa = new Empresa($nombre_empresa);
+    $nombre_departamento = $nombre_empresa  . "_Recursos Humanos";
+    $departamento = $cd->get_by_name($nombre_departamento);
+    if (!$departamento) {
+        $departamento = new Departamento($nombre_departamento, null, $empresa);
+    }
 
     // Objeto Usuario
     $usuario = new Usuario(
         $dni,
         $email,
-        $tipoUsuario,
+        $tipo_de_usuario,
         $departamento,
-        $nombreApellido
+        $nombre_apellido
     );
 
     $result = $cu->save($usuario, $clave_generada);
@@ -154,7 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     if ($result) {
         $_SESSION['empresaCreada'] = false;
         $_SESSION['nombreEmpresa'] = null;
-        $_SESSION['mensaje'] = "Usuario <b>creado correctamente</b> con la clave <b>" . $clave_generada . "</b> . Ya puede compartir la <b>información inicial</b> con el cliente.";
+        $_SESSION['mensaje'] = "Usuario <b>creado correctamente</b> con la clave <b>" . $clave_generada . "</b>. Ya puede compartir la <b>información inicial</b> con el cliente.";
         $_SESSION['mensaje_tipo'] = "info";
     } else {
         if (!isset($_SESSION['mensaje']) && !isset($_SESSION['mensaje_tipo'])) {
