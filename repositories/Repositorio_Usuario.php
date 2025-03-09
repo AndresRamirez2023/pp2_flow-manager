@@ -187,7 +187,7 @@ class Repositorio_Usuario extends Repositorio
         $correo_electronico = $usuario->getCorreoElectronico();
         $telefono = $usuario->getTelefono();
         $tipo_de_usuario = $usuario->getTipoUsuario();
-        $departamento = $usuario->getDepartamento();
+        $departamento = $usuario->getDepartamento()->getNombre();
 
         // Encriptar la contraseña
         $clave_encriptada = password_hash($clave, PASSWORD_DEFAULT);
@@ -299,13 +299,13 @@ class Repositorio_Usuario extends Repositorio
 
         // Definir la consulta base
         $q = "UPDATE usuarios 
-              SET Nombre = ?, 
-                  Apellido = ?, 
+              SET NombreApellido = ?, 
                   FechaNacimiento = ?, 
                   Domicilio = ?, 
                   CorreoElectronico = ?, 
                   Telefono = ?, 
-                  TipoDeUsuario = ?";
+                  TipoDeUsuario = ?,
+                  Departamento = ?";
 
         if (!empty($nuevaPassword)) {
             $q .= ", clave = ?";
@@ -321,18 +321,33 @@ class Repositorio_Usuario extends Repositorio
         }
 
         // Obtener los datos del objeto $usuario
-        $dni = $usuario->getDni();
         $nombre_apellido = $usuario->getNombreApellido();
         $fecha_nacimiento = $usuario->getFechaNac();
         $domicilio = $usuario->getDomicilio();
         $correo_electronico = $usuario->getCorreoElectronico();
         $telefono = $usuario->getTelefono();
         $tipo_de_usuario = $usuario->getTipoUsuario();
+        $departamento = $usuario->getDepartamento()->getNombre();
+        $dni = $usuario->getDni();
 
         if (!empty($clave_encriptada)) {
             $clave_encriptada = password_hash($clave, PASSWORD_DEFAULT);
 
             // Vincular parámetros con la contraseña
+            $query->bind_param(
+                "ssssssssi",
+                $nombre_apellido,
+                $fecha_nacimiento,
+                $domicilio,
+                $correo_electronico,
+                $telefono,
+                $tipo_de_usuario,
+                $departamento,
+                $clave,
+                $dni
+            );
+        } else {
+            // Vincular parámetros sin la contraseña
             $query->bind_param(
                 "sssssssi",
                 $nombre_apellido,
@@ -341,19 +356,7 @@ class Repositorio_Usuario extends Repositorio
                 $correo_electronico,
                 $telefono,
                 $tipo_de_usuario,
-                $clave,
-                $dni
-            );
-        } else {
-            // Vincular parámetros sin la contraseña
-            $query->bind_param(
-                "ssssssi",
-                $nombre_apellido,
-                $fecha_nacimiento,
-                $domicilio,
-                $correo_electronico,
-                $telefono,
-                $tipo_de_usuario,
+                $departamento,
                 $dni
             );
         }
@@ -403,10 +406,11 @@ class Repositorio_Usuario extends Repositorio
 
         $sql = "DELETE FROM usuarios WHERE dni = ?;";
         $query = self::$conexion->prepare($sql);
-
-        if (!$query->bind_param("i", $dni)) {
-            echo "fallo la consulta";
+        if (!$query) {
+            throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
         }
+
+        $query->bind_param('i', $dni);
 
         return $query->execute();
     }

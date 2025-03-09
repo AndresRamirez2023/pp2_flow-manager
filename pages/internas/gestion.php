@@ -1,17 +1,41 @@
 <?php
 require_once '../../classes/Usuario.php';
-require_once __DIR__ . '/../../repositories/Repositorio_Departamento.php';
-require_once __DIR__ . '/../../repositories/Repositorio_Usuario.php';
+require_once '../../classes/Empresa.php';
+require_once '../../classes/Departamento.php';
+require_once __DIR__ . '/../../controllers/Controlador_Departamento.php';
+require_once __DIR__ . '/../../controllers/Controlador_Empresa.php';
+require_once __DIR__ . '/../../controllers/controlador_usuario.php';
 session_start();
 
-
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' && !isset($_SESSION['mensaje_mostrado'])) {
+  unset($_SESSION['usuarioCreado']);
+  unset($_SESSION['departamentoCreado']);
+  unset($_SESSION['formulario']);
+  unset($_SESSION['usuarioEditar']);
+  unset($_SESSION['departamentoEditar']);
+  $_SESSION['mensaje_mostrado'] = true;
+}
 
 if (!isset($_SESSION['usuario'])) {
   header("Location: login.php");
   exit;
 }
 
+// Declaración de variables
 $usuario = unserialize($_SESSION['usuario']);
+// TODO: Línea para versión de pruebas, borrar unserialize usuario para versión final
+$empresa = isset($_SESSION['empresa']) ? unserialize($_SESSION['empresa']) : $usuario->getDepartamento()->getEmpresa();
+$usuario_editar = null;
+$departamento_editar = null;
+
+$cd = new Controlador_Departamento();
+$ce = new Controlador_Empresa();
+$cu = new Controlador_Usuario();
+
+$departamentos = $cd->get_all($empresa->getNombre());
+$departamentos_nombres = [];
+
+$nombre_empresa = $empresa->getNombre();
 
 // Verificar si el usuario es de tipo RRHH
 if (!$usuario->esRRHH()) {
@@ -19,15 +43,98 @@ if (!$usuario->esRRHH()) {
   header("Location: panelPrincipal.php");
   exit;
 }
-$rd = new Repositorio_Departamento();
-$departamentos = $rd->get_all();
-$departamentos_nombres = [];
+
+if (isset($_GET['dni'])) {
+  $usuario_editar = $cu->get_by_param($_GET['dni']);
+  $_SESSION['usuarioEditar'] = serialize($usuario_editar);
+}
 
 foreach ($departamentos as $departamento) {
   $nombre = $departamento->getNombre();
   $nombre_departamento = strstr($nombre, '_') ? substr(strstr($nombre, '_'), 1) : $nombre;
   $departamentos_nombres[] = [$departamento, $nombre_departamento];
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'agregarUsuario') {
+  $_SESSION['formulario'] = 'usuario';
+  // Datos del usuario
+  $nombre_apellido = trim($_POST['nombreApellido']);
+  $dni = trim($_POST['dni']);
+  $domicilio = trim($_POST['domicilio']);
+  $telefono = trim($_POST['telefono']);
+  $email = trim($_POST['email']);
+  $fecha_de_nac = trim($_POST['fechaNacimiento']);
+  $tipo_de_usuario = trim($_POST['tipoDeUsuario']);
+  $nombre_departamento = trim($_POST['Departamento']);
+  $clave_generada = preg_replace('/[^A-Za-z0-9-]/', '.', strtolower($nombre_empresa)) . "123";
+
+  $nextNumber = 4;
+  while (strlen($clave_generada) < 8) {
+    $clave_generada .= $nextNumber;
+    $nextNumber++;
+  }
+
+  if (empty($dni) || empty($nombre_apellido) || empty($email) || empty($tipo_de_usuario)) {
+    $_SESSION['mensaje'] = "Hay campos obligatorios incompletos. Revise los datos ingresados.";
+    $_SESSION['mensaje_tipo'] = "warning";
+    header('Location: gestion.php' . ($usuario_editar ? '?dni=' . $usuario_editar->getDni() : '' ));
+    exit();
+  }
+
+  if (!$usuario_editar && $cu->get_by_param($dni) !== null) {
+    $_SESSION['mensaje'] = "El usuario <b>ya se encuentra registrado</b> en el sistema. Revise los datos ingresados y/o los usuarios creados anteriormente.";
+    $_SESSION['mensaje_tipo'] = "danger";
+    header('Location: gestion.php');
+    exit();
+  }
+
+  // Buscar Departamento
+  $empresa = new Empresa($nombre_empresa);
+  $departamento = $cd->get_by_name($nombre_departamento);
+
+  if ($departamento == null) {
+    $_SESSION['mensaje'] = "El departamento <b>no existe</b> en el sistema. Revise los datos ingresados.";
+    $_SESSION['mensaje_tipo'] = "danger";
+    header('Location: gestion.php' . ($usuario_editar ? '?dni=' . $usuario_editar->getDni() : '' ));
+    exit();
+  }
+
+  // Objeto Usuario
+  $usuario = new Usuario(
+    $dni,
+    $email,
+    $tipo_de_usuario,
+    $departamento,
+    $nombre_apellido,
+    $fecha_de_nac,
+    $domicilio,
+    $telefono
+  );
+
+  if ($usuario_editar) {
+    $result = $cu->update($usuario, null);
+  } else {
+    $result = $cu->save($usuario, $clave_generada);
+  }
+
+  if ($result) {
+    $_SESSION['empresaCreada'] = false;
+    $_SESSION['nombreEmpresa'] = null;
+    unset($_SESSION['usuarioEditar']);
+    $_SESSION['mensaje'] = "Usuario <b>" . ($usuario_editar ? 'editado correctamente</b>.' : 'creado correctamente</b> con la clave provisoria: <b>"' . $clave_generada . '"</b>.');
+    $_SESSION['mensaje_tipo'] = "info";
+  } else {
+    if (!isset($_SESSION['mensaje']) && !isset($_SESSION['mensaje_tipo'])) {
+      $_SESSION['mensaje'] = "<b>Error</b> al crear el usuario. Verifique los datos, si el problema persiste <b>contacte a un administrador</b>.";
+      $_SESSION['mensaje_tipo'] = "danger";
+    }
+  }
+
+  header('Location: gestion.php');
+  exit();
+}
+
+$mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
 ?>
 
 <!DOCTYPE html>
@@ -70,10 +177,10 @@ foreach ($departamentos as $departamento) {
         <!-- Navegación -->
         <div class="navbar-nav ms-auto">
           <a class="btn btn-custom nav-link" href="panelPrincipal.php">Panel Principal</a>
-          <a class="btn btn-custom nav-link" href="gestion.php">Gestión</a>
           <a class="btn btn-custom nav-link" href="mensajes.php">Mensajes y Archivos</a>
           <a class="btn btn-custom nav-link" href="departamento.php">Departamento</a>
           <a class="btn btn-custom nav-link" href="licencias.php">Licencias y Vacaciones</a>
+          <a class="btn btn-custom-rrhh nav-link" href="gestion.php">Gestión</a>
           <a
             href="soporte.php"
             class="btn btn-help"
@@ -113,12 +220,27 @@ foreach ($departamentos as $departamento) {
         <div class="container my-4 bg-white rounded shadow-sm">
           <h2>Gestión de Usuarios</h2>
           <hr>
-          <h3>Agregar usuario</h3>
+          <?php
+          if (!is_null($usuario_editar)) {
+            echo '<h3>Editar usuario</h3>';
+          } else {
+            echo '<h3>Agregar usuario</h3>';
+          }
+          ?>
 
+          <?php if (isset($_SESSION['mensaje']) && isset($_SESSION['formulario']) && $_SESSION['formulario'] == 'usuario'): ?>
+            <div class="alert alert-<?php echo $_SESSION['mensaje_tipo']; ?> mt-3">
+              <?php echo $_SESSION['mensaje']; ?>
+            </div>
+            <?php
+            unset($_SESSION['mensaje']);
+            unset($_SESSION['mensaje_tipo']);
+            ?>
+          <?php endif; ?>
           <form
             id="form-agregar-usuario"
             class="row g-3"
-            action="../../controllers/controlador_usuario.php"
+            action="gestion.php"
             method="POST"
             onsubmit="return validarFormulario();">
 
@@ -131,6 +253,7 @@ foreach ($departamentos as $departamento) {
                 name="nombreApellido"
                 pattern="^[A-Za-zÀ-ÿ\s]{2,50}$"
                 title="El nombre debe contener solo letras y espacios, entre 2 y 50 caracteres."
+                value="<?php echo $usuario_editar ? $usuario_editar->getNombreApellido() : '' ?>"
                 required />
             </div>
 
@@ -144,6 +267,8 @@ foreach ($departamentos as $departamento) {
                 maxlength="8"
                 pattern="\d{8}"
                 title="El DNI debe tener exactamente 8 dígitos numéricos."
+                value="<?php echo $usuario_editar ? $usuario_editar->getDni() : '' ?>"
+                <?php echo $usuario_editar ? 'readonly' : '' ?>
                 required />
             </div>
 
@@ -155,6 +280,7 @@ foreach ($departamentos as $departamento) {
                 id="domicilio"
                 name="domicilio"
                 pattern="^[A-Za-z0-9\s,.-]{5,100}$"
+                value="<?php echo $usuario_editar ? $usuario_editar->getDomicilio() : '' ?>"
                 title="El domicilio debe contener entre 5 y 100 caracteres, incluyendo letras, números, espacios, y símbolos como ',' o '-'." />
             </div>
 
@@ -166,6 +292,7 @@ foreach ($departamentos as $departamento) {
                 id="telefono"
                 name="telefono"
                 pattern="^\+?\d{7,15}$"
+                value="<?php echo $usuario_editar ? $usuario_editar->getTelefono() : '' ?>"
                 title="El teléfono debe contener entre 7 y 15 dígitos, opcionalmente iniciando con '+'." />
             </div>
 
@@ -176,6 +303,8 @@ foreach ($departamentos as $departamento) {
                 class="form-control"
                 id="email"
                 name="email"
+                value="<?php echo $usuario_editar ? $usuario_editar->getCorreoElectronico() : '' ?>"
+                <?php echo $usuario_editar ? 'readonly' : '' ?>
                 required />
             </div>
 
@@ -187,38 +316,47 @@ foreach ($departamentos as $departamento) {
                 id="fechaNacimiento"
                 name="fechaNacimiento"
                 max="2006-12-31"
+                value="<?php echo $usuario_editar ? $usuario_editar->getFechaNac() : '' ?>"
                 title="El usuario debe ser mayor de edad." />
             </div>
 
             <div class="col-md-6">
-              <label for="TipoDeUsuario" class="form-label">Tipo de usuario <b>*</b></label>
-              <select name="TipoDeUsuario" id="TipoDeUsuario" class="form-select" required>
+              <label for="tipoDeUsuario" class="form-label">Tipo de usuario <b>*</b></label>
+              <select name="tipoDeUsuario" id="tipoDeUsuario" class="form-select" required>
                 <option value="">Seleccione un tipo de usuario</option>
-                <option value="RRHH">RRHH</option>
-                <option value="Directivo">Directivo</option>
-                <option value="Empleado">Empleado</option>
+                <?php
+                $tiposUsuario = ["RRHH", "Directivo", "Empleado"];
+                foreach ($tiposUsuario as $tipo) {
+                  $selected = (isset($usuario_editar) && $usuario_editar->getTipoUsuario() === $tipo) ? 'selected' : '';
+                  echo "<option value='$tipo' $selected>$tipo</option>";
+                }
+                ?>
               </select>
             </div>
 
             <div class="col-md-6">
               <label for="Departamento" class="form-label">Departamento</label>
-              <?php
-              echo '<select name="Departamento" id="Departamento" class="form-select">';
-              echo '<option value="Sin Asignar">Seleccione un departamento</option>';
+              <select name="Departamento" id="Departamento" class="form-select">
+                <option value="<?php echo $nombre_empresa . '_Sin asignar' ?>">Seleccione un departamento</option>
 
-              foreach ($departamentos_nombres as $departamento) {
-                if ($departamento[1] === 'Sin asignar') {
-                  continue;
-                }
-                // Selecciona un departamento en caso de editar usuario
-                // $selected = '' . $usuario ? ($usuario->getDepartamento()->getNombre() ? 'selected' : '') : '';
-                echo '<option value="' . $departamento[0]->getNombre() . '">' . $departamento[1] . '</option>';
-              }
-              echo '</select>';
-              ?>
+                <?php foreach ($departamentos_nombres as $departamento) :
+                  if ($departamento[1] === 'Sin asignar') {
+                    continue;
+                  }
+                  $nombre = $departamento[0]->getNombre();
+                  $tiene_director = !is_null($departamento[0]->getDirectorAcargo());
+                  $tipo_depto = str_contains($nombre, "Recursos Humanos") ? "Recursos Humanos" : "Otro";
+                  $selected = ($usuario_editar && $usuario_editar->getDepartamento()->getNombre() === $nombre) ? 'selected' : '';
+                ?>
+                  <option value="<?= $nombre ?>" data-director="<?= $tiene_director ?>" data-tipo="<?= $tipo_depto ?>" <?= $selected ?>>
+                    <?= $departamento[1] ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
             </div>
+
             <div class="col-md-12 col-relative" style="min-height: 70px;">
-              <button type="submit" class="btn btn-primary button-absolute">Agregar Usuario</button>
+              <button type="submit" name="accion" value="agregarUsuario" class="btn custom-color button-absolute"><?php echo !is_null($usuario_editar) ? 'Guardar' : 'Agregar' ?></php></button>
             </div>
           </form>
           <hr>
@@ -248,6 +386,15 @@ foreach ($departamentos as $departamento) {
           <hr>
           <h3>Agregar departamento</h3>
 
+          <?php if (isset($_SESSION['mensaje']) && isset($_SESSION['formulario']) && $_SESSION['formulario'] == 'departamento'): ?>
+            <div class="alert alert-<?php echo $_SESSION['mensaje_tipo']; ?> mt-3">
+              <?php echo $_SESSION['mensaje']; ?>
+            </div>
+            <?php
+            unset($_SESSION['mensaje']);
+            unset($_SESSION['mensaje_tipo']);
+            ?>
+          <?php endif; ?>
           <!-- Fila con dos columnas -->
           <div class="row">
             <!-- Columna izquierda: Agregar departamento -->
@@ -271,9 +418,8 @@ foreach ($departamentos as $departamento) {
                     name="dniDirector"
                     required />
                 </div>
-                <input type="hidden" name="accion" value="agregar">
                 <div class="col-2 col-relative">
-                  <button type="submit" class="btn btn-primary button-absolute">
+                  <button type="submit" name="accion" value="agregarDepartamento" class="btn custom-color button-absolute">
                     Agregar
                   </button>
                 </div>
@@ -425,10 +571,49 @@ foreach ($departamentos as $departamento) {
             </div>
 
             <!-- Botón de envío -->
-            <button type="submit" class="btn btn-primary w-100">
+            <button type="submit" class="btn custom-color w-100">
               Enviar
             </button>
           </form>
+        </div>
+
+        <!-- Modal para confirmar borrado de usuario -->
+        <div
+          class="modal fade"
+          id="deleteUsuarioModal"
+          tabindex="-1"
+          aria-labelledby="deleteUsuarioModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="deleteUsuarioModalLabel">
+                  Borrar Usuario
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Cerrar"></button>
+              </div>
+              <div class="modal-body">
+                <form>
+                  <div class="mb-3">
+                    <p>¿Está seguro que desea eliminar al usuario con DNI: <b id="dniUsuarioBorrar"></b>?</p>
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary-custom"
+                  data-bs-dismiss="modal">
+                  Cancelar
+                </button>
+                <button type="button" class="btn btn-custom" id="btnConfirmarBorrar">Confirmar</button>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
@@ -438,7 +623,6 @@ foreach ($departamentos as $departamento) {
   <script src="../../assets/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../js/profile-menu.js"></script>
   <script src="../js/gestion.js"></script>
-  <script src="../js/buscar_usuarios_tabla.js"></script>
 </body>
 
 </html>

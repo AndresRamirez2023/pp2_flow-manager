@@ -50,13 +50,13 @@ class Controlador_Usuario
 
     public function delete($dni)
     {
-        $this->ru->delete($dni);
+        return $this->ru->delete($dni);
     }
 
     private function validator(Usuario $usuario, $clave)
     {
         // **VALIDACIONES BACKEND**
-        if ($usuario->getDni()) {
+        if (!isset($_SESSION['usuarioEditar']) && $usuario->getDni()) {
             // Validar si el DNI ya existe en la base de datos
             if ($this->get_by_param($usuario->getDni())) {
                 throw new Exception('Error: El DNI ingresado ya está registrado.');
@@ -67,7 +67,7 @@ class Controlador_Usuario
             }
         }
 
-        if ($usuario->getCorreoElectronico()) {
+        if (!isset($_SESSION['usuarioEditar']) && $usuario->getCorreoElectronico()) {
             // Validar si el correo electrónico ya existe en la base de datos
             if ($this->get_by_param($usuario->getCorreoElectronico())) {
                 throw new Exception('Error: El correo electrónico ingresado ya está registrado.');

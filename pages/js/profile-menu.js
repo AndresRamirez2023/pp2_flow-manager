@@ -1,4 +1,3 @@
-// Custom JS
 // Mostrar/ocultar el menú al hacer clic en la imagen de perfil
 document.getElementById('profileMenu').addEventListener('click', function () {
   const dropdown = document.getElementById('profileDropdown');
