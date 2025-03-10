@@ -1,62 +1,28 @@
 <?php
-require_once __DIR__ . '/../classes/Usuario.php';
 require_once __DIR__ . '/../repositories/Repositorio_Mensaje.php';
 require_once __DIR__ . '/../classes/Mensaje.php';
-require_once __DIR__ . '/../classes/archivo.php';
-require_once __DIR__ . '/../repositories/Repositorio_Archivo.php';
 
 class Controlador_Mensaje
 {
-    protected $repositorioMensaje;
-    protected $repositorioArchivo;
+    protected $rm;
 
     public function __construct()
     {
-        $this->repositorioMensaje = new Repositorio_Mensaje();
-        $this->repositorioArchivo = new Repositorio_Archivo();
+        $this->rm = new Repositorio_Mensaje();
     }
 
-    public function redactarMensaje(Mensaje $mensaje, $archivo = null)
+    public function get_all($dni, $tipo)
     {
-        $fechaHora = date('Y-m-d H:i:s');
-        $dniRemitente=$mensaje->getRemitente();
-        $resultado = $this->repositorioMensaje->redactar_mensaje( $mensaje,
-            $archivo
-        );
-
-        if ($resultado && $mensaje->getTipoMensaje() === "Documentacion" && $archivo) {
-            return $this->guardarArchivo($archivo, $fechaHora, $dniRemitente);
-        }
-
-        return $resultado;
+        return $this->rm->get_all($dni, $tipo);
     }
 
-    public function guardarArchivo($archivo, $fechaHora, $dniRemitente)
+    public function send(Mensaje $mensaje)
     {
-        if ($archivo['error'] === UPLOAD_ERR_OK) {
-            $nombreArchivo = basename($archivo['name']);
-            $contenidoArchivo = file_get_contents($archivo['tmp_name']);
-
-            return $this->repositorioArchivo->guardarArchivo($nombreArchivo, $fechaHora, $contenidoArchivo, $dniRemitente);
-        }
-
-        return false;
+        return $this->rm->send($mensaje);
     }
 
-    public function UpdateMensajesArchivo($DniReceptor, $nuevoTitulo, $nuevoTipo, $nuevoCuerpo , $Contenido=null, $dniCreador=null){
-        $this->repositorioMensaje->UpdateMensajes($DniReceptor, $nuevoTitulo, $nuevoTipo, $nuevoCuerpo);
-
-        if (!empty($Contenido) && !empty($dniCreador)){
-            $this->repositorioArchivo->UpdateArchivo($Contenido, $dniCreador);
-        }
-        return true; 
-    }
-
-    public function DeleteMensajes($TituloMensaje, $DniReceptor, $Contenido=null, $dniCreador=null){
-        $this->repositorioMensaje->DeleteMensajes($TituloMensaje, $DniReceptor);
-        if (!empty($Contenido) && !empty($dniCreador)){
-            $this->repositorioArchivo->DeleteArchivo($Contenido, $dniCreador);
-        }
-        return true; 
+    public function delete(Mensaje $mensaje)
+    {
+        // TODO: Borrado lógico de los mensajes seleccionados por un usuario
     }
 }

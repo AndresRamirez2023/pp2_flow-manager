@@ -22,9 +22,9 @@ $cu = new Controlador_Usuario();
 
 $departamento = $cd->get_by_name($usuario->getDepartamento()->getNombre());
 
-$cant_usuarios = count($cu->get_all($departamento));
-
 $empresa = unserialize($_SESSION['empresa']);
+
+$cant_usuarios = count($cu->get_all($departamento, $empresa));
 
 // Función para obtener la extensión del archivo
 function obtenerExtension($nombreArchivo)

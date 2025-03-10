@@ -1,32 +1,28 @@
 <?php
 
-require_once 'Usuario.php';
 class Mensaje
 {
-
-    //FechaHoraMensaje
     protected $fechaHora;
-    //TituloMensaje
     protected $tituloMensaje;
-    //Dni Remitente
-    protected $dniRemitente;
-    //Tipo Mensaje
+    protected $remitente;
     protected $tipoMensaje;
-    //Cuerpo Mensaje
     protected $cuerpoMensaje;
-    //Dni Receptor
-    protected $dniReceptor;
+    protected $receptor;
+    protected $requiereFirma;
+    protected $pathArchivo;
 
 
-    public function __construct($fechaHora, $tituloMensaje, Usuario $dniRemitente, $tipoMensaje, $cuerpoMensaje, Usuario $dniReceptor)
+    public function __construct($fechaHora, $tituloMensaje, $remitente, $tipoMensaje, $cuerpoMensaje, $receptor, $requiereFirma, $pathArchivo)
     {
 
         $this->fechaHora = $fechaHora;
         $this->tituloMensaje = $tituloMensaje;
-        $this->dniRemitente = $dniRemitente;
+        $this->remitente = $remitente;
         $this->tipoMensaje = $tipoMensaje;
         $this->cuerpoMensaje = $cuerpoMensaje;
-        $this->dniReceptor = $dniReceptor;
+        $this->receptor = $receptor;
+        $this->requiereFirma = $requiereFirma;
+        $this->pathArchivo = $pathArchivo;
     }
 
     public function getFechaHora()
@@ -41,7 +37,7 @@ class Mensaje
 
     public function getRemitente()
     {
-        return $this->dniRemitente->getDni();
+        return $this->remitente;
     }
 
     public function getTipoMensaje()
@@ -54,15 +50,18 @@ class Mensaje
         return $this->cuerpoMensaje;
     }
 
-    public function getDniReceptor()
+    public function getReceptor()
     {
-        return $this->dniReceptor->getDni();
+        return $this->receptor;
     }
 
+    public function getRequiereFirma()
+    {
+        return $this->requiereFirma;
+    }
 
-
-
-
-
-
+    public function getPathArchivo()
+    {
+        return $this->pathArchivo;
+    }
 }

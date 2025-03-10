@@ -4,15 +4,39 @@ document.addEventListener('DOMContentLoaded', function () {
   const envioDocumento = document.getElementById('envioDocumento');
   const seccionAviso = document.getElementById('seccion-aviso');
   const seccionDocumento = document.getElementById('seccion-documento');
+  const tituloAviso = document.getElementById('tituloAviso');
+  const cuerpoAviso = document.getElementById('cuerpoAviso');
+  const departamentosAviso = document.getElementById('departamentosAviso');
+  const tituloDocumento = document.getElementById('tituloDocumento');
+  const usuarioDocumento = document.getElementById('usuarioDocumento');
+  const archivoDocumento = document.getElementById('archivoDocumento');
+  const mensajeDocumento = document.getElementById('cuerpoDocumento');
+  const requiereFirma = document.getElementById('requiereFirma');
 
   envioAviso.addEventListener('click', function () {
     seccionAviso.classList.remove('d-none');
     seccionDocumento.classList.add('d-none');
+    tituloDocumento.setAttribute('disabled', true);
+    usuarioDocumento.setAttribute('disabled', true);
+    archivoDocumento.setAttribute('disabled', true);
+    mensajeDocumento.setAttribute('disabled', true);
+    requiereFirma.setAttribute('disabled', true);
+    tituloAviso.removeAttribute('disabled');
+    cuerpoAviso.removeAttribute('disabled');
+    departamentosAviso.removeAttribute('disabled');
   });
 
   envioDocumento.addEventListener('click', function () {
     seccionAviso.classList.add('d-none');
     seccionDocumento.classList.remove('d-none');
+    tituloAviso.setAttribute('disabled', true);
+    cuerpoAviso.setAttribute('disabled', true);
+    departamentosAviso.setAttribute('disabled', true);
+    tituloDocumento.removeAttribute('disabled');
+    usuarioDocumento.removeAttribute('disabled');
+    archivoDocumento.removeAttribute('disabled');
+    mensajeDocumento.removeAttribute('disabled');
+    requiereFirma.removeAttribute('disabled');
   });
 });
 
@@ -125,4 +149,30 @@ document.addEventListener('DOMContentLoaded', function () {
       .catch((error) => console.error('Error al buscar usuario:', error));
   });
   asignarEventosBorrar();
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  const select = document.getElementById('departamentosAviso');
+
+  select.addEventListener('mousedown', function (event) {
+    event.preventDefault(); // Evita que se deseleccionen opciones automáticamente
+
+    const clickedOption = event.target;
+    const options = [...select.options];
+    const selectedValues = options
+      .filter((opt) => opt.selected)
+      .map((opt) => opt.value);
+    const todosOption = options.find((opt) => opt.value === 'todos');
+
+    if (clickedOption.value === 'todos') {
+      // Si "Todos" es seleccionado, deseleccionar todas las demás opciones
+      options.forEach((opt) => (opt.selected = opt.value === 'todos'));
+    } else {
+      // Si "Todos" está seleccionado y se elige otra opción, deselecciona "Todos"
+      todosOption.selected = false;
+
+      // Alternar selección manualmente
+      clickedOption.selected = !clickedOption.selected;
+    }
+  });
 });

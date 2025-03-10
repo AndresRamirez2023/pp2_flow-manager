@@ -5,6 +5,7 @@ require_once '../../classes/Departamento.php';
 require_once __DIR__ . '/../../controllers/Controlador_Departamento.php';
 require_once __DIR__ . '/../../controllers/Controlador_Empresa.php';
 require_once __DIR__ . '/../../controllers/controlador_usuario.php';
+require_once __DIR__ . '/../../controllers/Controlador_Mensaje.php';
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' && !isset($_SESSION['mensaje_mostrado'])) {
@@ -19,16 +20,17 @@ if (!isset($_SESSION['usuario'])) {
   exit;
 }
 
+unset($_SESSION['usuarioEditar']);
+
 // Declaración de variables
 $usuario = unserialize($_SESSION['usuario']);
-// TODO: Línea para versión de pruebas, borrar unserialize usuario para versión final
 $empresa = isset($_SESSION['empresa']) ? unserialize($_SESSION['empresa']) : $usuario->getDepartamento()->getEmpresa();
 $usuario_editar = null;
 $departamento_editar = null;
 
 $cd = new Controlador_Departamento();
-$ce = new Controlador_Empresa();
 $cu = new Controlador_Usuario();
+$cm = new Controlador_Mensaje();
 
 $departamentos = $cd->get_all($empresa->getNombre());
 $departamentos_nombres = [];
@@ -206,6 +208,131 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
   }
 
   header('Location: gestion.php#departamentos');
+  exit();
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'enviarMensaje') {
+  $_SESSION['formulario'] = 'mensajes';
+  $tipo_de_envio = $_POST['tipoEnvio'];
+  $fecha_hora = date('Y-m-d H:i:s');
+  $usuarios_destinatarios = [];
+
+  if (!$tipo_de_envio) {
+    $_SESSION['mensaje'] = "No se seleccionó el tipo de mensaje.";
+    header('Location: gestion.php#mensajes');
+    exit();
+  }
+
+  if ($tipo_de_envio == 'aviso') {
+    // Datos del mensaje
+    $titulo = trim($_POST['tituloAviso']);
+    $cuerpo_mensaje = trim($_POST['cuerpoAviso']);
+    $departamentos = $_POST['departamentosAviso'];
+    $requiere_firma = false;
+    $path_archivo = null;
+
+    // $usuario_receptor->getDni(),
+
+    // var_dump($titulo, $cuerpo_mensaje, $departamentos);
+    // die;
+    if (empty($titulo) || empty($cuerpo_mensaje) || empty($departamentos)) {
+      $_SESSION['mensaje'] = "Hay campos obligatorios incompletos. Revise los datos ingresados.";
+      $_SESSION['mensaje_tipo'] = "warning";
+      header('Location: gestion.php#mensajes');
+      exit();
+    }
+
+
+    if (in_array('todos', $departamentos)) {
+      $usuarios_destinatarios = $cu->get_all(null, $empresa);
+    } else {
+      foreach ($departamentos as $nombre_departamento) {
+        $departamento = new Departamento($nombre_departamento, null, $empresa);
+        $usuarios_depto = $cu->get_all($departamento, $empresa);
+        $usuarios_destinatarios = array_merge($usuarios_destinatarios, $usuarios_depto);
+      }
+    }
+  } elseif ($tipo_de_envio == 'documento') {
+    $titulo = trim($_POST['tituloDocumento']);
+    $dato_receptor = trim($_POST['usuarioDocumento']);
+    $extension_archivo = strtolower(pathinfo($_FILES['archivoDocumento']['name'], PATHINFO_EXTENSION));
+    $cuerpo_mensaje = trim($_POST['cuerpoDocumento']);
+    $requiere_firma = isset($_POST['requiereFirma']) ? true : false;
+
+    if (empty($titulo) || empty($dato_receptor) || empty($_FILES['archivoDocumento']['name'])) {
+      $_SESSION['mensaje'] = "Hay campos obligatorios incompletos. Revise los datos ingresados.";
+      $_SESSION['mensaje_tipo'] = "warning";
+      header('Location: gestion.php#mensajes');
+      exit();
+    }
+
+    if ($extension_archivo !== 'pdf') {
+      $_SESSION['mensaje'] = "El archivo debe ser de tipo PDF.";
+      $_SESSION['mensaje_tipo'] = "warning";
+      header('Location: gestion.php#mensajes');
+      exit();
+    }
+
+    // Buscar Usuario
+    $usuario_receptor = $cu->get_by_param($dato_receptor);
+
+    if ($dato_receptor && $usuario_receptor == null) {
+      $_SESSION['mensaje'] = "El usuario <b>no existe</b> en el sistema. Revise los datos ingresados.";
+      $_SESSION['mensaje_tipo'] = "danger";
+      header('Location: gestion.php#mensajes');
+      exit();
+    }
+
+    // Procesar archivos
+    $nombre_empresa_limpio = preg_replace('/[^A-Za-z0-9_-]/', '_', $nombre_empresa);
+    $directorioBase = "../../uploads/$nombre_empresa_limpio/";
+    $directorioArchivos = $directorioBase . "files/messages/";
+
+    // Crear directorio si no existe
+    if (!file_exists($directorioArchivos)) {
+      mkdir($directorioArchivos, 0777, true);
+    }
+
+    // Guardar Archivo
+    $path_archivo = null;
+    if (!empty($_FILES['archivoDocumento']['name'])) {
+      $path_archivo = $directorioArchivos . $usuario->getDni() . '_' . str_replace([' ', ':'], ['_', '-'], $fecha_hora) . '.pdf';
+      move_uploaded_file($_FILES['archivoDocumento']['tmp_name'], $path_archivo);
+    }
+
+    $usuarios_destinatarios[] = $usuario_receptor;
+  }
+
+  foreach ($usuarios_destinatarios as $usuario_receptor_lista) {
+    if ($usuario->getDni() === $usuario_receptor_lista->getDni()) {
+      continue;
+    }
+    // Objeto Mensaje
+    $mensaje = new Mensaje(
+      $fecha_hora,
+      $titulo,
+      $usuario->getDni(),
+      $tipo_de_envio,
+      $cuerpo_mensaje,
+      $usuario_receptor_lista->getDni(),
+      $requiere_firma,
+      $path_archivo
+    );
+
+    $result = $cm->send($mensaje);
+  }
+  if ($result) {
+    if (count($usuarios_destinatarios) > 1) {
+      $_SESSION['mensaje'] = "Mensajes <b>enviados</b> correctamente a todos los usuarios.";
+    } else {
+      $_SESSION['mensaje'] = "Mensaje <b>enviado</b> correctamente a " .  $usuario_receptor->getNombreApellido() . ' | ' .  $usuario_receptor->getCorreoElectronico() . '.';
+    }
+    $_SESSION['mensaje_tipo'] = "info";
+  } else {
+    if (!isset($_SESSION['mensaje']) && !isset($_SESSION['mensaje_tipo'])) {
+      $_SESSION['mensaje'] = "<b>Error</b> al enviar el mensaje. Verifique los datos, si el problema persiste <b>contacte a un administrador</b>.";
+      $_SESSION['mensaje_tipo'] = "danger";
+    }
+  }
+  header('Location: gestion.php#mensajes');
   exit();
 }
 
@@ -431,6 +558,11 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
             </div>
 
             <div class="col-md-12 col-relative" style="min-height: 70px;">
+              <?php
+              if (!is_null($usuario_editar)) {
+                echo "<a href='gestion.php' class='btn btn-secondary' style='width: 150px; position: absolute; bottom: 0; right: 160px;'>Cancelar</a>";
+              }
+              ?>
               <button type="submit" name="accion" value="agregarUsuario" class="btn custom-color button-absolute"><?php echo !is_null($usuario_editar) ? 'Guardar' : 'Agregar' ?></php></button>
             </div>
           </form>
@@ -560,9 +692,18 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
         </div>
 
         <!-- Sección para enviar avisos o documentación -->
-        <div class="container my-4 bg-white rounded shadow-sm">
+        <div class="container my-4 bg-white rounded shadow-sm" id="mensajes">
           <h2>Enviar Aviso o Documentación</h2>
-          <form id="form-enviar-aviso-doc">
+          <?php if (isset($_SESSION['mensaje']) && isset($_SESSION['formulario']) && $_SESSION['formulario'] == 'mensajes'): ?>
+            <div class="alert alert-<?php echo $_SESSION['mensaje_tipo']; ?> mt-3">
+              <?php echo $_SESSION['mensaje']; ?>
+            </div>
+            <?php
+            unset($_SESSION['mensaje']);
+            unset($_SESSION['mensaje_tipo']);
+            ?>
+          <?php endif; ?>
+          <form id="form-enviar-aviso-doc" action="gestion.php#mensajes" method="POST" enctype="multipart/form-data">
             <!-- Radio buttons para seleccionar tipo -->
             <div class="mb-3">
               <div class="form-check form-check-inline">
@@ -590,18 +731,21 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
             <div id="seccion-aviso" class="row">
               <div class="col-6">
                 <div class="mb-3">
-                  <label for="tituloAviso" class="form-label">Título del Aviso</label>
+                  <label for="tituloAviso" class="form-label">Título del Aviso <b>*</b></label>
                   <input
                     type="text"
                     class="form-control"
                     id="tituloAviso"
+                    name="tituloAviso"
                     required />
                 </div>
                 <div class="mb-3">
-                  <label for="cuerpoAviso" class="form-label">Cuerpo del Mensaje</label>
+                  <label for="cuerpoAviso" class="form-label">Cuerpo del Mensaje <b>*</b></label>
                   <textarea
                     class="form-control"
                     id="cuerpoAviso"
+                    name="cuerpoAviso"
+                    maxlength="250"
                     rows="4"
                     required></textarea>
                 </div>
@@ -610,18 +754,24 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
               <!-- Ajuste del select dentro de la columna -->
               <div class="col-6">
                 <div class="mb-3" style="height: 100%">
-                  <label for="departamentosAviso" class="form-label">Departamentos</label>
+                  <label for="departamentosAviso" class="form-label">Departamentos <b>*</b></label>
                   <select
                     class="form-select"
                     id="departamentosAviso"
+                    name="departamentosAviso[]"
                     multiple
-                    style="height: 200px">
+                    style="height: 200px" required>
                     <option value="todos">Todos</option>
-                    <option value="ventas">Ventas</option>
-                    <option value="finanzas">Finanzas</option>
-                    <option value="rrhh">Recursos Humanos</option>
-                    <option value="it">IT</option>
-                    <!-- Agregar más departamentos si es necesario -->
+                    <?php foreach ($departamentos_nombres as $departamento) :
+                      if ($departamento[1] === 'Sin asignar') {
+                        continue;
+                      }
+                    ?>
+                      <option value="<?= $departamento[0]->getNombre(); ?>">
+                        <?= $departamento[1] ?>
+                      </option>
+                    <?php endforeach; ?>
+                    <option value="<?php echo $nombre_empresa . '_Sin asignar' ?>">Sin departamento</option>
                   </select>
                 </div>
               </div>
@@ -629,40 +779,64 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
 
             <!-- Sección de envío de documentación -->
             <div id="seccion-documento" class="d-none">
-              <div class="mb-3">
-                <label for="usuarioDocumento" class="form-label">Usuario (DNI)</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="usuarioDocumento"
-                  required />
+              <div class="row">
+                <div class="mb-3 col-6">
+                  <label for="tituloDocumento" class="form-label">Título del Mensaje <b>*</b></label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="tituloDocumento"
+                    name="tituloDocumento"
+                    disabled
+                    required />
+                </div>
+                <div class="mb-3 col-6">
+                  <label for="usuarioDocumento" class="form-label">Usuario (DNI o email) <b>*</b></label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="usuarioDocumento"
+                    name="usuarioDocumento"
+                    disabled
+                    required />
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="archivoDocumento" class="form-label">Archivo</label>
-                <input
-                  type="file"
-                  class="form-control"
-                  id="archivoDocumento"
-                  required />
-              </div>
-              <div class="mb-3">
-                <label for="mensajeDocumento" class="form-label">Mensaje Opcional</label>
-                <textarea
-                  class="form-control"
-                  id="mensajeDocumento"
-                  rows="4"></textarea>
+              <div class="row">
+                <div class="mb-3 col-6">
+                  <label for="cuerpoDocumento" class="form-label">Cuerpo del Mensaje (Opcional)</label>
+                  <textarea
+                    class="form-control"
+                    id="cuerpoDocumento"
+                    name="cuerpoDocumento"
+                    disabled
+                    maxlength="250"
+                    rows="4"></textarea>
+                </div>
+                <div class="mb-3 col-6">
+                  <label for="archivoDocumento" class="form-label">Archivo (PDF) <b>*</b></label>
+                  <input
+                    type="file"
+                    class="form-control"
+                    id="archivoDocumento"
+                    name="archivoDocumento"
+                    accept="application/pdf"
+                    disabled
+                    required />
+                </div>
               </div>
               <div class="mb-3 form-check">
                 <input
                   type="checkbox"
                   class="form-check-input"
-                  id="requiereFirma" />
+                  disabled
+                  id="requiereFirma"
+                  name="requiereFirma" />
                 <label class="form-check-label" for="requiereFirma">Requiere firma</label>
               </div>
             </div>
 
             <!-- Botón de envío -->
-            <button type="submit" class="btn custom-color w-100">
+            <button type="submit" name="accion" value="enviarMensaje" class="btn custom-color w-100">
               Enviar
             </button>
           </form>

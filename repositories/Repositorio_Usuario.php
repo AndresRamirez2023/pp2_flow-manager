@@ -18,7 +18,7 @@ class Repositorio_Usuario extends Repositorio
         parent::__construct();
     }
 
-    public function get_all($param)
+    public function get_all($param, $empresa)
     {
         if (!self::$conexion) {
             throw new Exception("La conexión no ha sido inicializada.");
@@ -34,21 +34,24 @@ class Repositorio_Usuario extends Repositorio
         $nombre_departamento = null;
         $director_a_cargo = null;
         $nombre_empresa = null;
-        $sql = $this->selectSql;
-        $bindType = '';
+        $sql = $this->selectSql . " WHERE d.Empresa = ?";
+        $bindType = 's';
         $bindValue = null;
+        $empresa = $empresa->getNombre();
 
         if ($param !== null) {
             if ($param instanceof Departamento) {
                 $param = $param->getNombre();
-                $sql .= " WHERE u.Departamento LIKE ?";
+                $sql .= " AND u.Departamento = ?";
             } elseif (is_numeric($param)) {
-                $sql .= " WHERE u.Dni LIKE ?";
+                $sql .= " AND u.Dni LIKE ?";
+                $param = "%$param%";
             } else {
-                $sql .= " WHERE u.NombreApellido LIKE ?";
+                $sql .= " AND u.NombreApellido LIKE ?";
+                $param = "%$param%";
             }
-            $bindType = 's';
-            $bindValue = "%$param%";
+            $bindType .= 's';
+            $bindValue = $param;
         }
 
         $query = self::$conexion->prepare($sql);
@@ -57,7 +60,9 @@ class Repositorio_Usuario extends Repositorio
         }
 
         if ($param !== null) {
-            $query->bind_param($bindType, $bindValue);
+            $query->bind_param($bindType, $empresa, $bindValue);
+        } else {
+            $query->bind_param($bindType, $empresa);
         }
 
         if ($query->execute()) {

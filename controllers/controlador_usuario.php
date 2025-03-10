@@ -12,9 +12,9 @@ class Controlador_Usuario
         $this->ru = new Repositorio_Usuario();
     }
 
-    public function get_all($param)
+    public function get_all($param, $empresa)
     {
-        return $this->ru->get_all($param);
+        return $this->ru->get_all($param, $empresa);
     }
 
     public function get_by_param($param)

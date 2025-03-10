@@ -24,19 +24,6 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `archivos`
---
-
-CREATE TABLE `archivos` (
-  `Nombre` varchar(50) NOT NULL,
-  `FechaCreacion` date NOT NULL,
-  `Contenido` blob DEFAULT NULL,
-  `DniCreador` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Estructura de tabla para la tabla `usuarios`
 --
 
@@ -323,11 +310,13 @@ DELIMITER ;
 --
 
 CREATE TABLE `mensajes` (
-  `FechaHoraMensaje` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `FechaHoraMensaje` timestamp NOT NULL DEFAULT current_timestamp(),
   `TituloMensaje` varchar(50) NOT NULL,
   `DniRemitente` int(11) NOT NULL,
   `TipoMensaje` varchar(50) NOT NULL,
-  `CuerpoMensaje` varchar(160) DEFAULT NULL,
+  `CuerpoMensaje` varchar(250) DEFAULT NULL,
+  `RequiereFirma` boolean DEFAULT FALSE,
+  `PathArchivo` varchar(255) DEFAULT NULL,
   `DniReceptor` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -392,13 +381,6 @@ CREATE TABLE `usuarios_reuniones` (
 --
 
 --
--- Indices de la tabla `archivos`
---
-ALTER TABLE `archivos`
-  ADD PRIMARY KEY (`Nombre`,`FechaCreacion`),
-  ADD KEY `fk_mensajes_archivos` (`DniCreador`);
-
---
 -- Indices de la tabla `departamentos`
 --
 ALTER TABLE `departamentos`
@@ -409,7 +391,7 @@ ALTER TABLE `departamentos`
 -- Indices de la tabla `mensajes`
 --
 ALTER TABLE `mensajes`
-  ADD PRIMARY KEY (`FechaHoraMensaje`,`DniRemitente`),
+  ADD PRIMARY KEY (`FechaHoraMensaje`,`DniRemitente`,`DniReceptor`),
   ADD KEY `fk_mensajes_usuarios1` (`DniRemitente`),
   ADD KEY `fk_mensajes_usuarios2` (`DniReceptor`);
 
@@ -455,12 +437,6 @@ ALTER TABLE `usuarios_reuniones`
 --
 -- Restricciones para tablas volcadas
 --
-
---
--- Filtros para la tabla `archivos`
---
-ALTER TABLE `archivos`
-  ADD CONSTRAINT `fk_mensajes_archivos` FOREIGN KEY (`DniCreador`) REFERENCES `mensajes` (`DniRemitente`);
 
 -- 
 -- Filtros para la tabla `empresas`

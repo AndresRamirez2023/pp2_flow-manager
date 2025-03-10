@@ -3,157 +3,117 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 require_once 'Repositorio.php';
-require_once 'Repositorio_Archivo.php';
 require_once __DIR__ . '/../classes/Mensaje.php';
 require_once __DIR__ . '/../classes/Usuario.php';
-require_once __DIR__ . '/../classes/Solicitud.php';
 
 
-class Repositorio_Mensaje extends Repositorio_Archivo
+class Repositorio_Mensaje extends Repositorio
 {
 
-    public function redactar_mensaje(Mensaje $m, $archivo = null)
+    public function send(Mensaje $mensaje)
     {
         if (!self::$conexion) {
             throw new Exception("La conexión no ha sido inicializada.");
         }
 
-        $FechaHoraMensaje= $m->getFechaHora();
-        $TituloMensaje=$m->getTituloMensaje();
-        $DniRemitente=$m->getRemitente();
-        $TipoMensaje=$m->getTipoMensaje();
-        $CuerpoMensaje=$m->getCuerpoMensaje();
-        $DniReceptor=$m->getDniReceptor();
+        $fecha_hora_mensaje = $mensaje->getFechaHora();
+        $titulo_mensaje = $mensaje->getTituloMensaje();
+        $dni_remitente = $mensaje->getRemitente();
+        $tipo_mensaje = $mensaje->getTipoMensaje();
+        $cuerpo_mensaje = $mensaje->getCuerpoMensaje();
+        $dni_receptor = $mensaje->getReceptor();
+        $requiere_firma = $mensaje->getRequiereFirma();
+        $path_archivo = $mensaje->getPathArchivo();
 
+        $sql = 'INSERT INTO
+        mensajes (FechaHoraMensaje, TituloMensaje, DniRemitente, TipoMensaje, CuerpoMensaje, DniReceptor, RequiereFirma, PathArchivo)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
 
-        $sql_dni = "SELECT Dni from usuarios where Dni=?";
-        $query_dni = self::$conexion->prepare($sql_dni);
-        $query_dni->bind_param("s", $DniReceptor);
-        $query_dni->execute();
-        $resultado_dni = $query_dni->get_result();
-
-
-
-        if ($resultado_dni->num_rows == 0) {
-            exit("El DNI del receptor no fue encontrado");
-        }
-
-        $sql = 'INSERT INTO mensajes (FechaHoraMensaje, TituloMensaje, DniRemitente, TipoMensaje, CuerpoMensaje, DniReceptor) VALUES (?, ?, ?, ?, ?, ?)';
         $query = self::$conexion->prepare($sql);
-        $query->bind_param("ssssss", $FechaHoraMensaje, $TituloMensaje, $DniRemitente, $TipoMensaje, $CuerpoMensaje, $DniReceptor);
 
-        if ($query->execute()) {
-
-            if ($archivo !== null) {
-                // Asegurarse de que el archivo fue recibido correctamente
-                if ($archivo['error'] == UPLOAD_ERR_OK) {
-                    // Obtener los detalles del archivo
-                    $contenidoArchivo = file_get_contents($archivo['tmp_name']);
-                    $nombreArchivo = $archivo['name'];
-                    $fechaCreacion = date("Y-m-d H:i:s"); // Fecha actual
-                    $dniCreador = $DniRemitente; // DNI del creador del mensaje
-
-                    // Invocar la función para guardar el archivo
-                    $this->guardarArchivo($nombreArchivo, $fechaCreacion, $contenidoArchivo, $dniCreador);
-                } else {
-                    exit("Hubo un problema al subir el archivo.");
-                }
-            }
+        if (!$query->bind_param(
+            "ssississ",
+            $fecha_hora_mensaje,
+            $titulo_mensaje,
+            $dni_remitente,
+            $tipo_mensaje,
+            $cuerpo_mensaje,
+            $dni_receptor,
+            $requiere_firma,
+            $path_archivo
+        )) {
+            echo "Fallo la consulta a la base de datos.";
+            return false;
         }
+
+        return $query->execute();
     }
 
-    public function GetAllMensajes($DniReceptor)
+    public function get_all($dni, $tipo)
     {
         if (!self::$conexion) {
             throw new Exception("La conexión no ha sido inicializada.");
         }
+        $sql = 'SELECT * FROM mensajes';
 
-        $FechaHoraMensaje = null;
-        $TituloMensaje = null;
-        $DniRemitente = null;
-        $TipoMensaje = null;
-        $CuerpoMensaje = null;
-
-        $sql = 'SELECT FechaHoraMensaje, TituloMensaje, DniRemitente, TipoMensaje, CuerpoMensaje FROM mensajes where DniReceptor= ?';
         $query = self::$conexion->prepare($sql);
-
-
         if (!$query) {
             throw new Exception("Error en la preparación de la consulta: " . self::$conexion->error);
         }
 
-        $query->bind_param('s', $DniReceptor);
+        $fecha_hora_mensaje = null;
+        $titulo_mensaje = null;
+        $dni_remitente = null;
+        $tipo_mensaje = null;
+        $cuerpo_mensaje = null;
+        $dni_receptor = null;
+        $requiere_firma = null;
+        $path_archivo = null;
+
+        if ($tipo) {
+            if ($tipo == 'remitente') {
+                $sql .= " WHERE DniRemitente = ?;";
+            } elseif ($tipo == 'receptor') {
+                $sql .= "  WHERE DniReceptor = ?;";
+            }
+            $query->bind_param('i', $dni);
+        }
+
         if ($query->execute()) {
-            $query->bind_result($FechaHoraMensaje, $TituloMensaje, $DniRemitente, $TipoMensaje, $CuerpoMensaje);
+            $query->bind_result(
+                $fecha_hora_mensaje,
+                $titulo_mensaje,
+                $dni_remitente,
+                $tipo_mensaje,
+                $cuerpo_mensaje,
+                $dni_receptor,
+                $requiere_firma,
+                $path_archivo
+            );
 
             $mensajes = [];
 
             while ($query->fetch()) {
-                $mensajes[] = [
-                    'FechaHoraMensaje' => $FechaHoraMensaje,
-                    'TituloMensaje' => $TituloMensaje,
-                    'DniRemitente' => $DniRemitente,
-                    'TipoMensaje' => $TipoMensaje,
-                    'CuerpoMensaje' => $CuerpoMensaje
-
-                ];
+                $mensaje = new Mensaje(
+                    $fecha_hora_mensaje,
+                    $titulo_mensaje,
+                    $dni_remitente,
+                    $tipo_mensaje,
+                    $cuerpo_mensaje,
+                    $dni_receptor,
+                    $requiere_firma,
+                    $path_archivo
+                );
+                $mensajes[] = $mensaje;
             }
+            return $mensajes;
         }
-
-
         $query->close();
-        return !empty($mensajes) ? $mensajes : null;
+        return null;
     }
 
-
-    public function UpdateMensajes($DniReceptor, $nuevoTitulo, $nuevoTipo, $nuevoCuerpo)
+    public function delete($TituloMensaje, $DniReceptor)
     {
-        if (!self::$conexion) {
-            throw new Exception("La conexión no ha sido inicializada.");
-        }
-
-        $sql = "UPDATE mensajes set  TituloMensaje=?, TipoMensaje=?, CuerpoMensaje=? WHERE DniReceptor=?";
-        $query = self::$conexion->prepare($sql);
-
-        if (!$query) {
-            throw new Exception("Error en la rpeparacion de la consulta: " . self::$conexion->error);
-        }
-
-        $query->bind_param('ssss', $nuevoTitulo, $nuevoTipo, $nuevoCuerpo, $DniReceptor);
-
-        if (!$query->execute()) {
-            throw new Exception("Error en la ejecicion de la actualizacion: " . $query->error);
-        }
-
-        if ($query->affected_rows > 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public function DeleteMensajes($TituloMensaje, $DniReceptor)
-    {
-        if (!self::$conexion) {
-            throw new Exception("La conexión no ha sido inicializada.");
-        }
-
-        $sql = "DELETE * FROM mensajes WHERE TituloMensaje= ? and DniReceptor=?";
-        $query = self::$conexion->prepare($sql);
-
-        if (!$query) {
-            throw new Exception("Error en la rpeparacion de la consulta: " . self::$conexion->error);
-        }
-
-        $query->bind_param("ss", $TituloMensaje, $DniReceptor);
-
-        $resultado = $query->execute();
-
-        if (!$resultado) {
-            error_log("Error al ejecutar la consulta: " . $query->error);
-            return false;
-        }
-
-        return true; // Retorna true si se eliminó correctamente
+        // TODO:
     }
 }
