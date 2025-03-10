@@ -3,46 +3,49 @@ require_once __DIR__ . '/../repositories/Repositorio_solicitud.php';
 
 class Controlador_Solicitud
 {
-    protected $repositorio;
+    protected $rs;
 
     public function __construct()
     {
-        // Crear una instancia del repositorio de solicitudes
-        $this->repositorio = new Repositorio_solicitud();
+        $this->rs = new Repositorio_solicitud();
     }
 
-    // Obtener todas las solicitudes o las solicitudes de un usuario específico
-    public function obtenerSolicitudes($dni = null)
+    public function get_all($dni = null)
     {
-        return $this->repositorio->mostrarSolicitud($dni);
+        return $this->rs->get_all($dni);
     }
 
     // Crear una solicitud de licencia
-    public function crearSolicitud($tipoLicencia, $DniSolicitante, $fechaInicio, $fechaFin)
+    public function create(Solicitud $solicitud)
     {
-        // Validar las fechas antes de proceder
-        if ($this->validarFechas($fechaInicio, $fechaFin)) {
-            return $this->repositorio->guardarSolicitud($tipoLicencia, $DniSolicitante, $fechaInicio, $fechaFin);
-        } else {
-            return "La fecha de inicio debe ser anterior o igual a la fecha de fin.";
+        try {
+            // Validar las fechas antes de proceder
+            $this->validarFechas($solicitud->getFechaDesde(), $solicitud->getFechaHasta());
+            return $this->rs->create($solicitud);
+        } catch (Exception $e) {
+            $_SESSION['mensaje'] = $e->getMessage();
+            $_SESSION['mensaje_tipo'] = "danger";
+            return false;
         }
     }
 
     // Actualizar el estado de una solicitud
-    public function actualizarEstado($estado, $DniSolicitante, $id_licencia)
+    public function update($solicitud)
     {
-        return $this->repositorio->updateSolicitud($estado, $DniSolicitante, $id_licencia);
+        return $this->rs->update($solicitud);
     }
 
     // Eliminar una solicitud
-    public function eliminarSolicitud($id_licencia, $DniSolicitante = null)
+    public function delete($id_licencia, $DniSolicitante = null)
     {
-        return $this->repositorio->deleteSolicitud($id_licencia, $DniSolicitante);
+        return $this->rs->delete($id_licencia, $DniSolicitante);
     }
 
     // Validar que la fecha de inicio sea menor o igual a la fecha de fin
     private function validarFechas($fechaInicio, $fechaFin)
     {
-        return $fechaInicio <= $fechaFin;
+        if (!($fechaInicio <= $fechaFin)) {
+            throw new Exception("La <b>fecha de inicio</b> debe ser anterior o igual a la <b>fecha de fin</b>.");
+        }
     }
 }

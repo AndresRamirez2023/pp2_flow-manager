@@ -20,7 +20,7 @@ if (empty($_POST['username']) || empty($_POST['password'])) {
     if ($login[0] === true) {
         $redirigir = '../internas/panelPrincipal.php';
     } else {
-        $redirigir = '../internas/login.php?' . (is_null($empresa) === null ? '' : 'empresa=' . $empresa->getNombre() . '&') . 'mensaje=' . $login[1] . '&tipo=danger';
+        $redirigir = '../internas/login.php?' . (is_null($empresa) ? '' : 'empresa=' . $empresa->getNombre() . '&') . 'mensaje=' . $login[1] . '&tipo=danger';
     }
 }
 header('Location: ' . $redirigir);

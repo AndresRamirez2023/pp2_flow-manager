@@ -3,32 +3,27 @@
 require_once 'Usuario.php';
 class Solicitud
 {
-    //TipoSolicitud(clave primeria)
     protected $TipoSolicitud;
-    //Dni(solicitante clave primaria/secundaria)
     protected $DniSolicitante;
-    //FechaDesde
     protected $FechaDesde;
-    //FechaHasta
     protected $FechaHasta;
+    protected $estado;
 
-    public function __construct($TipoSolicitud, Usuario $DniSolicitante, $FechaDesde ,$FechaHasta)
+    public function __construct($TipoSolicitud, $DniSolicitante, $FechaDesde, $FechaHasta, $estado)
     {
         $this->TipoSolicitud = $TipoSolicitud;
         $this->DniSolicitante = $DniSolicitante;
         $this->FechaDesde = $FechaDesde;
         $this->FechaHasta = $FechaHasta;
-
+        $this->estado = $estado;
     }
-
-    // TODO: Getters y setters
     public function getTipoSolicitud()
     {
         return "$this->TipoSolicitud";
     }
     public function getDniSolicitante()
     {
-        return $this->DniSolicitante->getDni();
+        return $this->DniSolicitante;
     }
     public function getFechaDesde()
     {
@@ -38,5 +33,8 @@ class Solicitud
     {
         return $this->FechaHasta;
     }
-
+    public function getEstado()
+    {
+        return $this->estado;
+    }
 }

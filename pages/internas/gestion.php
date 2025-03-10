@@ -443,8 +443,7 @@ $mensaje = isset($_SESSION['mensaje']) ? $_SESSION['mensaje'] : "";
             id="form-agregar-usuario"
             class="row g-3"
             action="gestion.php"
-            method="POST"
-            onsubmit="return validarFormulario();">
+            method="POST">
 
             <div class="col-md-6">
               <label for="nombreApellido" class="form-label">Nombre y Apellido<b>*</b></label>

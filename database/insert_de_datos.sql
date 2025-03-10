@@ -42,6 +42,15 @@ VALUES (41754883, 'Carlos Fernández', '1998-05-12', 'Av. Libertador 123, Buenos
 --
 -- Volcado de datos para la tabla `solicitudes`
 --
-INSERT INTO solicitudes (TipoSolicitud, DniSolicitante, FechaHoraDesde, FechaHoraHasta, Estado, id_licencia)
-VALUES ('maternidad', 20406012, '2025-01-22', '2025-01-24', 'Rechazada', 1),
-       ('vacaciones', 20406012, '2025-01-16', '2025-01-17', 'Pendiente', 2);
+INSERT INTO solicitudes (TipoSolicitud, DniSolicitante, FechaHoraDesde, FechaHoraHasta, Estado)
+VALUES 
+    ('vacaciones', 41754883, '2025-02-10', '2025-02-20', 'Aprobada'),
+    ('enfermedad', 41328471, '2025-03-05', '2025-03-10', 'Pendiente'),
+    ('vacaciones', 41013852, '2025-04-01', '2025-06-30', 'Aprobada'),
+    ('estudio', 41019921, '2025-05-15', '2025-05-20', 'Rechazada'),
+    ('vacaciones', 41029986, '2025-07-01', '2025-07-15', 'Pendiente'),
+    ('otros', 41025601, '2025-08-12', '2025-08-14', 'Aprobada'),
+    ('enfermedad', 41038873, '2025-09-03', '2025-09-07', 'Pendiente'),
+    ('maternidad', 41033201, '2025-10-10', '2025-12-10', 'Aprobada'),
+    ('estudio', 41040821, '2025-11-20', '2025-11-25', 'Pendiente'),
+    ('otros', 41140501, '2025-12-15', '2025-12-18', 'Rechazada');
